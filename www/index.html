@@ -1,0 +1,38 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <style>
+    canvas {
+        border: 2px solid #000;
+        position: absolute;
+        top: 0;
+        left: 0;
+        visibility: hidden;
+    }
+    </style>
+    <meta charset="UTF-8">
+    <title>Monacanoid</title>
+    <meta name="viewport" content="target-densitydpi=device-dpi,width=320,maximum-scale=1,minimum-scale=1,user-scalable=no" />
+    <meta http-equiv="Content-Security-Policy" content="default-src * data: gap: https://ssl.gstatic.com; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'">
+    <link rel="stylesheet" href="components/loader.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="components/loader.js"></script>
+    <script src="js/ParamDefine.js"></script>
+    <script src="js/ItemDefine.js"></script>
+    <script src="js/UnitDefine.js"></script>
+    <script src="js/FieldDefine.js"></script>
+    <script src="js/CommonView.js"></script>
+    <script src="js/TitleStar.js"></script>
+    <script src="js/SaveFileIO.js"></script> 
+    <script src="js/TitleView.js"></script>
+    <script src="js/BattleField.js"></script>
+    <script src="js/BattleView.js"></script>
+    <script src="js/GameOverView.js"></script>
+    <script src="js/main.js"></script> 
+</head>
+<body>
+ 
+    <canvas id="gameCanvas" width="500" height="700"></canvas>
+    <canvas id="gameCanvasFlip" width="500"" height="700"></canvas>
+</body>
+</html>
