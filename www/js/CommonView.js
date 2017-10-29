@@ -1,12 +1,12 @@
 //「具体的な画面クラス」のすべてに優先して定義される、画面系汎用メソッド定義クラス
 
 var CommonView = function(x, y, border, appearTime) {
- 
+
     // 汎用アナウンスメッセージ表示用
     var printMsg = new Array();//アナウンスメッセージ
     var printMsgCount = 0;// >0のときアナウンスメッセージ表示
 };
-    
+
 CommonView.staticCanvas = function() {
     if (typeof arguments.callee.cv == 'undefined') {
         arguments.callee.cv = document.getElementById('gameCanvas');
@@ -64,7 +64,7 @@ CommonView.paintMessage = function(ctxFlip) {
         for (var i = 0; i < nowMessages.length; i++) {
             ctxFlip.fillText(nowMessages[i], MESSAGE_X, MESSAGE_Y + 20 + 20 * i);
         }
-        
+
         // カウンタをデクリメント
         CommonView.msgCounter(nowMsgCounter - 1);
     } else {
@@ -72,7 +72,11 @@ CommonView.paintMessage = function(ctxFlip) {
     }
 }
 
-CommonView.addMessage = function(addMsg, printCount = 60) {
+CommonView.addMessage = function(addMsg, printCount) {
+	if (printCount <= 0) {
+		// デフォルト引数のかわり
+		printCount = 60;
+	}
     var nowMessages = CommonView.messages();
     nowMessages.push(addMsg);
     // メッセージが7個以上になったら最も古いものを削除

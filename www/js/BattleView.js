@@ -685,7 +685,7 @@ BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
                     this.spGauge[BATTLE_MIKATA] -= requireCost;
                     unitAtFocus.y = searchY;   
                 } else {
-                    CommonView.addMessage("SPゲージが足りません");
+                    CommonView.addMessage("SPゲージが足りません", -1);
                 }
                 
             }                    
