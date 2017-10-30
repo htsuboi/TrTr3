@@ -27,7 +27,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
     }
     switch(eqType) {
     case ITEM_TYPE_SWORD:arguments
-        this.range = 2;
+        idef.range = 2;
         switch(eqSyurui) {
             case 0:arguments
                 idef.namae = "大量生産の剣";
@@ -63,7 +63,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
         }
         break;
     case ITEM_TYPE_SPEAR:arguments
-        this.range = 3;
+        idef.range = 3;
         switch(eqSyurui) {
             case 0:arguments
                 idef.namae = "大量生産の槍";
@@ -98,7 +98,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
         }
         break;
     case ITEM_TYPE_HAMMER:arguments
-        this.range = 2;
+        idef.range = 2;
         idef.text = "敵の防御力を無視";
         switch(eqSyurui) {
             case 0:arguments
@@ -131,7 +131,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
         }
         break;
     case ITEM_TYPE_BOW:arguments
-        this.range = 4;
+        idef.range = 4;
         switch(eqSyurui) {
             case 0:arguments
                 idef.namae = "大量生産の弓";
@@ -161,7 +161,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
         }
         break;
     case ITEM_TYPE_KNIFE:arguments
-        this.range = 2;
+        idef.range = 2;
         switch(eqSyurui) {
             case 0:arguments
                 idef.namae = "大量生産の短剣";
@@ -198,7 +198,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
         }
         break;
     case ITEM_TYPE_PUNCH:arguments
-        this.range = 2;
+        idef.range = 2;
         switch(eqSyurui) {
             case 0:arguments
                 idef.namae = "大量生産の手袋";
@@ -230,7 +230,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
         }
         break;
     case ITEM_TYPE_SHIELD:arguments
-        this.range = 2;
+        idef.range = 2;
         switch(eqSyurui) {
             case 0:arguments
                 idef.namae = "大量生産の盾";
@@ -265,7 +265,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
         }
         break;
     case ITEM_TYPE_FIRE:arguments
-        this.range = 4;
+        idef.range = 4;
         switch(eqSyurui) {
             case 0:arguments
                 idef.namae = "火の練習帳";
@@ -296,7 +296,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
         }
         break;
     case ITEM_TYPE_WATER:arguments
-        this.range = 4;
+        idef.range = 4;
         switch(eqSyurui) {
             case 0:arguments
                 idef.namae = "水の練習帳";
@@ -332,7 +332,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
         }
         break;
     case ITEM_TYPE_WIND:arguments
-        this.range = 4;
+        idef.range = 4;
         switch(eqSyurui) {
             case 0:arguments
                 idef.namae = "風の練習帳";
@@ -367,7 +367,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
         }
         break;
     case ITEM_TYPE_EARTH:arguments
-        this.range = 4;
+        idef.range = 4;
         switch(eqSyurui) {
             case 0:arguments
                 idef.namae = "地の練習帳";
@@ -429,7 +429,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
         }
         break;
     case ITEM_TYPE_SUDE:arguments
-        this.range = 1;
+        idef.range = 1;
         switch(eqSyurui) {
             case 0:arguments
                 idef.namae = "素手";

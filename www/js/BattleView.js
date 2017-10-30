@@ -3,7 +3,14 @@ var returnableData = function() {
     this.x = 0;
     this.y = 0;
     this.spGauge = 0;
-}
+};
+
+// 攻撃実行時の結果保管
+var battleResult = function() {
+    this.isHit = false;
+    this.isCrt = false;
+    this.damage = 0;
+};
 
 var BattleView = function() {
     this.counter = 0;
@@ -12,6 +19,7 @@ var BattleView = function() {
     this.bar = [0, 0, 0, 0, 0, 0, 0];// 演出用の棒の長さ
     this.fieldDefine = new FieldDefine;
     this.fieldMsg = "";
+    this.battleMsg = ["", "", "", ""];
     this.spGauge = [200, 200];// 味方、敵のspゲージ
     this.spGaugePaint = [0, 0];// 味方、敵のspゲージ(表示用　実際のゲージはspGauge)
     this.field = 0;//どのフィールドか
@@ -21,6 +29,7 @@ var BattleView = function() {
     this.commandState = BATTLEVIEW_COMSTATE_PRECHOICE;
     this.cantOpCounter = 0;// 演出のため操作不能な時間
     this.battleFields = new Array();
+    this.tempResult = new battleResult();
     // 手持ち武器の選択時、tempEquipTypeForPaintは「ITEM_TYPE_TEMOCHI」だが、tempEqTypeForEquipは手持ち武器の種類により変わる
     // それ以外の状況では下記2変数は一致している
     this.tempEqTypeForPaint = ITEM_TYPE_TEMOCHI;//どの属性の武器を画面表示するか
@@ -50,7 +59,7 @@ BattleView.prototype.init = function (position, isAttack) {
     this.tempEqTypeForPaint = ITEM_TYPE_TEMOCHI;//表示している武器タイプ
     this.tempEqTypeForEquip = -1;//暫定装備している武器タイプ
     this.tempEqSyurui = -1;//カーソルが合っている=暫定装備している武器種類
-    this.tempTargetEnemy = -1;//暫定攻撃ターゲット　もう一回選択すると実際に攻撃
+    this.tempTargetUnit = -1;//暫定攻撃ターゲット　もう一回選択すると実際に攻撃
     this.tempY = 0;// 移動演出のため使用
     for (var j = 0; j <= 2; j++) {
         for (var k = 0; k <= 2; k ++) {
@@ -62,9 +71,8 @@ BattleView.prototype.init = function (position, isAttack) {
                 this.battleFields[BATTLE_TEKI][j][k].init(this.fieldDefine.ofMap[3 * j + k]);
             }
         }
-    }
-    
-}
+    }    
+};
 
 BattleView.prototype.calc = function(ud, itemMap) {
     // SPゲージ見た目を実際に近づける
@@ -90,6 +98,37 @@ BattleView.prototype.calc = function(ud, itemMap) {
         }
     }
     
+    if (this.commandState == BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE && this.cantOpCounter > 0) {
+        var unitAtFocus = this.getUnitAtFocus(ud);
+        var tempIndex = 0;
+        if (this.cantOpCounter > 35) {
+            this.battleMsg = ["", "", "", ""];
+        }
+        if (this.cantOpCounter <= 35) {
+            this.battleMsg[tempIndex++] = unitAtFocus.namae + "は" + this.tempTargetUnit.namae + "に攻撃した。";
+        }
+        if (this.cantOpCounter <= 30) {
+            if (!this.tempResult.isHit) {
+                this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "は攻撃をかわした。";
+            } else {
+                if (this.tempResult.isCrt) {
+                   this.battleMsg[tempIndex++] = "クリティカル!"; 
+                }
+                if (this.tempResult.damage == 0) {
+                    this.battleMsg[tempIndex++] = "ダメージが通らない!";
+                } else {
+                    this.battleMsg[tempIndex++] = this.tempResult.damage + "ダメージ!";
+                }
+            }
+        }
+        if (this.tempResult.isHit && this.cantOpCounter == 20) {
+            this.tempTargetUnit.hp = Math.max(this.tempTargetUnit.hp - this.tempResult.damage, 0);
+            if (this.tempTargetUnit.hp == 0) {
+                this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "は倒れた!";
+            }
+        }
+    }
+    
     this.counter ++;
     if (this.counter == this.MAXCOUNTER) {
         this.counter = this.ENDCOUNTER;
@@ -101,7 +140,7 @@ BattleView.prototype.calc = function(ud, itemMap) {
         // 画面作りかけを意味
         return 0;
     }
-}
+};
 
 BattleView.prototype.paint = function (ud, itemMap) {
 
@@ -236,9 +275,7 @@ BattleView.prototype.paint = function (ud, itemMap) {
                     var unitAtFocus = this.getUnitAtFocus(ud);
                     // 手番ユニットと当該マスの距離
                     var distance = unitAtFocus.x + unitAtFocus.y + i + j;
-                    // TODO:レンジ計算
-                    var range = 2;
- 
+                    var range = UnitDefine.calcRange(unitAtFocus, ud, this.tempEqTypeForEquip, this.tempEqSyurui);
                     var sideColor = 'rgb(0, 0, 0)';
                     if (range >= distance) {
                         // 普通に届く
@@ -273,8 +310,9 @@ BattleView.prototype.paint = function (ud, itemMap) {
         ctxFlip.fillRect(BATTLEVIEW_BATTLETXT_X, BATTLEVIEW_BATTLETXT_Y, BATTLEVIEW_BATTLETXT_W, BATTLEVIEW_BATTLETXT_H);
         ctxFlip.fillStyle = 'rgb(0, 0, 0)';
         ctxFlip.font = "11px 'MS Pゴシック'";
-        ctxFlip.fillText(this.fieldMsg, BATTLEVIEW_FIELDTXT_X, BATTLEVIEW_FIELDTXT_Y + 20);
-        
+        for (var i = 0; i < this.battleMsg.length; i++) {
+            ctxFlip.fillText(this.battleMsg[i], BATTLEVIEW_BATTLETXT_X, BATTLEVIEW_BATTLETXT_Y + 20 + 12 * i);
+        }
         // SPゲージ表示
         ctxFlip.fillStyle = 'rgb(223, 223, 55)';
         ctxFlip.fillRect(BATTLEVIEW_SPGAUGE_X - 2, BATTLEVIEW_SPGAUGE_Y - 2, BATTLEVIEW_SPGAUGE_W + 5, BATTLEVIEW_SPGAUGE_H + 5);
@@ -301,9 +339,17 @@ BattleView.prototype.paint = function (ud, itemMap) {
                     var orgDestY = BATTLEVIEW_MIKATA_Y + BATTLEVIEW_SIZE * this.tempY;
                     targetXY[1] = (targetXY[1] * (20 - this.cantOpCounter) + orgDestY * this.cantOpCounter) / 20;
                 }
+                // 被ダメージ中
+                if (this.commandState == BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE && this.cantOpCounter > 0) {
+                    if (this.cantOpCounter <= 30 && u.equalUnit(this.tempTargetUnit)) {
+                        if (this.tempResult.isHit && this.tempResult.damage > 0) {
+                            targetXY[0] = targetXY[0] + 3 * (Math.abs((this.cantOpCounter % 9) - 4) - 2);
+                        }
+                    }
+                }
                 ctxFlip.drawImage(BattleField.getWeaponsImg(), paintXY[0], paintXY[1], 64, 64, targetXY[0], targetXY[1], 64, 64);
                 // ターゲット選択中
-                if (this.commandState == BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE && u.side == BATTLE_TEKI) {
+                if (this.commandState == BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE && u.side == BATTLE_TEKI && this.cantOpCounter == 0) {
                     var adjust = ((this.MAXCOUNTER - this.counter) / 3) % 40;// EndCounter～MaxCounterは0～600
                     ctxFlip.fillStyle = getGladColorRed((this.MAXCOUNTER - this.counter) / 6);
                     ctxFlip.fillRect(targetXY[0] + 6 - 1, targetXY[1] + adjust - 1, 54, 14);
@@ -312,7 +358,7 @@ BattleView.prototype.paint = function (ud, itemMap) {
                     ctxFlip.fillStyle = 'rgb(0, 0, 0)';
                     ctxFlip.font = "10px 'MS Pゴシック'";
                     ctxFlip.fillText("ENEMY", targetXY[0] + 10, targetXY[1] + adjust + 10);
-                    if (u.equalUnit(this.tempTargetEnemy)) {
+                    if (u.equalUnit(this.tempTargetUnit)) {
                         for (var j = 0; j <= 2; j++) {
                             var targetCounter = (Math.floor((this.counter - this.ENDCOUNTER) / 3)) % 20;//this.counter - this.ENDCOUNTERは0～599
                             ctxFlip.beginPath();
@@ -332,6 +378,48 @@ BattleView.prototype.paint = function (ud, itemMap) {
                             }
                             ctxFlip.arc(targetXY[0] + 32, targetXY[1] + 32, r, 0, 2 * Math.PI, false);
                             ctxFlip.stroke();
+                        }
+                    }
+                }
+                // 被ダメージ中
+                if (this.commandState == BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE && this.cantOpCounter > 0) {
+                    if (this.cantOpCounter <= 30 && u.equalUnit(this.tempTargetUnit)) {
+                        if (this.tempResult.isHit && this.tempResult.damage > 0) {
+                            ctxFlip.fillStyle = 'rgb(255, 0, 0)';
+                            for (var j = 0; j <= 5; j++) {
+                                var halfWidth = 2;
+                                var halfHeight = 15 - Math.abs(this.cantOpCounter - 15) + 3 * (2 - Math.abs(j - 4));
+                                ctxFlip.fillRect(targetXY[0] + 28 - this.cantOpCounter + 2 * halfWidth * j, targetXY[1] + 32 - halfHeight, 2 * halfWidth, 2 * halfHeight);
+                            }
+                            if (this.tempResult.isCrt) {
+                                for (var j = 0; j <= 7; j++) {
+                                    ctxFlip.beginPath();
+                                    var tempColorCounter = (this.cantOpCounter + j) % 5;
+                                    switch (tempColorCounter) {
+                                        case 0:arguments
+                                            ctxFlip.strokeStyle = 'rgb(255, 0, 0)';
+                                        break;
+                                        case 1:arguments
+                                            ctxFlip.strokeStyle = 'rgb(255, 63, 63)';
+                                        break;
+                                        case 2:arguments
+                                            ctxFlip.strokeStyle = 'rgb(255, 127, 127)';
+                                        break;
+                                        case 3:arguments
+                                            ctxFlip.strokeStyle = 'rgb(255, 191, 191)';
+                                        break;
+                                        case 4:arguments
+                                            ctxFlip.strokeStyle = 'rgb(255, 255, 255)';
+                                        break;
+                                    }
+                                    var rMin = 15 - this.cantOpCounter / 2;
+                                    var rMax = rMin + 12 + (30 - this.cantOpCounter);
+                                    var rad = 0.25 * j + 0.1 * this.cantOpCounter;
+                                    ctxFlip.moveTo(targetXY[0] + 32 + rMin * Math.cos(rad * Math.PI), targetXY[1] + 32 + rMin * Math.sin(rad * Math.PI));
+                                    ctxFlip.lineTo(targetXY[0] + 32 + rMax * Math.cos(rad * Math.PI), targetXY[1] + 32 + rMax * Math.sin(rad * Math.PI));
+                                    ctxFlip.stroke();
+                                }
+                            }
                         }
                     }
                 }
@@ -500,7 +588,7 @@ BattleView.prototype.paint = function (ud, itemMap) {
     var imageData = ctxFlip.getImageData(0, 0, CommonView.staticCanvasFlip().width, CommonView.staticCanvasFlip().height);
     var ctx = CommonView.staticCanvas().getContext('2d');
     ctx.putImageData(imageData, 0, 0);
-}
+};
 
 BattleView.prototype.getDestXY = function(u) {
     var destX = 0;
@@ -513,7 +601,7 @@ BattleView.prototype.getDestXY = function(u) {
         destY = BATTLEVIEW_TEKI_Y + BATTLEVIEW_SIZE * (2 - u.y);
     }
     return [destX, destY];
-}
+};
 
 BattleView.prototype.decorateSide = function(ctxFlip, x, y, color, width) {
     ctxFlip.fillStyle = color;
@@ -530,7 +618,7 @@ BattleView.prototype.isSelected = function(i) {
         return 2;
     }
     return 0;
-}
+};
 
 // 現在手番のユニットを取得
 BattleView.prototype.getUnitAtFocus = function(ud) {    
@@ -541,7 +629,7 @@ BattleView.prototype.getUnitAtFocus = function(ud) {
         }
     }
     return null;
-}
+};
 
 BattleView.prototype.unitMsg = function (u, ctxFlip) {
     ctxFlip.fillStyle = getGladColorBlue((this.MAXCOUNTER - this.counter) / 6);
@@ -609,13 +697,13 @@ BattleView.prototype.unitMsg = function (u, ctxFlip) {
     }
     // ユニット顔グラ表示
     ctxFlip.drawImage(UnitDefine.getCharaImg(u.pSyurui), u.px, u.py, 256, 320, BATTLEVIEW_UNITPAINT_X, BATTLEVIEW_UNITPAINT_Y, 128, 160);
-}
+};
 
 BattleView.prototype.moveCheckComState = function(cState, cComState) {
     this.state = cState;
     this.commandState = cComState;
     var checkRet = 1; 
-}
+};
 
 // 各マスごとに、移動可能かどうかチェック
 // -1…そもそも列orSide違い 0…同一マス それ以外…移動コスト 
@@ -635,7 +723,7 @@ BattleView.prototype.checkMoveCost = function(orgSide, orgX, orgY, checkSide, ch
     } else {
         return this.battleFields[checkSide][checkX][checkY + 1].move + this.battleFields[checkSide][checkX][checkY].move;
     }
-}
+};
 
 BattleView.prototype.searchAtXY = function(x, y, ud) {
     var retU = null;
@@ -659,7 +747,7 @@ BattleView.prototype.searchAtXY = function(x, y, ud) {
         }
     }
     return retU;
-}
+};
 
 BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
     //演出中
@@ -733,7 +821,7 @@ BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
                     if (this.tempEqSyurui = handEquip0.eqSyurui) {
                         // 選択済みの武器に決定
                         this.moveCheckComState(this.state, BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE);
-                        this.tempTargetEnemy = -1;
+                        this.tempTargetUnit = -1;
                     } else {
                         // 武器選択
                         this.tempEqSyurui = handEquip0.eqSyurui;
@@ -757,16 +845,41 @@ BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
         var tempUnit = this.searchAtXY(mouseX, mouseY, ud);   
         // 敵をクリックしていたらターゲットに設定
         if (tempUnit != null && tempUnit.side == BATTLE_TEKI) {
-            if (tempUnit.equalUnit(this.tempTargetEnemy)) {
+            var unitAtFocus = this.getUnitAtFocus(ud);
+            if (tempUnit.equalUnit(this.tempTargetUnit)) {
                 // 既に選択済みの敵を再選択したら、攻撃
-                CommonView.addMessage("攻撃します!");
+                this.cantOpCounter = 40;
+                var randomForHit = Math.floor(Math.random() * 100);//0～99
+                var hitRate = UnitDefine.calcHit(unitAtFocus, this.tempTargetUnit, ud, this.tempEqTypeForEquip, this.tempEqSyurui);
+                this.tempResult.isHit = hitRate > randomForHit;
+                var randomForCrt = Math.floor(Math.random() * 100);//0～99
+                var crtRate = UnitDefine.calcCrt(unitAtFocus, this.tempTargetUnit, ud, this.tempEqTypeForEquip, this.tempEqSyurui);
+                this.tempResult.isCrt = crtRate > randomForCrt;
+                var basicDamage = UnitDefine.calcBasicDamage(unitAtFocus, this.tempTargetUnit, ud, this.tempEqTypeForEquip, this.tempEqSyurui);
+                var chikeiRate = UnitDefine.calcChikei(unitAtFocus, this.tempTargetUnit, ud, this.battleFields, this.tempEqTypeForEquip, this.tempEqSyurui);
+                var rateDamage = UnitDefine.calcRateDamage(unitAtFocus, this.tempTargetUnit, ud, this.tempEqTypeForEquip, this.tempEqSyurui);
+                var totalDamage = Math.floor(basicDamage * (100 - chikeiRate) / 100 + rateDamage);
+                var randomForPlus = 0.01 * Math.random() * LUCK_RATE * unitAtFocus.luck;
+                var randomForKeigen = 0.01 * Math.random() * LUCK_RATE * this.tempTargetUnit.luck;
+                this.tempResult.damage = Math.floor(totalDamage * (1 + randomForPlus) * (1 - randomForKeigen));
+                if (this.tempResult.isCrt) {
+                    // クリティカル時のダメージ増加
+                    var crtDamage = UnitDefine.calcCrtDamage(unitAtFocus, this.tempTargetUnit, ud, this.tempEqTypeForEquip, this.tempEqSyurui);
+                    this.tempResult.damage += crtDamage;
+                }
             } else {
                 // 別のターゲットに移る
-                this.tempTargetEnemy = tempUnit;
+                this.tempTargetUnit = tempUnit;
+                var hitRate = UnitDefine.calcHit(unitAtFocus, this.tempTargetUnit, ud, this.tempEqTypeForEquip, this.tempEqSyurui);
+                var basicDamage = UnitDefine.calcBasicDamage(unitAtFocus, this.tempTargetUnit, ud, this.tempEqTypeForEquip, this.tempEqSyurui);
+                var chikeiRate = UnitDefine.calcChikei(unitAtFocus, this.tempTargetUnit, ud, this.battleFields, this.tempEqTypeForEquip, this.tempEqSyurui);
+                var rateDamage = UnitDefine.calcRateDamage(unitAtFocus, this.tempTargetUnit, ud, this.tempEqTypeForEquip, this.tempEqSyurui);
+                var totalDamage = Math.floor(basicDamage * (100 - chikeiRate) / 100 + rateDamage);
+                this.battleMsg[0] = "命中" + hitRate + " " + basicDamage + "×" + (100 - chikeiRate) + "%+" + rateDamage + "=" + totalDamage + "ダメージ";
             }
         } else {
             // ターゲット解除
-            this.tempTargetEnemy = null;
+            this.tempTargetUnit = null;
         }
     }
     // 戦闘コマンド選択
@@ -819,4 +932,4 @@ BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
     return -1;
     //TitleStar.titleCounter(0);
     //return GAMEMODE_GAMEOVER;
-}
+};

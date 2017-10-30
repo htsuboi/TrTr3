@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <widget xmlns="http://www.w3.org/ns/widgets" id="com.example.helloworld" version="1.0.0">
-  <name>Break the Bricks</name>
-  <description>Made with Monaca (http://monaca.mobi)</description>
+  <name>Tri Trust 3</name>
+  <description>by Na-Nyo-N</description>
   <author/>
   <content src="index.html"/>
   <access origin="*"/>

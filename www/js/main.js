@@ -42,6 +42,10 @@ ItemDefine.init(ITEM_TYPE_SWORD, 2, tempItem);
 itemMap.set(tempItem.namae, {equipNum: 1, allNum:4});
 ItemDefine.init(ITEM_TYPE_SWORD, 3, tempItem);
 itemMap.set(tempItem.namae, {equipNum: 2, allNum:4});
+ItemDefine.init(ITEM_TYPE_SPEAR, 0, tempItem);
+itemMap.set(tempItem.namae, {equipNum: 0, allNum:0});
+ItemDefine.init(ITEM_TYPE_SPEAR, 1, tempItem);
+itemMap.set(tempItem.namae, {equipNum: 1, allNum:2});
 //itemMap.set({eqType:ITEM_TYPE_SWORD, eqSyurui:ITEM_SYURUI_SWORD2}, {equipNum: 4, allNum:5});
 
 var intervalId;

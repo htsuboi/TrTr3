@@ -352,7 +352,7 @@ UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofO
         break;
         case UNIT_SYURUI_KNIGHT:arguments
             this.msp = 22;
-            this.crt = 5;
+            this.crt = 6;
             this.luck = 3;
             this.rat = 3;//割合ダメージ
             this.rdf = 7;//割合軽減
@@ -700,6 +700,7 @@ UnitDefine.prototype.calcBattleStr = function(eqType, eqSyurui) {
     // amari:orgValueの小数点1桁(ゲーム内非表示、戦闘では使用しない)
     // up1, up2, up3は÷10した値が実際の成長率で、orgValueとamariに加算される
     return {namae: equip.namae,
+           crt: this.crt + equip.crt,
            str: this.strObj.now + equip.str,
            mag: this.magObj.now + equip.mag,
            def: this.defObj.now + equip.def,
@@ -707,7 +708,8 @@ UnitDefine.prototype.calcBattleStr = function(eqType, eqSyurui) {
            hit: this.hitObj.now + equip.hit,
            avo: this.avoObj.now + equip.avo,
            rat: this.rat + equip.rat,
-           rdf: this.rdf + equip.rdf};
+           rdf: this.rdf + equip.rdf,
+           range: equip.range};
 }
 
 UnitDefine.getCharaImg = function(pSyurui) {
@@ -730,3 +732,74 @@ UnitDefine.getCharaImg = function(pSyurui) {
     return null;
     }
 };
+
+// 射程計算　基本的に装備武器は「装備中のもの」を想定するが、攻撃予想時のみ「予想に使用する武器」である
+UnitDefine.calcRange = function(attacker, ud, attackerEQType, attackerEQSyurui) {
+    var attackerBattleStatus = attacker.calcBattleStr(attackerEQType, attackerEQSyurui);// 装備品込みのステータスを取得
+    var range = attackerBattleStatus.range;
+
+    return range;
+}
+
+// 命中率計算　基本的に装備武器は「装備中のもの」を想定するが、攻撃予想時のみ「予想に使用する武器」である
+UnitDefine.calcHit = function(attacker, defender, ud, attackerEQType, attackerEQSyurui) {
+    var attackerBattleStatus = attacker.calcBattleStr(attackerEQType, attackerEQSyurui);// 装備品込みのステータスを取得
+    var defenderBattleStatus = defender.calcBattleStr();// 装備品込みのステータスを取得
+    var hitRate = attackerBattleStatus.hit - defenderBattleStatus.avo;
+    if (hitRate < 0) {
+        hitRate = 0;
+    } 
+    if (hitRate > 100) {
+        hitRate = 100;
+    }
+    return hitRate;
+}
+
+// クリティカル計算　基本的に装備武器は「装備中のもの」を想定するが、攻撃予想時のみ「予想に使用する武器」である
+UnitDefine.calcCrt = function(attacker, defender, ud, attackerEQType, attackerEQSyurui) {
+    var attackerBattleStatus = attacker.calcBattleStr(attackerEQType, attackerEQSyurui);// 装備品込みのステータスを取得
+    var crtRate = attackerBattleStatus.crt;
+    if (crtRate < 0) {
+        crtRate = 0;
+    } 
+    if (crtRate > 100) {
+        crtRate = 100;
+    }
+    return crtRate;
+}
+
+// ダメージ計算　基本的に装備武器は「装備中のもの」を想定するが、攻撃予想時のみ「予想に使用する武器」である
+UnitDefine.calcBasicDamage = function(attacker, defender, ud, attackerEQType, attackerEQSyurui) {
+    var attackerBattleStatus = attacker.calcBattleStr(attackerEQType, attackerEQSyurui);// 装備品込みのステータスを取得
+    var defenderBattleStatus = defender.calcBattleStr();// 装備品込みのステータスを取得
+    var eqType = (attackerEQType != null ? attackerEQType: attacker.handEquip[0].eqType);
+    var isMagic = (eqType == ITEM_TYPE_FIRE || eqType == ITEM_TYPE_WIND || eqType == ITEM_TYPE_WATER || eqType == ITEM_TYPE_EARTH);
+    var hitDamage = 0;
+    if (isMagic) {
+        hitDamage = attackerBattleStatus.mag - defenderBattleStatus.mdf;
+    } else {
+        hitDamage = attackerBattleStatus.str - defenderBattleStatus.def;
+    }
+    return Math.floor(Math.max(0, hitDamage));
+}
+
+// クリティカルダメージ計算
+UnitDefine.calcCrtDamage = function(attacker, defender, ud, attackerEQType, attackerEQSyurui) {
+    var crtDamage = defender.mhpObj.now * CRT_RATE;
+    return Math.floor(Math.max(0, crtDamage));
+}
+
+// 地形軽減率後
+UnitDefine.calcChikei = function(attacker, defender, ud, battleFields, attackerEQType, attackerEQSyurui) {
+    var chikeiRate = battleFields[defender.side][defender.x][defender.y].def;
+    return chikeiRate;
+}
+
+// 割合ダメージ計算　基本的に装備武器は「装備中のもの」を想定するが、攻撃予想時のみ「予想に使用する武器」である
+UnitDefine.calcRateDamage = function(attacker, defender, ud, attackerEQType, attackerEQSyurui) {
+    var attackerBattleStatus = attacker.calcBattleStr(attackerEQType, attackerEQSyurui);// 装備品込みのステータスを取得
+    var defenderBattleStatus = defender.calcBattleStr();// 装備品込みのステータスを取得
+    var hitRateDamage = Math.floor(defender.mhpObj.now * 0.01 * (attackerBattleStatus.rat - defenderBattleStatus.rdf));
+    
+    return Math.max(0, hitRateDamage);
+}

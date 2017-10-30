@@ -247,6 +247,12 @@ var UNIT_LVUP_EXLV2 = 20;
 
 // 1LvUpごとの取得経験値/必要経験値の増加率
 var UNIT_LVUP_EX = 1.4;
+
+// 幸運1で最大何%ダメージ増加/軽減するか
+var LUCK_RATE = 3;
+
+// クリティカルで最大HPのどれだけダメージ増加するか
+var CRT_RATE = 0.3;
 // どこからでも使用できるようここに記述
 var printWarn = function(msg) {
     alert(msg);
