@@ -58,7 +58,7 @@ var BATTLEVIEW_FIELDTXT_H = 50;
 var BATTLEVIEW_UNITTXT_X = 250;
 var BATTLEVIEW_UNITTXT_Y = 215;
 var BATTLEVIEW_UNITTXT_W = 110;
-var BATTLEVIEW_UNITTXT_H = 370;
+var BATTLEVIEW_UNITTXT_H = 390;
 // 戦闘説明左上
 var BATTLEVIEW_BATTLETXT_X = 10;
 var BATTLEVIEW_BATTLETXT_Y = 520;
@@ -87,10 +87,16 @@ var BATTLEVIEW_WEAP_H = 200;
 var BATTLEVIEW_WEAP_INTERVAL = 30;
 
 // 戦闘画面の状態
+var BATTLEVIEW_TURN_MIKATA = 0;
+var BATTLEVIEW_TURN_TEKI = 1;
+var BATTLEVIEW_TURN_INITIAL = 2;
+var BATTLEVIEW_TURN_WINBATTLE = 3;
+var BATTLEVIEW_TURN_LOSEBATTLE = 4;
+
 // 手番最初の移動前
 var BATTLEVIEW_STATE_FIRSTMOVE = 0;
 // 手番最初の移動後、行動前
-var BATTLEVIEW_STATE_ACTE = 1;
+var BATTLEVIEW_STATE_ACTSTART = 1;
 // 行動後、移動前
 var BATTLEVIEW_STATE_SECONDMOVE = 2;
 
@@ -102,6 +108,11 @@ var BATTLEVIEW_COMSTATE_RUN = 30;
 var BATTLEVIEW_COMSTATE_WAIT = 40;
 var BATTLEVIEW_COMSTATE_CHANGE = 50;
 
+var BATTLEVIEW_COMMANDNUM_ACT = 0;
+var BATTLEVIEW_COMMANDNUM_MOVE = 1;
+var BATTLEVIEW_COMMANDNUM_RUN = 2;
+var BATTLEVIEW_COMMANDNUM_WAIT = 3;
+var BATTLEVIEW_COMMANDNUM_CHANGE = 4;
 
 var BATTLEVIEW_UNITPAINT_X = 10;
 var BATTLEVIEW_UNITPAINT_Y = 10;
@@ -245,8 +256,16 @@ var UNIT_NAMAE_KAGE = "デルグ";
 var UNIT_LVUP_EXLV1 = 10;
 var UNIT_LVUP_EXLV2 = 20;
 
+// Lv1からLv2になるのに必要な経験値
+var FIRST_EXP = 10;
 // 1LvUpごとの取得経験値/必要経験値の増加率
-var UNIT_LVUP_EX = 1.4;
+var UNIT_LVUP_EXP = 1.4;
+// ゲーム中の最大レベル
+var MAX_LV = 35;
+
+// 2人/3人での勝利時の経験値補正
+var EXP_FOR2 = 0.8;
+var EXP_FOR3 = 0.6;
 
 // 幸運1で最大何%ダメージ増加/軽減するか
 var LUCK_RATE = 3;
@@ -284,7 +303,7 @@ var getGladColor = function(count) {
             return 'rgb(143, 143, 143)';
         break;
         default:arguments
-            printWarn('no GladColor peakDistance:' + peakDistance);  
+            printWarn('no GladColor peakDistance:' + peakDistance + ' count:' + count);
         break;
     }
 }
@@ -314,7 +333,7 @@ var getGladColorBlue = function(count) {
             return 'rgb(111, 143, 159)';
         break;
         default:arguments
-            printWarn('no GladColor peakDistance:' + peakDistance);  
+            printWarn('no GladColorBlue peakDistance:' + peakDistance + ' count:' + count);   
         break;
     }
 }
@@ -344,7 +363,7 @@ var getGladColorRed = function(count) {
             return 'rgb(159, 143, 111)';
         break;
         default:arguments
-            printWarn('no GladColor peakDistance:' + peakDistance);  
+            printWarn('no GladColorRed peakDistance:' + peakDistance + ' count:' + count); 
         break;
     }
 }

@@ -4,7 +4,7 @@ var UnitDefine = function() {
     this.px = 0;// 絵でのX座標
     this.py = 0;// 絵でのY座標
     this.pSyurui = 0;//どのファイルに絵があるか 0雑魚 1ボス 2PC 3NPC
-    this.field = 1;// どこのフィールドにいるか
+    this.field = -1;// どこのフィールドにいるか -1は「待機」
     this.x = 0;//戦闘画面でのX座標(0…2)
     this.y = 0//戦闘画面でのY座標(0…2)
     this.lv = 1;
@@ -72,6 +72,7 @@ UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofO
             this.x++;
         }
     }
+    this.field  = field;
     this.y = FieldDefine.calcUnitY(field, ofOrDf, this.x);
     switch(unitSyurui) {
         case UNIT_SYURUI_SWORD:arguments
@@ -448,11 +449,30 @@ UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofO
     // 指定Lvまでレベルアップ
     while(this.lv < lv) {
         this.lv++;
-        this.exp = Math.floor(UNIT_LVUP_EX * this.exp)
+        if (this.side == BATTLE_TEKI) {
+            this.exp = Math.floor(UNIT_LVUP_EXP * this.exp);
+        }
         this.lvUp(this.lv);
     }
     this.hp = this.mhpObj.now;
     this.sp = this.msp;
+    if (this.side == BATTLE_MIKATA) {
+        this.exp = this.calcExp(this.lv);
+    }
+}
+
+// あるレベル(入力引数)になるまでの累積経験値
+UnitDefine.prototype.calcExp = function(lv) {
+    // Lv1→2になるのに必要な経験値
+    var tempNextExp = FIRST_EXP;
+    var tempLv = 1;
+    var tempExp = 0;
+    while (tempLv < lv) {
+        tempExp += tempNextExp;
+        tempLv++;
+        tempNextExp = Math.floor(UNIT_LVUP_EXP * tempNextExp);
+    }
+    return tempExp;
 }
 
 // 描画はBattleViewで行う

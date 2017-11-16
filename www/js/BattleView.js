@@ -14,8 +14,10 @@ var battleResult = function() {
 
 var BattleView = function() {
     this.counter = 0;
-    this.ENDCOUNTER = 180;// ここに到達するまでは画面作りかけ状態
-    this.MAXCOUNTER = 780;// 画面完成後、ENDCOUNTER～MAXCOUNTERまでの値をぐるぐるしてアニメーションさせる
+    this.INITIALCOUNTER = 180;// ここに到達するまでは画面作りかけ状態(this.turnはBATTLEVIEW_TURN_INITIAL)
+    this.WINCOUNTER = 90;// 戦闘勝利演出(this.turnはBATTLEVIEW_TURN_WINBATTLE)
+    this.LOSECOUNTER = 90;// 戦闘敗北演出(this.turnはBATTLEVIEW_TURN_LOSEBATTLE)
+    this.MAXCOUNTER = 600;// 画面完成後、0～MAXCOUNTERまでの値をぐるぐるしてアニメーションさせる
     this.bar = [0, 0, 0, 0, 0, 0, 0];// 演出用の棒の長さ
     this.fieldDefine = new FieldDefine;
     this.fieldMsg = "";
@@ -25,11 +27,14 @@ var BattleView = function() {
     this.field = 0;//どのフィールドか
     this.infoUnit = null;// どのユニットの情報を表示するか
     this.focus = 0;//手番ユニット(0～5)
+    this.turn = BATTLEVIEW_TURN_INITIAL;
     this.state = BATTLEVIEW_STATE_FIRSTMOVE;
     this.commandState = BATTLEVIEW_COMSTATE_PRECHOICE;
     this.cantOpCounter = 0;// 演出のため操作不能な時間
     this.battleFields = new Array();
     this.tempResult = new battleResult();
+    this.winExp = 0;//戦闘勝利時のExp
+    this.winMoney = 0;//戦闘勝利時の金
     // 手持ち武器の選択時、tempEquipTypeForPaintは「ITEM_TYPE_TEMOCHI」だが、tempEqTypeForEquipは手持ち武器の種類により変わる
     // それ以外の状況では下記2変数は一致している
     this.tempEqTypeForPaint = ITEM_TYPE_TEMOCHI;//どの属性の武器を画面表示するか
@@ -59,8 +64,10 @@ BattleView.prototype.init = function (position, isAttack) {
     this.tempEqTypeForPaint = ITEM_TYPE_TEMOCHI;//表示している武器タイプ
     this.tempEqTypeForEquip = -1;//暫定装備している武器タイプ
     this.tempEqSyurui = -1;//カーソルが合っている=暫定装備している武器種類
-    this.tempTargetUnit = -1;//暫定攻撃ターゲット　もう一回選択すると実際に攻撃
+    this.tempTargetUnit = null;//暫定攻撃ターゲット　もう一回選択すると実際に攻撃
     this.tempY = 0;// 移動演出のため使用
+    this.winExp = 0;//戦闘勝利時のExp
+    this.winMoney = 0;//戦闘勝利時の金
     for (var j = 0; j <= 2; j++) {
         for (var k = 0; k <= 2; k ++) {
             if (isAttack) {
@@ -127,18 +134,46 @@ BattleView.prototype.calc = function(ud, itemMap) {
                 this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "は倒れた!";
             }
         }
+        if (this.tempResult.isHit && this.cantOpCounter == 1) {
+            if (this.tempTargetUnit.hp == 0) {
+                this.infoUnit = null;// 必ず「今倒した敵」を表示しているはずなので、その表示をやめる
+                var shibouSide = this.tempTargetUnit.side;
+                this.shibouUnit(this.tempTargetUnit, ud);
+            }
+        }
+        if (this.cantOpCounter == 1) {
+            var endCheck = this.endBattleCheck(ud);
+            if (endCheck == -1) {
+                // 決着がついていない
+                this.moveCheckComState(BATTLEVIEW_STATE_SECONDMOVE, BATTLEVIEW_COMSTATE_PRECHOICE);
+            }
+        }
     }
     
+    if (this.turn == BATTLEVIEW_TURN_INITIAL) {
+        if (this.counter >= this.INITIALCOUNTER) {
+            // TODO:不戦敗時処理
+            this.counter = 0;
+            this.turn = BATTLEVIEW_TURN_MIKATA;
+            // 画面作成完了を意味
+            return 1;
+        }
+    }
+    if (this.turn == BATTLEVIEW_TURN_WINBATTLE) {
+        // カウンタインクリメント不要
+        if (this.counter >= this.WINCOUNTER) {
+            return;
+        }
+    }
+    if (this.turn == BATTLEVIEW_TURN_LOSEBATTLE) {
+        // カウンタインクリメント不要
+        if (this.counter >= this.LOSECOUNTER) {
+            return;
+        }
+    }
     this.counter ++;
     if (this.counter == this.MAXCOUNTER) {
-        this.counter = this.ENDCOUNTER;
-    }
-    if (this.counter >= this.ENDCOUNTER) {
-        // 画面作成完了を意味
-        return 1;
-    } else {
-        // 画面作りかけを意味
-        return 0;
+        this.counter = 0;
     }
 };
 
@@ -152,32 +187,34 @@ BattleView.prototype.paint = function (ud, itemMap) {
     ctxFlip.fillStyle = 'rgb(0, 0, 0)';
     ctxFlip.fillRect(0, 0, CommonView.staticCanvasFlip().width, CommonView.staticCanvasFlip().height);
     
-    if (this.counter <= 90) {
-        ctxFlip.fillStyle = 'rgb(191, 239, 191)';
-        for (var i = 0; i < 10; i++) {
-            var width = Math.max(Math.min(3 * this.counter - 7 * Math.abs(i - 4.5), totalWidth / 2), 0);
-            var y = totalHeight / 10 * i;
-            var height = totalHeight / 10 + 1;
-            ctxFlip.fillRect(0, y, width, height);
-        }
-        ctxFlip.fillStyle = 'rgb(239, 191, 191)';
-        for (var i = 0; i < 10; i++) {
-            var width = Math.max(Math.min(3 * this.counter - 7 * Math.abs(i - 4.5), totalWidth / 2), 0);
-            var y = totalHeight / 10 * i;
-            var height = totalHeight / 10 + 1;
-            ctxFlip.fillRect(totalWidth - width, y, width, height);
-        }
-    } else if (this.counter < this.ENDCOUNTER ){
-        ctxFlip.fillStyle = 'rgb(191, 239, 191)';
-        ctxFlip.fillRect(0, 0, totalWidth / 2, totalHeight);
-        ctxFlip.fillStyle = 'rgb(239, 191, 191)';
-        ctxFlip.fillRect(totalWidth / 2, 0, totalWidth / 2, totalHeight);
-        ctxFlip.fillStyle = 'rgb(191, 191, 191)';
-        for (var i = 0; i < 10; i++) {
-            var width = Math.max(Math.min(6 * (this.counter - 100) - 14 * Math.abs(i - 4.5), totalWidth), 0);
-            var y = totalHeight / 10 * i;
-            var height = totalHeight / 10 + 1;
-            ctxFlip.fillRect((totalWidth - width) / 2, y, width, height);
+    if (this.turn == BATTLEVIEW_TURN_INITIAL) {
+        if (this.counter <= 90) {
+            ctxFlip.fillStyle = 'rgb(191, 239, 191)';
+            for (var i = 0; i < 10; i++) {
+                var width = Math.max(Math.min(3 * this.counter - 7 * Math.abs(i - 4.5), totalWidth / 2), 0);
+                var y = totalHeight / 10 * i;
+                var height = totalHeight / 10 + 1;
+                ctxFlip.fillRect(0, y, width, height);
+            }
+            ctxFlip.fillStyle = 'rgb(239, 191, 191)';
+            for (var i = 0; i < 10; i++) {
+                var width = Math.max(Math.min(3 * this.counter - 7 * Math.abs(i - 4.5), totalWidth / 2), 0);
+                var y = totalHeight / 10 * i;
+                var height = totalHeight / 10 + 1;
+                ctxFlip.fillRect(totalWidth - width, y, width, height);
+            }
+        } else if (this.counter < this.INITIALCOUNTER ){
+            ctxFlip.fillStyle = 'rgb(191, 239, 191)';
+            ctxFlip.fillRect(0, 0, totalWidth / 2, totalHeight);
+            ctxFlip.fillStyle = 'rgb(239, 191, 191)';
+            ctxFlip.fillRect(totalWidth / 2, 0, totalWidth / 2, totalHeight);
+            ctxFlip.fillStyle = 'rgb(191, 191, 191)';
+            for (var i = 0; i < 10; i++) {
+                var width = Math.max(Math.min(6 * (this.counter - 100) - 14 * Math.abs(i - 4.5), totalWidth), 0);
+                var y = totalHeight / 10 * i;
+                var height = totalHeight / 10 + 1;
+                ctxFlip.fillRect((totalWidth - width) / 2, y, width, height);
+            }
         }
     } else {
         // バトルのメイン状態
@@ -185,7 +222,7 @@ BattleView.prototype.paint = function (ud, itemMap) {
         ctxFlip.fillRect(0, 0, totalWidth, totalHeight);
         for (var i = 0; i < this.bar.length; i++) {
             var oldLength = this.bar[i];
-            var diff = ((this.counter + i * 2 - this.ENDCOUNTER) % 60 - 30) / 10;
+            var diff = ((this.counter + i * 2 - this.INITIALCOUNTER) % 60 - 30) / 10;
             this.bar[i] += diff;
             if (this.bar[i] < 20) {
                 this.bar[i] = 20;
@@ -260,7 +297,7 @@ BattleView.prototype.paint = function (ud, itemMap) {
                             sideColor = 'rgb(239, 0, 0)'; 
                             break;
                         }
-                        var decorateWidth = 2 + (Math.abs((this.counter - this.ENDCOUNTER) / 6) % 11 - 5);//this.counter - this.ENDCOUNTERは0～599
+                        var decorateWidth = 2 + (Math.abs((this.counter - this.INITIALCOUNTER) / 6) % 11 - 5);//this.counter - this.INITIALCOUNTERは0～599
                         this.decorateSide(ctxFlip, BATTLEVIEW_MIKATA_X + 66 * (2 - i), BATTLEVIEW_MIKATA_Y + 66 * j, sideColor, decorateWidth);
                     }
                 }
@@ -288,7 +325,7 @@ BattleView.prototype.paint = function (ud, itemMap) {
                         sideColor = 'rgb(255, 0, 0)';
                     }
                         
-                    var decorateWidth = 2 + (Math.abs((this.counter - this.ENDCOUNTER) / 6) % 11 - 5);//this.counter - this.ENDCOUNTERは0～599
+                    var decorateWidth = 2 + (Math.abs((this.counter - this.INITIALCOUNTER) / 6) % 11 - 5);//this.counter - this.INITIALCOUNTERは0～599
                     this.decorateSide(ctxFlip, BATTLEVIEW_TEKI_X + 66 * i, BATTLEVIEW_TEKI_Y + 66 * (2 - j), sideColor, decorateWidth);
                 }
             }
@@ -332,6 +369,10 @@ BattleView.prototype.paint = function (ud, itemMap) {
         for (var i = 0; i < ud.length; i++) {
             var u = ud[i];
             if (u.field == this.field) {
+                if (u.hp == 0 && this.cantOpCounter % 2 == 0) {
+                    // 死にかけユニットの点滅
+                    continue;
+                }
                 var paintXY = ItemDefine.getItemXY(u.eqType);
                 var targetXY = this.getDestXY(u);
                 // 移動中
@@ -348,9 +389,21 @@ BattleView.prototype.paint = function (ud, itemMap) {
                     }
                 }
                 ctxFlip.drawImage(BattleField.getWeaponsImg(), paintXY[0], paintXY[1], 64, 64, targetXY[0], targetXY[1], 64, 64);
+                // レベルアップ中
+                if (this.turn == BATTLEVIEW_TURN_WINBATTLE && u.exp >= u.calcExp(u.lv + 1)) {
+                    var lvUpDestY = 256;
+                    if (this.counter > 10) {
+                        lvUpDestY = 272;
+                    }
+                    if (this.counter > 20) {
+                        lvUpDestY = 288;
+                    }
+                    var lvUpTargetY = targetXY[1] + Math.max(0, 32 - this.counter);
+                    ctxFlip.drawImage(BattleField.getWeaponsImg(), 0, lvUpDestY, 64, 16, targetXY[0], lvUpTargetY, 64, 16);
+                }
                 // ターゲット選択中
                 if (this.commandState == BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE && u.side == BATTLE_TEKI && this.cantOpCounter == 0) {
-                    var adjust = ((this.MAXCOUNTER - this.counter) / 3) % 40;// EndCounter～MaxCounterは0～600
+                    var adjust = ((this.MAXCOUNTER - this.counter) / 3) % 40;// INITIALCOUNTER～MaxCounterは0～600
                     ctxFlip.fillStyle = getGladColorRed((this.MAXCOUNTER - this.counter) / 6);
                     ctxFlip.fillRect(targetXY[0] + 6 - 1, targetXY[1] + adjust - 1, 54, 14);
                     ctxFlip.fillStyle = 'rgb(255, 255, 255)';
@@ -360,7 +413,7 @@ BattleView.prototype.paint = function (ud, itemMap) {
                     ctxFlip.fillText("ENEMY", targetXY[0] + 10, targetXY[1] + adjust + 10);
                     if (u.equalUnit(this.tempTargetUnit)) {
                         for (var j = 0; j <= 2; j++) {
-                            var targetCounter = (Math.floor((this.counter - this.ENDCOUNTER) / 3)) % 20;//this.counter - this.ENDCOUNTERは0～599
+                            var targetCounter = (Math.floor((this.counter - this.INITIALCOUNTER) / 3)) % 20;//this.counter - this.INITIALCOUNTERは0～599
                             ctxFlip.beginPath();
                             var firstWidth = 6 * (this.MAXCOUNTER - this.counter);
                             var r = 23 - targetCounter + 6 * j;
@@ -428,7 +481,7 @@ BattleView.prototype.paint = function (ud, itemMap) {
         
         // 手番ユニットの強調
         for (var i = 0; i <= 4; i++) {
-            var focusCounter = (Math.floor((this.counter - this.ENDCOUNTER) / 6)) % 20;//this.counter - this.ENDCOUNTERは0～599
+            var focusCounter = (Math.floor((this.counter - this.INITIALCOUNTER) / 6)) % 20;//this.counter - this.INITIALCOUNTERは0～599
             ctxFlip.beginPath();
             var firstWidth = 6 * (this.MAXCOUNTER - this.counter);
             var r = 28 - focusCounter;
@@ -609,10 +662,28 @@ BattleView.prototype.decorateSide = function(ctxFlip, x, y, color, width) {
     ctxFlip.fillRect(x + 64 - width, y, width, 64);
 };
 
-// 各コマンドボタンが選択可能/選択中か?
+// 各コマンドボタンが選択可能/選択中か?(1:選択可能 2:選択中 0:選択不能)
+// iは「0行動 1移動 2逃亡 3待機 4交代」
 BattleView.prototype.isSelected = function(i) {
     if (this.commandState == BATTLEVIEW_COMSTATE_PRECHOICE) {
-        return 1;
+        if (this.state == BATTLEVIEW_STATE_FIRSTMOVE) {
+            // 全コマンド選択可
+            return 1;
+        }
+        if (this.state == BATTLEVIEW_STATE_ACTSTART) {
+            if (i == BATTLEVIEW_COMMANDNUM_ACT || i == BATTLEVIEW_COMMANDNUM_WAIT) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+        if (this.state == BATTLEVIEW_STATE_SECONDMOVE) {
+            if (i == BATTLEVIEW_COMMANDNUM_ACT || i == BATTLEVIEW_COMMANDNUM_MOVE || i == BATTLEVIEW_COMMANDNUM_WAIT) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
     }
     if (Math.floor(this.commandState / 10) == i + 1) {
         return 2;
@@ -629,6 +700,24 @@ BattleView.prototype.getUnitAtFocus = function(ud) {
         }
     }
     return null;
+};
+
+// 次の手番のユニットに回す
+BattleView.prototype.moveToNextFocus = function(ud) {
+    while(true) {
+        this.focus++;
+        if (this.focus == 6) {
+            // 1周してもどる
+            this.focus = 0;
+        }
+        for (var i = 0; i < ud.length; i++) {
+            var u = ud[i];
+            if (u.field == this.field &&  u.side == (this.focus % 2) && u.x == Math.floor(this.focus / 2)) {
+                // ユニットが見つかったらreturn
+                return u; 
+            }
+        }
+    }
 };
 
 BattleView.prototype.unitMsg = function (u, ctxFlip) {
@@ -685,6 +774,9 @@ BattleView.prototype.unitMsg = function (u, ctxFlip) {
     ctxFlip.fillText("スキル3:" + u.exAtCost, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval + 15);
 
     ctxFlip.fillText("Exp:" + u.exp, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 25 + lineCount++ * yInterval + 15);
+    if (u.side == BATTLE_MIKATA && u.lv < MAX_LV) {
+        ctxFlip.fillText("(Next:" + u.calcExp(u.lv + 1) + ")", BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 25 + lineCount++ * yInterval + 15);
+    }
     if (u.side == BATTLE_MIKATA) {
         for (var i = ITEM_TYPE_SWORD; i <= ITEM_TYPE_EARTH; i++) {
             if (u.getItemIndex(i) >= 0) {
@@ -749,10 +841,106 @@ BattleView.prototype.searchAtXY = function(x, y, ud) {
     return retU;
 };
 
+// 勝利側を返す
+BattleView.prototype.endBattleCheck = function(ud) {
+    var shibouSide = this.isZenmetsu(ud);
+    if (shibouSide == BATTLE_TEKI) {
+        CommonView.addMessage("戦闘勝利! " + this.winExp, 60);
+        var remainMikata = this.calcRemain(BATTLE_MIKATA, ud);
+        var getExp = this.winExp;
+        switch(remainMikata) {
+        case 2:arguments
+            getExp = Math.floor(getExp * EXP_FOR2);
+            break;
+        case 3:arguments
+            getExp = Math.floor(getExp * EXP_FOR3);
+            break;
+        }
+        for (var i = 0; i < ud.length; i++) {
+            var u = ud[i];
+            if (u.field == this.field &&  u.side == BATTLE_MIKATA && u.hp > 0) {
+                u.exp += getExp; 
+            }
+        }
+        this.turn = BATTLEVIEW_TURN_WINBATTLE;
+        this.counter = 0;
+        return BATTLE_MIKATA;
+    }
+    if (shibouSide == BATTLE_MIKATA) {
+        CommonView.addMessage("戦闘敗北!", 60);
+        this.turn = BATTLEVIEW_TURN_LOSEBATTLE;
+        this.counter = 0;
+        return BATTLE_TEKI;
+    }
+    return -1;
+} 
+
+BattleView.prototype.isZenmetsu = function(ud) {
+    // 全滅側を返す
+    var mikataRemain = this.calcRemain(BATTLE_MIKATA, ud);
+    var tekiRemain = this.calcRemain(BATTLE_TEKI, ud);
+    if (mikataRemain == 0) {
+        return BATTLE_MIKATA;
+    }
+    if (tekiRemain == 0) {
+        return BATTLE_TEKI;
+    }
+    return -1;
+};
+
+BattleView.prototype.calcRemain = function(side, ud) {
+    // ユニットの生存人数カウント
+    var remain = 0;//同陣営の残り人数
+    for (var i = 0; i < ud.length; i++) {
+        var u = ud[i];
+        if (u.hp > 0 && u.side == side && u.field == this.field) {
+            remain++;
+        }
+    }
+    return remain;
+};
+
+BattleView.prototype.shibouUnit = function(deadU, ud) {
+    // ユニット死亡時の処理
+    for (var i = 0; i < ud.length; i++) {
+        var u = ud[i];
+        if (u.hp > 0 && u.side == deadU.side && u.field == this.field) {
+            if (u.x > deadU.x) {
+                u.x--;
+            }
+        }
+    }
+    if (deadU.side == BATTLE_MIKATA) {
+        // TODO:装備解除
+        deadU.field = -1;
+    } else {
+        this.winExp += deadU.exp;
+        // TODO:winMoney計算
+        this.winMoney += 10;
+        
+        // udから死亡ユニットを消す
+        var deleteIndex = ud.indexOf(deadU);
+        ud.splice(deleteIndex, 1);
+    }
+    return;
+};
+
 BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
+
+    if (CommonView.printWarnFlag() == true) {
+        // 警告表示時はそれを消す
+        CommonView.printWarnFlag(false);
+        return -1;
+    }
+    
     //演出中
     if (this.cantOpCounter > 0) {
-        return;
+        return -1;
+    }
+    
+    // 味方ターン以外
+    if (this.turn != BATTLEVIEW_TURN_MIKATA) {
+        return -1;
     }
     
     // 味方マスチェック中
@@ -771,9 +959,11 @@ BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
                     // 移動
                     this.cantOpCounter = 20;
                     this.spGauge[BATTLE_MIKATA] -= requireCost;
-                    unitAtFocus.y = searchY;   
+                    unitAtFocus.y = searchY;
+                    return -1;
                 } else {
-                    CommonView.addMessage("SPゲージが足りません");
+                    CommonView.addWarn("SPゲージが移動コストに足りません");
+                    return -1;
                 }
                 
             }                    
@@ -799,6 +989,7 @@ BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
                 var handEquip0 = focusUnit.handEquip[0];
                 this.tempEqTypeForEquip = handEquip0.eqType;
                 this.tempEqSyurui = handEquip0.eqSyurui;
+                return -1;
             } else {
                 var weapTypeIndex = focusUnit.getReverseItemIndex(tempY - 1);
                 // -1は「見つからなかった」の意味
@@ -807,6 +998,7 @@ BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
                     this.tempEqTypeForEquip = weapTypeIndex;
                     // とりあえず最初の武器を表示、暫定装備
                     this.tempEqSyurui = ItemDefine.getReverseItemIndex(itemMap, this.tempEqTypeForEquip, 0);
+                    return -1;
                 }
             }
         }
@@ -822,9 +1014,11 @@ BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
                         // 選択済みの武器に決定
                         this.moveCheckComState(this.state, BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE);
                         this.tempTargetUnit = -1;
+                        return -1;
                     } else {
                         // 武器選択
                         this.tempEqSyurui = handEquip0.eqSyurui;
+                        return -1;
                     }
                 }
             } else {
@@ -833,9 +1027,11 @@ BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
                     if (this.tempEqSyurui == tempEqSyurui) {
                         // 選択済みの武器に決定
                         this.moveCheckComState(this.state, BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE);
+                        return -1;
                     } else {
                         // 表示すべきアイテムあり
                         this.tempEqSyurui = tempEqSyurui;
+                        return -1;
                     }
                 } 
             }
@@ -848,6 +1044,26 @@ BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
             var unitAtFocus = this.getUnitAtFocus(ud);
             if (tempUnit.equalUnit(this.tempTargetUnit)) {
                 // 既に選択済みの敵を再選択したら、攻撃
+                var distance = unitAtFocus.x + unitAtFocus.y + tempUnit.x + tempUnit.y;
+                var range = UnitDefine.calcRange(unitAtFocus, ud, this.tempEqTypeForEquip, this.tempEqSyurui);
+                if (range >= distance) {
+                    // 普通に届く(なにもしない)
+                } else if (range == distance - 1) {
+                    // 射程伸ばしで届く
+                    var rangeCost = unitAtFocus.rangeCost;
+                    if(this.spGauge[unitAtFocus.side] >= rangeCost) {
+                        this.spGauge[unitAtFocus.side] -= rangeCost;
+                    } else {
+                        // 射程伸ばしでも届かない
+                        CommonView.addWarn("射程範囲外です。");
+                        CommonView.addWarn("伸ばすにはSPゲージが足りません。");
+                        return -1;    
+                    }
+                } else {
+                    // 射程伸ばしでも届かない
+                    CommonView.addWarn("射程範囲外です。");
+                    return -1;
+                }
                 this.cantOpCounter = 40;
                 var randomForHit = Math.floor(Math.random() * 100);//0～99
                 var hitRate = UnitDefine.calcHit(unitAtFocus, this.tempTargetUnit, ud, this.tempEqTypeForEquip, this.tempEqSyurui);
@@ -867,6 +1083,7 @@ BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
                     var crtDamage = UnitDefine.calcCrtDamage(unitAtFocus, this.tempTargetUnit, ud, this.tempEqTypeForEquip, this.tempEqSyurui);
                     this.tempResult.damage += crtDamage;
                 }
+                return -1;
             } else {
                 // 別のターゲットに移る
                 this.tempTargetUnit = tempUnit;
@@ -876,10 +1093,12 @@ BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
                 var rateDamage = UnitDefine.calcRateDamage(unitAtFocus, this.tempTargetUnit, ud, this.tempEqTypeForEquip, this.tempEqSyurui);
                 var totalDamage = Math.floor(basicDamage * (100 - chikeiRate) / 100 + rateDamage);
                 this.battleMsg[0] = "命中" + hitRate + " " + basicDamage + "×" + (100 - chikeiRate) + "%+" + rateDamage + "=" + totalDamage + "ダメージ";
+                // clickの後続で新ターゲットのデータ表示が必要なので、ここでreturnしてはいけない
             }
         } else {
             // ターゲット解除
             this.tempTargetUnit = null;
+            // clickの後続で旧ターゲットのデータ非表示が必要なので、ここでreturnしてはいけない
         }
     }
     // 戦闘コマンド選択
@@ -889,28 +1108,40 @@ BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
         if (isSelectable == 0) {
             // コマンド選択に戻す
             this.moveCheckComState(this.state, BATTLEVIEW_COMSTATE_PRECHOICE);
+            return -1;
         } else {
             switch(commandNum) {
                 case 0:arguments//行動
-                    // とりあえず手持ち武器を表示
-                    this.tempEqTypeForPaint = ITEM_TYPE_TEMOCHI;
-                    // とりあえず最初の武器を暫定装備(必ず「素手」)
-                    var handEquip0 = focusUnit.handEquip[0];
-                    this.tempEqTypeForEquip = handEquip0.eqType;
-                    this.tempEqSyurui = handEquip0.eqSyurui;
-                    this.moveCheckComState(this.state, BATTLEVIEW_COMSTATE_ACT_WEAPCHOICE);
+                    var requireCost = (this.state == BATTLEVIEW_STATE_SECONDMOVE ? focusUnit.exAtCost : 0);
+                    if (this.spGauge[BATTLE_MIKATA] >= requireCost) {
+                        this.spGauge[BATTLE_MIKATA] -= requireCost;
+                        // とりあえず手持ち武器を表示
+                        this.tempEqTypeForPaint = ITEM_TYPE_TEMOCHI;
+                        // とりあえず最初の武器を暫定装備(必ず「素手」)
+                        var handEquip0 = focusUnit.handEquip[0];
+                        this.tempEqTypeForEquip = handEquip0.eqType;
+                        this.tempEqSyurui = handEquip0.eqSyurui;
+                        this.moveCheckComState(this.state, BATTLEVIEW_COMSTATE_ACT_WEAPCHOICE);
+                    } else {
+                        CommonView.addWarn("SPゲージが再行動コストに足りません");
+                        return -1;
+                    }
                 break;
                 case 1:arguments//移動
                     this.moveCheckComState(this.state, BATTLEVIEW_COMSTATE_MOVE);
+                    return -1;
                 break;
                 case 2:arguments//逃亡
                     this.moveCheckComState(this.state, BATTLEVIEW_COMSTATE_RUN);
+                    return -1;
                 break;
                 case 3:arguments//待機
-                    this.moveCheckComState(this.state, BATTLEVIEW_COMSTATE_WAIT);
+                    this.moveToNextFocus(ud);
+                    return -1;
                 break;
                 case 4:arguments//交代
                     this.moveCheckComState(this.state, BATTLEVIEW_COMSTATE_CHANGE);
+                    return -1;
                 break;
             }
         }
@@ -926,10 +1157,6 @@ BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
         // クリック先にユニットがいたら表示ユニット更新
         this.infoUnit = (tempUnit != null ? tempUnit : this.infoUnit);
     }
-    //var u2 = new UnitDefine();
-    //this.infoUnit = u2;
     // ゲームステータス変更なし
     return -1;
-    //TitleStar.titleCounter(0);
-    //return GAMEMODE_GAMEOVER;
 };
