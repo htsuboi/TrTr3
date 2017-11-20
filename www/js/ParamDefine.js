@@ -117,6 +117,20 @@ var BATTLEVIEW_COMMANDNUM_CHANGE = 4;
 var BATTLEVIEW_UNITPAINT_X = 10;
 var BATTLEVIEW_UNITPAINT_Y = 10;
 
+// 敵AI
+// 手番最初
+var BATTLEAI_FM_NO = 0;//なにもしない 
+var BATTLEAI_FM_FRONT = 100;//必ず前進 
+var BATTLEAI_FM_BACK = 200;//必ず後退
+var BATTLEAI_FM_FRGTARGET = 300;//ターゲットが増えるなら前進 
+
+// 行動後
+var BATTLEAI_SM_NO = 0;//なにもしない 
+var BATTLEAI_SM_FRONT = 1;//必ず前進 
+var BATTLEAI_SM_BACK = 2;//必ず後退
+var BATTLEAI_SM_FRGCHIKEI = 3;//地形効果がよいなら前進
+var BATTLEAI_SM_BKGCHIKEI = 4;//地形効果がよいなら後退
+
 // 「手持ち武器」を表示すべき時を明示するため使用　特定の武器タイプを表現する意味ではない
 var ITEM_TYPE_TEMOCHI = 0;
 
@@ -195,7 +209,8 @@ var ITEM_SYURUI_DOGU4 = 4;
 // Type:99 Syurui:0は「素手」
 var ITEM_TYPE_SUDE = 99;
 
-var ITEM_EQMAX = 5;//1キャラが装備可能な種類最大値
+var ITEM_EQMAX = 5;//1キャラが装備可能な武器属性最大値(手持ち、アイテム含む)
+var ITEM_TEMOCHIMAX = 4;//1キャラが装備可能な手持ち最大値(素手含む)
 
 // 表示などの都合上、1属性の武器、アイテムの種類はこの数字まで
 var ITEM_SYURUI_MAX = 8;

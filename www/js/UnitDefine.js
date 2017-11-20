@@ -461,6 +461,11 @@ UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofO
     }
 }
 
+UnitDefine.prototype.initTeki = function(ud, difficulty, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3, eqType, eqSyurui, aiType) {
+    this.initCommon(ud, difficulty, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3, eqType, eqSyurui);
+    this.aiType = aiType;
+}
+
 // あるレベル(入力引数)になるまでの累積経験値
 UnitDefine.prototype.calcExp = function(lv) {
     // Lv1→2になるのに必要な経験値
@@ -684,6 +689,18 @@ UnitDefine.prototype.getReverseItemIndex = function(idx){
     return -1;
 }
 
+// 手持ち武器にあるか?
+UnitDefine.prototype.isHandEquip = function(eqType, eqSyurui){
+    var equipIdx = -1;
+    for (var i = 0; i < this.handEquip.length; i++) {
+        var tempHandEquip = this.handEquip[i];
+        if (tempHandEquip.eqType == eqType && tempHandEquip.eqSyurui == eqSyurui) {
+            equipIdx = i;
+        }
+    }
+    return equipIdx;
+}
+
 UnitDefine.prototype.lvUpStatus = function(lv, paramObj) {
     // orgValue:ゲームで使用する値
     // amari:orgValueの小数点1桁(ゲーム内非表示、戦闘では使用しない)
@@ -822,4 +839,66 @@ UnitDefine.calcRateDamage = function(attacker, defender, ud, attackerEQType, att
     var hitRateDamage = Math.floor(defender.mhpObj.now * 0.01 * (attackerBattleStatus.rat - defenderBattleStatus.rdf));
     
     return Math.max(0, hitRateDamage);
+}
+
+// 1:移動コスト1で1歩前進　2:移動コスト2で1歩前進 -1:移動コスト1で1歩後退　-2:移動コスト2で1歩後退
+UnitDefine.prototype.decideFirstMove = function(ud, bv) {
+    var aiForFirstMove = Math.floor(this.aiType / 100) * 100;
+    var resultMove = 0;
+    var frontCost = bv.checkMoveCost(BATTLE_TEKI, this.x, this.y, BATTLE_TEKI, this.x, this.y - 1);
+    var backCost = bv.checkMoveCost(BATTLE_TEKI, this.x, this.y, BATTLE_TEKI, this.x, this.y + 1);
+    var frontCostSp = (frontCost == 1 ? this.m1Cost : this.m2Cost);
+    var backCostSp = (backCost == 1 ? this.m1Cost : this.m2Cost);
+    
+    switch(aiForFirstMove) {
+        case BATTLEAI_FM_NO:arguments
+            resultMove = 0;
+            break;
+        case BATTLEAI_FM_FRONT:arguments
+            if (this.y == 0 || frontCostSp > bv.spGauge[BATTLE_TEKI]) {
+                resultMove = 0;
+            } else {
+                resultMove = (frontCost == 1 ? 1 : 2);
+            }
+            break;
+        case BATTLEAI_FM_BACK:arguments
+            if (this.y == 2 || backCostSp > bv.spGauge[BATTLE_TEKI]) {
+                resultMove = 0;
+            } else {
+                resultMove = (backCost == 1 ? -1 : -2);
+            }
+            break;
+    }
+    return resultMove;
+}
+
+// 1:移動コスト1で1歩前進　2:移動コスト2で1歩前進 -1:移動コスト1で1歩後退　-2:移動コスト2で1歩後退
+UnitDefine.prototype.decideSecondMove = function(ud, bv) {
+    var aiForSecondMove = this.aiType % 10;
+    var resultMove = 0;
+    var frontCost = bv.checkMoveCost(BATTLE_TEKI, this.x, this.y, BATTLE_TEKI, this.x, this.y - 1);
+    var backCost = bv.checkMoveCost(BATTLE_TEKI, this.x, this.y, BATTLE_TEKI, this.x, this.y + 1);
+    var frontCostSp = (frontCost == 1 ? this.m1Cost : this.m2Cost);
+    var backCostSp = (backCost == 1 ? this.m1Cost : this.m2Cost);
+    
+    switch(aiForSecondMove) {
+        case BATTLEAI_SM_NO:arguments
+            resultMove = 0;
+            break;
+        case BATTLEAI_SM_FRONT:arguments
+            if (this.y == 0 || frontCostSp > bv.spGauge[BATTLE_TEKI]) {
+                resultMove = 0;
+            } else {
+                resultMove = (frontCost == 1 ? 1 : 2);
+            }
+            break;
+        case BATTLEAI_SM_BACK:arguments
+            if (this.y == 2 || backCostSp > bv.spGauge[BATTLE_TEKI]) {
+                resultMove = 0;
+            } else {
+                resultMove = (backCost == 1 ? -1 : -2);
+            }
+            break;
+    }
+    return resultMove;
 }

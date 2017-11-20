@@ -3,8 +3,8 @@ var ItemDefine = function() {
     this.text = "";//効果の補足説明
     this.px = 0;// 絵でのX座標
     this.py = 0;// 絵でのY座標
-    this.eqType = 0;
-    this.eqSyurui = 0;
+    this.eqType = -1;
+    this.eqSyurui = -1;
     this.lv = 0;//武器レベル
     this.money = 0;//買い値
     this.crt = 0;
@@ -439,6 +439,8 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
         }
         break;
     }
+    idef.eqType = eqType;
+    idef.eqSyurui = eqSyurui;
 };
 
 // [X座標、Y座標]の配列で返す
@@ -516,7 +518,7 @@ ItemDefine.getReverseItemIndex = function(itemMap, eqType, idx) {
         if (tempItemNum == null) {
             // 以降、定義されたアイテムなし
             break;
-        } else if (tempItemNum.allNum == 0) {
+        } else if (tempItemNum == 0) {
             // このアイテムは持っていない
             continue;
         } else {
