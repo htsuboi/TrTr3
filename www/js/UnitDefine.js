@@ -55,13 +55,13 @@ UnitDefine.prototype.equalUnit = function(u){
 
 // 敵味方共通の初期化
 // ud…既に存在しているユニットが入ったArray。今作成しているユニットは入っていない
-UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3, eqType, eqSyurui) {
+UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3) {
     this.unitSyurui = unitSyurui;
     this.skills[0] = skill1;
     this.skills[1] = skill2;
     this.skills[2] = skill3;
-    this.eqType = eqType;
-    this.eqSyurui = eqSyurui;
+    this.eqType = -1;
+    this.eqSyurui = -1;
     this.initNamePaint(unitSyurui);
     this.side = side;
     this.x = 0;
@@ -463,7 +463,32 @@ UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofO
 
 UnitDefine.prototype.initTeki = function(ud, difficulty, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3, eqType, eqSyurui, aiType) {
     this.initCommon(ud, difficulty, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3, eqType, eqSyurui);
+    this.eqType = eqType;
+    this.eqSyurui = eqSyurui;
     this.aiType = aiType;
+}
+
+// 武器使用時の消費気力(999は使用不可)
+UnitDefine.prototype.calcKiryoku = function(idef) {
+    var itemCost = idef.lv;
+    var myLevel = this.lv;
+    // アイテム・素手なら消費気力0
+    if (idef.eqType == ITEM_TYPE_DOGU || idef.eqType == ITEM_TYPE_SUDE) {
+        return 0;
+    } else {
+        myLevel += this.weaps[idef.eqType];
+    }
+    var retCost = 999;
+    if (myLevel >= itemCost) {
+        retCost = 3;
+    }
+    if (myLevel >= itemCost * 2) {
+        retCost = 2;
+    }
+    if (myLevel >= itemCost * 3) {
+        retCost = 1;
+    }
+    return retCost;
 }
 
 // あるレベル(入力引数)になるまでの累積経験値
@@ -719,6 +744,28 @@ UnitDefine.prototype.lvUpStatus = function(lv, paramObj) {
     paramObj.amari = lvUpValueTotal % 10;
 }
 
+// 全ユニットに適用する処理
+UnitDefine.allTargetSyori = function(ud, eqSyurui, bv) {
+    switch(eqSyurui) {
+    case ITEM_SYURUI_JIAI:arguments
+        for (var i = 0; i < ud.length; i++) {
+            var u = ud[i];
+            if (u.side == BATTLE_MIKATA && u.hp > 0 && u.field == bv.field) {
+                u.hp = u.mhpObj.now;
+            }
+        }
+        break;
+    case ITEM_SYURUI_MUJIN:arguments
+        for (var i = 0; i < ud.length; i++) {
+            var u = ud[i];
+            if (u.side == BATTLE_MIKATA && u.hp > 0 && u.field == bv.field) {
+                u.sp = u.msp;
+            }
+        }
+        break;
+    }
+}
+
 // 以下、素のステータス+装備補正を返す。ついでに装備武器名も取得
 UnitDefine.prototype.calcBattleStr = function(eqType, eqSyurui) {
     if (eqType != undefined && eqSyurui != undefined) {
@@ -780,6 +827,10 @@ UnitDefine.calcRange = function(attacker, ud, attackerEQType, attackerEQSyurui) 
 
 // 命中率計算　基本的に装備武器は「装備中のもの」を想定するが、攻撃予想時のみ「予想に使用する武器」である
 UnitDefine.calcHit = function(attacker, defender, ud, attackerEQType, attackerEQSyurui) {
+    // 味方は気力0なら問答無用で敵の攻撃全命中
+    if (defender.side == BATTLE_MIKATA && defender.sp == 0) {
+        return 100;
+    }
     var attackerBattleStatus = attacker.calcBattleStr(attackerEQType, attackerEQSyurui);// 装備品込みのステータスを取得
     var defenderBattleStatus = defender.calcBattleStr();// 装備品込みのステータスを取得
     var hitRate = attackerBattleStatus.hit - defenderBattleStatus.avo;
@@ -812,10 +863,15 @@ UnitDefine.calcBasicDamage = function(attacker, defender, ud, attackerEQType, at
     var eqType = (attackerEQType != null ? attackerEQType: attacker.handEquip[0].eqType);
     var isMagic = (eqType == ITEM_TYPE_FIRE || eqType == ITEM_TYPE_WIND || eqType == ITEM_TYPE_WATER || eqType == ITEM_TYPE_EARTH);
     var hitDamage = 0;
+    var defence = (isMagic? defenderBattleStatus.mdf : defenderBattleStatus.def)
+    // 味方は気力0なら問答無用で防御0
+    if (defender.side == BATTLE_MIKATA && defender.sp == 0) {
+        defence = 0;
+    }
     if (isMagic) {
-        hitDamage = attackerBattleStatus.mag - defenderBattleStatus.mdf;
+        hitDamage = attackerBattleStatus.mag - defence;
     } else {
-        hitDamage = attackerBattleStatus.str - defenderBattleStatus.def;
+        hitDamage = attackerBattleStatus.str - defence;
     }
     return Math.floor(Math.max(0, hitDamage));
 }
@@ -840,6 +896,20 @@ UnitDefine.calcRateDamage = function(attacker, defender, ud, attackerEQType, att
     
     return Math.max(0, hitRateDamage);
 }
+
+// 敵AIの攻撃対象検索
+/*UnitDefine.prototype.getTargets = function(ud, bv, attacker, range) {
+    var resultTargets = new Array();
+    for (var i = 0; i < ud.length; i++) {
+        var u = ud[i];
+        // レンジ内の味方ユニット
+        if (u.side == BATTLE_MIKATA && u.field == bv.field && ((attacker.x + u.x) + (attacker.y + u.y) < range) {
+            
+        }
+    }
+    return resultTargets;
+}*/
+
 
 // 1:移動コスト1で1歩前進　2:移動コスト2で1歩前進 -1:移動コスト1で1歩後退　-2:移動コスト2で1歩後退
 UnitDefine.prototype.decideFirstMove = function(ud, bv) {
@@ -871,6 +941,36 @@ UnitDefine.prototype.decideFirstMove = function(ud, bv) {
     }
     return resultMove;
 }
+
+/*UnitDefine.prototype.decideAttack = function(ud, bv) {
+    var aiForBattle = Math.floor(this.aiType / 10) % 10;
+    var resultTarget = null;
+    var frontCost = bv.checkMoveCost(BATTLE_TEKI, this.x, this.y, BATTLE_TEKI, this.x, this.y - 1);
+    var backCost = bv.checkMoveCost(BATTLE_TEKI, this.x, this.y, BATTLE_TEKI, this.x, this.y + 1);
+    var frontCostSp = (frontCost == 1 ? this.m1Cost : this.m2Cost);
+    var backCostSp = (backCost == 1 ? this.m1Cost : this.m2Cost);
+    
+    switch(aiForFirstMove) {
+        case BATTLEAI_FM_NO:arguments
+            resultMove = 0;
+            break;
+        case BATTLEAI_FM_FRONT:arguments
+            if (this.y == 0 || frontCostSp > bv.spGauge[BATTLE_TEKI]) {
+                resultMove = 0;
+            } else {
+                resultMove = (frontCost == 1 ? 1 : 2);
+            }
+            break;
+        case BATTLEAI_FM_BACK:arguments
+            if (this.y == 2 || backCostSp > bv.spGauge[BATTLE_TEKI]) {
+                resultMove = 0;
+            } else {
+                resultMove = (backCost == 1 ? -1 : -2);
+            }
+            break;
+    }
+    return resultTarget;
+}*/
 
 // 1:移動コスト1で1歩前進　2:移動コスト2で1歩前進 -1:移動コスト1で1歩後退　-2:移動コスト2で1歩後退
 UnitDefine.prototype.decideSecondMove = function(ud, bv) {

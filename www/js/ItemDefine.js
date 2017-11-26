@@ -406,22 +406,22 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
         break;
     case ITEM_TYPE_DOGU:arguments
         switch(eqSyurui) {
-            case 0:arguments
+            case ITEM_SYURUI_KOUCHA:arguments
                 idef.namae = "体力の紅茶";
                 idef.text = "1人のHPを全回復する";
                 idef.price = 180;
             break;
-            case 1:arguments
+            case ITEM_SYURUI_KOUSUI:arguments
                 idef.namae = "気力の香水";
                 idef.text = "1人の気力を全回復する";
                 idef.price = 180;
             break;
-            case 2:arguments
+            case ITEM_SYURUI_JIAI:arguments
                 idef.namae = "新薬「慈愛」";
                 idef.text = "全員のHPを全回復する";
                 idef.price = 180;
             break;
-            case 3:arguments
+            case ITEM_SYURUI_MUJIN:arguments
                 idef.namae = "劇薬「無尽活力」";
                 idef.text = "全員の気力を全回復する";
                 idef.price = 180;
@@ -503,6 +503,19 @@ ItemDefine.getItemText = function(eqType) {
         return "道具";
     default:arguments  
         return [0, 192];
+    }
+};
+
+ItemDefine.isAllTarget = function(eqType, eqSyurui) {
+    if (eqType != ITEM_TYPE_DOGU) {
+        return false;
+    }
+    switch(eqSyurui) {
+    case ITEM_SYURUI_JIAI:arguments
+    case ITEM_SYURUI_MUJIN:arguments
+        return true;
+    default:arguments  
+        return false;
     }
 };
 
