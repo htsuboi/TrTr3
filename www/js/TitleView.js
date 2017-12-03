@@ -198,6 +198,7 @@ TitleView.prototype.paint = function () {
 
 TitleView.prototype.clk = function(mouseX, mouseY) {
     if (1 != this.checkCalc()) {
+        // 演出を飛ばす
         for (;;) {
             var retCalc = 0;
             retCalc = this.calc();

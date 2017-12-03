@@ -1,6 +1,6 @@
 var UnitDefine = function() {
     this.unitSyurui = 0;
-    this.namae = "テスト兵士";
+    this.namae = "";
     this.px = 0;// 絵でのX座標
     this.py = 0;// 絵でのY座標
     this.pSyurui = 0;//どのファイルに絵があるか 0雑魚 1ボス 2PC 3NPC
@@ -24,6 +24,8 @@ var UnitDefine = function() {
     this.exAtCost = 0;//再行動コスト
     this.aiType = 0;//AI行動(敵専用)
     this.skills = [0, 0, 0];
+    //this.skillON = [false, false, false];
+    this.skillON = [true, true, true];
     this.handEquip = new Array();//手持ち武器
     var sude = {eqType: ITEM_TYPE_SUDE, eqSyurui: 0};
     // 手持ち武器に「素手」を追加
@@ -42,6 +44,9 @@ var UnitDefine = function() {
     this.mdfObj = {now:-1, amari:0, up:0, upup:0, upupup:0};
     this.dexObj = {now:-1, amari:0, up:0, upup:0, upupup:0};
     this.avoObj = {now:-1, amari:0, up:0, upup:0, upupup:0};
+    // 毒、麻痺状態か?
+    this.isPoison = false;
+    this.isStun = false;
 };
 
 // field, px, pyが等しければtrue 死んだユニットは比較対象から外すつもりだが、一応HP > 0もつける
@@ -376,7 +381,7 @@ UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofO
         break;
         case UNIT_SYURUI_MUSCLE:arguments
             this.msp = 23;
-            this.crt = 3;
+            this.crt = 4;
             this.luck = 3;
             this.rat = 3;//割合ダメージ
             this.rdf = 3;//割合軽減
@@ -463,6 +468,7 @@ UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofO
 
 UnitDefine.prototype.initTeki = function(ud, difficulty, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3, eqType, eqSyurui, aiType) {
     this.initCommon(ud, difficulty, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3, eqType, eqSyurui);
+    this.skillON = [true, true, true];
     this.eqType = eqType;
     this.eqSyurui = eqSyurui;
     this.aiType = aiType;
@@ -472,8 +478,8 @@ UnitDefine.prototype.initTeki = function(ud, difficulty, unitSyurui, side, ofOrD
 UnitDefine.prototype.calcKiryoku = function(idef) {
     var itemCost = idef.lv;
     var myLevel = this.lv;
-    // アイテム・素手なら消費気力0
-    if (idef.eqType == ITEM_TYPE_DOGU || idef.eqType == ITEM_TYPE_SUDE) {
+    // アイテム・素手・なにもしないなら消費気力0
+    if (idef.eqType == ITEM_TYPE_DOGU || idef.eqType == ITEM_TYPE_SUDE || idef.eqType == ITEM_TYPE_NOTHING) {
         return 0;
     } else {
         myLevel += this.weaps[idef.eqType];
@@ -834,11 +840,23 @@ UnitDefine.calcHit = function(attacker, defender, ud, attackerEQType, attackerEQ
     var attackerBattleStatus = attacker.calcBattleStr(attackerEQType, attackerEQSyurui);// 装備品込みのステータスを取得
     var defenderBattleStatus = defender.calcBattleStr();// 装備品込みのステータスを取得
     var hitRate = attackerBattleStatus.hit - defenderBattleStatus.avo;
+    if (attacker.hasSkill(ud, SKILL_HIGHHIT)) {
+        hitRate += SKILL_HIGHHIT_RATE;
+    }
+    if (defender.hasSkill(ud, SKILL_HIGHAVO)) {
+        hitRate -= SKILL_HIGHAVO_RATE;
+    }
     if (hitRate < 0) {
         hitRate = 0;
     } 
     if (hitRate > 100) {
         hitRate = 100;
+    }
+    if (attacker.hasSkill(ud, SKILL_KENJITSU) && hitRate >= 100 - SKILL_KENJITSU_RATE) {
+        hitRate = 100;
+    }
+    if (defender.hasSkill(ud, SKILL_KENJITSU) && hitRate <= SKILL_KENJITSU_RATE) {
+        hitRate = 0;
     }
     return hitRate;
 }
@@ -847,6 +865,12 @@ UnitDefine.calcHit = function(attacker, defender, ud, attackerEQType, attackerEQ
 UnitDefine.calcCrt = function(attacker, defender, ud, attackerEQType, attackerEQSyurui) {
     var attackerBattleStatus = attacker.calcBattleStr(attackerEQType, attackerEQSyurui);// 装備品込みのステータスを取得
     var crtRate = attackerBattleStatus.crt;
+    if (attacker.hasSkill(ud, SKILL_KYOEN)) {
+        crtRate = crtRate * SKILL_KYOEN_RATE;
+    }
+    if (defender.hasSkill(ud, SKILL_KEIKAI)) {
+        crtRate = 0;
+    }
     if (crtRate < 0) {
         crtRate = 0;
     } 
@@ -868,10 +892,17 @@ UnitDefine.calcBasicDamage = function(attacker, defender, ud, attackerEQType, at
     if (defender.side == BATTLE_MIKATA && defender.sp == 0) {
         defence = 0;
     }
+    // ハンマーは問答無用で防御0
+    if (attackerEQType == ITEM_TYPE_HAMMER) {
+        defence = 0;
+    }
     if (isMagic) {
         hitDamage = attackerBattleStatus.mag - defence;
     } else {
         hitDamage = attackerBattleStatus.str - defence;
+    }
+    if (attacker.hasSkill(ud, SKILL_YOROI)) {
+        hitDamage += SKILL_YOROI_RATE * attacker.lv;
     }
     return Math.floor(Math.max(0, hitDamage));
 }
@@ -897,18 +928,95 @@ UnitDefine.calcRateDamage = function(attacker, defender, ud, attackerEQType, att
     return Math.max(0, hitRateDamage);
 }
 
+// 毒計算(攻撃側HP > 防御側耐性なら毒)
+UnitDefine.calcPoison = function(attacker, defender, ud) {
+    if (!attacker.hasPoison(ud)) {
+        return false;
+    }
+    var attackerHPRate = 100 * attacker.hp / attacker.mhpObj.now;
+    var defenderRate = defender.regPoison;
+    if (attackerHPRate > defenderRate) {
+        return true;
+    }
+    return false;
+}
+
+// 麻痺計算(攻撃側HP減少 > 防御側耐性なら麻痺)
+UnitDefine.calcStun = function(attacker, defender, ud) {
+    if (!attacker.hasStun(ud)) {
+        return false;
+    }
+    var attackerHPRate = 100 * (attacker.mhpObj.now - attacker.hp) / attacker.mhpObj.now;
+    var defenderRate = defender.regStun;
+    if (attackerHPRate > defenderRate) {
+        return true;
+    }
+    return false;
+}
+
 // 敵AIの攻撃対象検索
-/*UnitDefine.prototype.getTargets = function(ud, bv, attacker, range) {
+UnitDefine.prototype.getTargets = function(ud, bv, attacker, range) {
     var resultTargets = new Array();
     for (var i = 0; i < ud.length; i++) {
         var u = ud[i];
         // レンジ内の味方ユニット
-        if (u.side == BATTLE_MIKATA && u.field == bv.field && ((attacker.x + u.x) + (attacker.y + u.y) < range) {
-            
+        if (u.side == BATTLE_MIKATA && u.field == bv.field && ((attacker.x + u.x) + (attacker.y + u.y) <= range)) {
+            var hitRate = UnitDefine.calcHit(this, u, ud, this.eqType, this.eqSyurui);
+            var basicDamage = UnitDefine.calcBasicDamage(this, u, ud, this.eqType, this.eqSyurui);
+            var chikeiRate = UnitDefine.calcChikei(this, u, ud, bv.battleFields, this.eqType, this.eqSyurui);
+            var rateDamage = UnitDefine.calcRateDamage(this, u, ud, this.eqType, this.eqSyurui);
+            var totalDamage = Math.floor(basicDamage * (100 - chikeiRate) / 100 + rateDamage);
+            resultTargets.push({unit:u, hit:hitRate, damage:totalDamage});
         }
     }
     return resultTargets;
-}*/
+}
+
+// 戻り値は100 * ダメージ期待値(targetUnitを攻撃した場合の)
+UnitDefine.prototype.decideTarget = function(resultTargets, aiForAttack) {
+    var tempValue = 0;
+    var retDamage = 0;
+    var targetUnit = null;
+    for (var i = 0; i < resultTargets.length; i++) {
+        var u = resultTargets[i].unit;
+        var tempHit = resultTargets[i].hitRate;
+        var tempDamage = resultTargets[i].totalDamage;
+        var tempExpect = tempHit * tempDamage;
+        // とりあえず最初の一人を暫定ターゲット
+        if (i == 0) {
+            targetUnit = u;
+            retDamage =  tempExpect;
+        } else {
+            switch(aiForAttack) {
+            case BATTLEAI_AT_FIRST:arguments
+                if (targetUnit.x > u.x) {
+                    targetUnit = u;
+                    retDamage =  tempExpect;
+                }
+                break;
+            case BATTLEAI_AT_BACK:arguments
+                if (targetUnit.x < u.x) {
+                    targetUnit = u;
+                    retDamage =  tempExpect;
+                }
+                break;
+            case BATTLEAI_AT_MAXDM:arguments
+                if (tempExpect > retDamage) {
+                    targetUnit = u;
+                    retDamage =  tempExpect;
+                }
+                break;
+            case BATTLEAI_AT_MINHP:arguments
+                if (targetUnit.hp > u.hp) {
+                    targetUnit = u;
+                    retDamage =  tempExpect;
+                }
+                break;
+            }
+        }
+    }
+    return {unit:targetUnit, damage:retDamage};
+}
 
 
 // 1:移動コスト1で1歩前進　2:移動コスト2で1歩前進 -1:移動コスト1で1歩後退　-2:移動コスト2で1歩後退
@@ -942,35 +1050,17 @@ UnitDefine.prototype.decideFirstMove = function(ud, bv) {
     return resultMove;
 }
 
-/*UnitDefine.prototype.decideAttack = function(ud, bv) {
-    var aiForBattle = Math.floor(this.aiType / 10) % 10;
+UnitDefine.prototype.decideAttack = function(ud, bv) {
+    // 10の位がaiForAttack
+    var aiForAttack = 10 * (Math.floor(this.aiType / 10) % 10);
     var resultTarget = null;
-    var frontCost = bv.checkMoveCost(BATTLE_TEKI, this.x, this.y, BATTLE_TEKI, this.x, this.y - 1);
-    var backCost = bv.checkMoveCost(BATTLE_TEKI, this.x, this.y, BATTLE_TEKI, this.x, this.y + 1);
-    var frontCostSp = (frontCost == 1 ? this.m1Cost : this.m2Cost);
-    var backCostSp = (backCost == 1 ? this.m1Cost : this.m2Cost);
-    
-    switch(aiForFirstMove) {
-        case BATTLEAI_FM_NO:arguments
-            resultMove = 0;
-            break;
-        case BATTLEAI_FM_FRONT:arguments
-            if (this.y == 0 || frontCostSp > bv.spGauge[BATTLE_TEKI]) {
-                resultMove = 0;
-            } else {
-                resultMove = (frontCost == 1 ? 1 : 2);
-            }
-            break;
-        case BATTLEAI_FM_BACK:arguments
-            if (this.y == 2 || backCostSp > bv.spGauge[BATTLE_TEKI]) {
-                resultMove = 0;
-            } else {
-                resultMove = (backCost == 1 ? -1 : -2);
-            }
-            break;
-    }
-    return resultTarget;
-}*/
+    var range = UnitDefine.calcRange(this, ud, this.eqType, this.eqSyurui);
+    var targets = this.getTargets(ud, bv, this, range);
+    var targetUnit = null;
+    var expectTarget = this.decideTarget(targets, aiForAttack);
+    var targetUnit = expectTarget.unit;
+    return targetUnit;
+}
 
 // 1:移動コスト1で1歩前進　2:移動コスト2で1歩前進 -1:移動コスト1で1歩後退　-2:移動コスト2で1歩後退
 UnitDefine.prototype.decideSecondMove = function(ud, bv) {
@@ -1001,4 +1091,39 @@ UnitDefine.prototype.decideSecondMove = function(ud, bv) {
             break;
     }
     return resultMove;
+}
+
+UnitDefine.prototype.hasPoison = function(ud) {
+    if (this.unitSyurui == UNIT_SYURUI_POISON) {
+        return true;
+    }
+    if (ItemDefine.hasPoison(this.eqType, this.eqSyurui)) {
+        return true;
+    }
+    return false;
+}
+
+UnitDefine.prototype.hasStun = function(ud) {
+    if (this.unitSyurui == UNIT_SYURUI_STUN) {
+        return true;
+    }
+    if (ItemDefine.hasStun(this.eqType, this.eqSyurui)) {
+        return true;
+    }
+    return false;
+}
+
+// 味方の誰かがスキルをONにしているか
+UnitDefine.prototype.hasSkill = function(ud, skill) {
+    for (var i = 0; i < ud.length; i++) {
+        var u = ud[i];
+        if (u.field == this.field &&  u.side == this.side && u.hp > 0) {
+            for (var j = 0; j < 3; j++) {
+                if (u.skills[j] == skill && u.skillON[j] == true) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }

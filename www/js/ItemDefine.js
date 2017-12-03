@@ -438,6 +438,16 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
             break;
         }
         break;
+    case ITEM_TYPE_NOTHING:arguments
+        idef.range = 1;
+        switch(eqSyurui) {
+            case 0:arguments
+                idef.namae = "なにもしない";
+                idef.price = 0;
+                idef.lv = 0;
+            break;
+        }
+        break;
     }
     idef.eqType = eqType;
     idef.eqSyurui = eqSyurui;
@@ -506,12 +516,17 @@ ItemDefine.getItemText = function(eqType) {
     }
 };
 
+// ターゲット選択を飛ばすアイテムか?(なにもしない or 全体ターゲット)
 ItemDefine.isAllTarget = function(eqType, eqSyurui) {
+    if (eqType == ITEM_TYPE_NOTHING) {
+        return true;
+    }
     if (eqType != ITEM_TYPE_DOGU) {
         return false;
     }
     switch(eqSyurui) {
     case ITEM_SYURUI_JIAI:arguments
+        return true;
     case ITEM_SYURUI_MUJIN:arguments
         return true;
     default:arguments  
@@ -542,4 +557,12 @@ ItemDefine.getReverseItemIndex = function(itemMap, eqType, idx) {
         }
     }
     return retEqSyurui;// -1の場合「見つからなかった」
+}
+
+ItemDefine.hasPoison = function(eqType, eqSyurui) {
+    return false;
+}
+
+ItemDefine.hasStun = function(eqType, eqSyurui) {
+    return false;
 }

@@ -21,7 +21,15 @@ var BATTLE_TEKI = 1;
 var BATTLE_OFFENCE = 0;
 var BATTLE_DEFENCE = 1;
 
+var BATTLE_SPGAUGE_CHARGE = 100;
 var BATTLE_SPGAUGE_MAX = 300;
+
+// 攻撃時にメッセージ表示する総時間
+var BATTLE_BATTLEMSG_MAX = 100;
+// 攻撃時に2文目メッセージを表示する時間
+var BATTLE_BATTLEMSG_SECOND = 70;
+// 攻撃時に3文目メッセージを表示する時間
+var BATTLE_BATTLEMSG_THIRD = 40;
 
 //0雑魚 1ボス 2PC 3NPC
 var BATTLE_PSYURUI_ZAKO = 0;
@@ -124,6 +132,12 @@ var BATTLEAI_FM_FRONT = 100;//必ず前進
 var BATTLEAI_FM_BACK = 200;//必ず後退
 var BATTLEAI_FM_FRGTARGET = 300;//ターゲットが増えるなら前進 
 
+// 攻撃
+var BATTLEAI_AT_FIRST = 0;//前衛攻撃 
+var BATTLEAI_AT_BACK = 10;//後衛攻撃 
+var BATTLEAI_AT_MAXDM = 20;//最大ダメージ期待値
+var BATTLEAI_AT_MINHP = 30;//最小HPを攻撃
+
 // 行動後
 var BATTLEAI_SM_NO = 0;//なにもしない 
 var BATTLEAI_SM_FRONT = 1;//必ず前進 
@@ -208,12 +222,40 @@ var ITEM_SYURUI_MUJIN = 3;
 
 // Type:99 Syurui:0は「素手」
 var ITEM_TYPE_SUDE = 99;
+// Type:100 Syurui:0は「なにもしない」
+var ITEM_TYPE_NOTHING = 100;
 
 var ITEM_EQMAX = 5;//1キャラが装備可能な武器属性最大値(手持ち、アイテム含む)
 var ITEM_TEMOCHIMAX = 4;//1キャラが装備可能な手持ち最大値(素手含む)
 
 // 表示などの都合上、1属性の武器、アイテムの種類はこの数字まで
 var ITEM_SYURUI_MAX = 8;
+
+// SKILL配列0は「スキルなし」
+var SKILL_HIGHHIT = 1;
+var SKILL_HIGHHIT_RATE = 20;
+var SKILL_HIGHAVO = 2;
+var SKILL_HIGHAVO_RATE = 15;
+var SKILL_KENJITSU = 3;
+var SKILL_KENJITSU_RATE = 10;
+var SKILL_KEIKAI = 4;
+var SKILL_KAMAITACHI = 5;
+var SKILL_KAMAITACHI_RATE = 1;
+var SKILL_YOROI = 6;
+var SKILL_YOROI_RATE = 1;
+var SKILL_KYOEN = 7;
+var SKILL_KYOEN_RATE = 2;
+var SKILL_SYONETSU = 8;
+var SKILL_AKURO = 9;
+var SKILL_TAIEN = 10;
+var SKILL_KIYOME = 11;
+var SKILL_POISON = 12;
+var SKILL_STUN = 13;
+var SKILL_TAMASHII = 14;
+var SKILL_SURI = 15;
+var SKILL_HEDGEHOG = 16;
+var SKILL_THIEF = 17;
+
 // 雑魚
 var UNIT_SYURUI_SWORD = 1;
 var UNIT_NAMAE_SWORD = "剣兵";
@@ -238,7 +280,7 @@ var UNIT_NAMAE_SNIPE = "狙撃兵";
 var UNIT_SYURUI_POISON = 11;
 var UNIT_NAMAE_POISON = "毒兵";
 var UNIT_SYURUI_STUN = 12;
-var UNIT_NAMAE_SRUN = "麻痺兵";
+var UNIT_NAMAE_STUN = "麻痺兵";
 var UNIT_SYURUI_JMAGIC = 13;
 var UNIT_NAMAE_JMAGIC = "上級魔兵";
 var UNIT_SYURUI_SHIKI = 14;
