@@ -23,6 +23,8 @@ var UnitDefine = function() {
     this.rangeCost = 0;//射程伸ばしコスト
     this.exAtCost = 0;//再行動コスト
     this.aiType = 0;//AI行動(敵専用)
+    this.aiForRange = 0;//どれだけのリターン差で射程伸ばしするか
+    this.aiForAgain = 0;//必要値 + どれだけのSPゲージで再行動するか(負の値は「再行動しない」)
     this.skills = [0, 0, 0];
     //this.skillON = [false, false, false];
     this.skillON = [true, true, true];
@@ -466,12 +468,14 @@ UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofO
     }
 }
 
-UnitDefine.prototype.initTeki = function(ud, difficulty, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3, eqType, eqSyurui, aiType) {
+UnitDefine.prototype.initTeki = function(ud, difficulty, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3, eqType, eqSyurui, aiType, aiForRange, aiForAgain) {
     this.initCommon(ud, difficulty, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3, eqType, eqSyurui);
     this.skillON = [true, true, true];
     this.eqType = eqType;
     this.eqSyurui = eqSyurui;
     this.aiType = aiType;
+    this.aiForRange = aiForRange;
+    this.aiForAgain = aiForAgain;
 }
 
 // 武器使用時の消費気力(999は使用不可)
@@ -933,6 +937,9 @@ UnitDefine.calcPoison = function(attacker, defender, ud) {
     if (!attacker.hasPoison(ud)) {
         return false;
     }
+    if (defender.hasSkill(ud, SKILL_KIYOME)) {
+        return false;
+    }
     var attackerHPRate = 100 * attacker.hp / attacker.mhpObj.now;
     var defenderRate = defender.regPoison;
     if (attackerHPRate > defenderRate) {
@@ -944,6 +951,9 @@ UnitDefine.calcPoison = function(attacker, defender, ud) {
 // 麻痺計算(攻撃側HP減少 > 防御側耐性なら麻痺)
 UnitDefine.calcStun = function(attacker, defender, ud) {
     if (!attacker.hasStun(ud)) {
+        return false;
+    }
+    if (defender.hasSkill(ud, SKILL_KIYOME)) {
         return false;
     }
     var attackerHPRate = 100 * (attacker.mhpObj.now - attacker.hp) / attacker.mhpObj.now;
@@ -979,13 +989,13 @@ UnitDefine.prototype.decideTarget = function(resultTargets, aiForAttack) {
     var targetUnit = null;
     for (var i = 0; i < resultTargets.length; i++) {
         var u = resultTargets[i].unit;
-        var tempHit = resultTargets[i].hitRate;
-        var tempDamage = resultTargets[i].totalDamage;
+        var tempHit = resultTargets[i].hit;
+        var tempDamage = resultTargets[i].damage;
         var tempExpect = tempHit * tempDamage;
         // とりあえず最初の一人を暫定ターゲット
         if (i == 0) {
             targetUnit = u;
-            retDamage =  tempExpect;
+            retDamage = tempExpect;
         } else {
             switch(aiForAttack) {
             case BATTLEAI_AT_FIRST:arguments
@@ -1055,11 +1065,43 @@ UnitDefine.prototype.decideAttack = function(ud, bv) {
     var aiForAttack = 10 * (Math.floor(this.aiType / 10) % 10);
     var resultTarget = null;
     var range = UnitDefine.calcRange(this, ud, this.eqType, this.eqSyurui);
+    // 射程伸ばさない時のターゲット
     var targets = this.getTargets(ud, bv, this, range);
+    // 射程伸ばし時のターゲット
+    var targetsForLongRange = this.getTargets(ud, bv, this, range + 1);
     var targetUnit = null;
     var expectTarget = this.decideTarget(targets, aiForAttack);
+    var expectTargetForLongRange = this.decideTarget(targetsForLongRange, aiForAttack);
     var targetUnit = expectTarget.unit;
+    // 射程伸ばし可能かつ、そのリターンが閾値以上(射程伸ばしによってターゲットが変わるか、新たに出現)
+    // aiForRangeが1以下の敵は射程伸ばししない
+    if (this.aiForRange > 1 && bv.spGauge[BATTLE_TEKI] >= this.rangeCost && this.aiForRange * expectTarget.damage < expectTargetForLongRange.damage) {
+        targetUnit = expectTargetForLongRange.unit;
+    }
+    
     return targetUnit;
+}
+
+// 再行動するか
+UnitDefine.prototype.decideAgain = function(ud, bv) {
+    if (this.aiForAgain < 0) {
+        return false;
+    }
+    if (bv.spGauge[BATTLE_TEKI] < this.exAtCost) {
+        return false;
+    }
+    // 射程伸ばさずに攻撃できなければfalseとする
+    var range = UnitDefine.calcRange(this, ud, this.eqType, this.eqSyurui);
+    var targets = this.getTargets(ud, bv, this, range);
+    if (targets.length == 0) {
+        return false;
+    }
+    var randomForAgain = Math.floor(Math.random() * 100);//0～99
+    if (bv.spGauge[BATTLE_TEKI] - this.exAtCost >= this.aiForAgain * randomForAgain) {
+        return true;
+    }
+    
+    return false;
 }
 
 // 1:移動コスト1で1歩前進　2:移動コスト2で1歩前進 -1:移動コスト1で1歩後退　-2:移動コスト2で1歩後退

@@ -1,6 +1,7 @@
 var GAMEMODE_TITLE = 0;
 var GAMEMODE_GAMEOVER = 1;
 var GAMEMODE_BATTLE = 2;
+var GAMEMODE_EVENT = 3;
 
 var GAME_DIFFICULTY_NORMAL = 0;
 var GAME_DIFFICULTY_HARD = 1;
@@ -232,23 +233,24 @@ var ITEM_TEMOCHIMAX = 4;//1キャラが装備可能な手持ち最大値(素手�
 var ITEM_SYURUI_MAX = 8;
 
 // SKILL配列0は「スキルなし」
-var SKILL_HIGHHIT = 1;
+var SKILL_HIGHHIT = 1;//Done
 var SKILL_HIGHHIT_RATE = 20;
-var SKILL_HIGHAVO = 2;
+var SKILL_HIGHAVO = 2;//Done
 var SKILL_HIGHAVO_RATE = 15;
-var SKILL_KENJITSU = 3;
+var SKILL_KENJITSU = 3;//Done
 var SKILL_KENJITSU_RATE = 10;
-var SKILL_KEIKAI = 4;
-var SKILL_KAMAITACHI = 5;
+var SKILL_KEIKAI = 4;//Done
+var SKILL_KAMAITACHI = 5;//Done
 var SKILL_KAMAITACHI_RATE = 1;
-var SKILL_YOROI = 6;
+var SKILL_YOROI = 6;//Done
 var SKILL_YOROI_RATE = 1;
-var SKILL_KYOEN = 7;
+var SKILL_KYOEN = 7;//Done
 var SKILL_KYOEN_RATE = 2;
-var SKILL_SYONETSU = 8;
+var SKILL_SYONETSU = 8;//Done
+var SKILL_SYONETSU_RATE = 10;
 var SKILL_AKURO = 9;
 var SKILL_TAIEN = 10;
-var SKILL_KIYOME = 11;
+var SKILL_KIYOME = 11;//Done
 var SKILL_POISON = 12;
 var SKILL_STUN = 13;
 var SKILL_TAMASHII = 14;
@@ -329,6 +331,31 @@ var LUCK_RATE = 3;
 
 // クリティカルで最大HPのどれだけダメージ増加するか
 var CRT_RATE = 0.3;
+
+var EVENTVIEW_COMSTATE_PRECHOICE = 0;
+var EVENTVIEW_COMSTATE_BUY_WEAPCHOICE = 10;
+var EVENTVIEW_COMSTATE_SELL_WEAPCHOICE = 20;
+
+// コマンドをどこから並べるか
+var EVENTVIEW_COMMAND_X = 10;
+var EVENTVIEW_COMMAND_Y = 300;
+var EVENTVIEW_COMMAND_W = 45;
+var EVENTVIEW_COMMAND_H = 30;
+var EVENTVIEW_COMMAND_DIST = 15;
+
+var EVENTVIEW_TEXT_X = 10;
+var EVENTVIEW_TEXT_Y = 450;
+var EVENTVIEW_TEXT_W = 300;
+var EVENTVIEW_TEXT_H = 200;
+
+var EVENTVIEW_COMMANDNUM_PROC = 0;
+var EVENTVIEW_COMMANDNUM_SELL = 1;
+var EVENTVIEW_COMMANDNUM_BUY = 2;
+var EVENTVIEW_COMMANDNUM_CHECK = 3;
+var EVENTVIEW_COMMANDNUM_WAIT = 4;
+var EVENTVIEW_COMMANDNUM_SAVE = 5;
+var EVENTVIEW_COMMANDNUM_LOAD = 6;
+
 // どこからでも使用できるようここに記述
 var printWarn = function(msg) {
     alert(msg);

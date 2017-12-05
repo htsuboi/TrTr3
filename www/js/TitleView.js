@@ -104,7 +104,7 @@ TitleView.prototype.calc = function() {
             eachStar.calc();
         }
     }
-    return this.checkCalc()
+    return this.checkCalc();
 }
 
 TitleView.prototype.checkCalc = function() {
@@ -211,6 +211,7 @@ TitleView.prototype.clk = function(mouseX, mouseY) {
         mouseY >= TITLEVIEW_NEWGAME_Y &&
         mouseY <= TITLEVIEW_NEWGAME_Y + TITLEVIEW_NEWGAME_HEIGHT) {
         return GAMEMODE_BATTLE;
+        //return GAMEMODE_EVENT;
         //SaveFileIO.loadFile();
         //return -1;
     } else if (mouseX >= TITLEVIEW_CONTGAME_X && 

@@ -175,6 +175,14 @@ BattleView.prototype.calc = function(ud, itemMap) {
         if (this.cantOpCounter == BATTLE_BATTLEMSG_THIRD) {
             if (isAttack && this.tempResult.isHit) {
                 // ダメージ・毒・麻痺
+                if (unitAtFocus.hasSkill(ud, SKILL_SYONETSU)) {
+                    for (var i = 0; i < ud.length; i++) {
+                        var u = ud[i];
+                        if (u.side == this.tempTargetUnit.side && u.field == this.tempTargetUnit.field && !u.equalUnit(this.tempTargetUnit)) {
+                            u.hp = Math.max(u.hp - Math.floor(0.01 * SKILL_SYONETSU_RATE * this.tempResult.damage), 1);
+                        }
+                    }
+                }
                 this.tempTargetUnit.hp = Math.max(this.tempTargetUnit.hp - this.tempResult.damage, 0);
                 if (this.tempTargetUnit.hp == 0) {
                     this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "は倒れた!";
@@ -251,6 +259,12 @@ BattleView.prototype.calc = function(ud, itemMap) {
             if (this.state == BATTLEVIEW_STATE_FIRSTMOVE) {
                 moveCheck = unitAtFocus.decideFirstMove(ud, this);
             } else {
+                // 再行動実行時はここでACTSTARTに遷移させる
+                if (unitAtFocus.decideAgain(ud, this)) {
+                    this.spGauge[BATTLE_TEKI] -= unitAtFocus.exAtCost;
+                    this.moveCheckComState(BATTLEVIEW_STATE_ACTSTART, BATTLEVIEW_COMSTATE_PRECHOICE);
+                    return -1;
+                }
                 moveCheck = unitAtFocus.decideSecondMove(ud, this);
             }
             if (moveCheck == 0) {
@@ -281,6 +295,12 @@ BattleView.prototype.calc = function(ud, itemMap) {
             } else {
                 this.cantOpCounter = BATTLE_BATTLEMSG_MAX;
                 this.tempTargetUnit = actCheck;
+                var range = UnitDefine.calcRange(unitAtFocus, ud, unitAtFocus.eqType, unitAtFocus.eqSyurui);
+                var dist = unitAtFocus.x + unitAtFocus.y + this.tempTargetUnit.x + this.tempTargetUnit.y;
+                if (range < dist) {
+                    // 射程伸ばし
+                    this.spGauge[BATTLE_TEKI] -= unitAtFocus.rangeCost;
+                }
                 var randomForHit = Math.floor(Math.random() * 100);//0～99
                 var hitRate = UnitDefine.calcHit(unitAtFocus, this.tempTargetUnit, ud, unitAtFocus.eqType, unitAtFocus.eqSyurui);
                 this.tempResult.isHit = hitRate > randomForHit;
