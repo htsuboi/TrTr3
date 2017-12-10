@@ -210,8 +210,8 @@ TitleView.prototype.clk = function(mouseX, mouseY) {
         mouseX <= TITLEVIEW_NEWGAME_X + TITLEVIEW_NEWGAME_WIDTH &&
         mouseY >= TITLEVIEW_NEWGAME_Y &&
         mouseY <= TITLEVIEW_NEWGAME_Y + TITLEVIEW_NEWGAME_HEIGHT) {
-        return GAMEMODE_BATTLE;
-        //return GAMEMODE_EVENT;
+        //return GAMEMODE_BATTLE;
+        return GAMEMODE_EVENT;
         //SaveFileIO.loadFile();
         //return -1;
     } else if (mouseX >= TITLEVIEW_CONTGAME_X && 

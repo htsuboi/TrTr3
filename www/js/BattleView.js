@@ -887,6 +887,9 @@ BattleView.prototype.paint = function (ud, itemMap) {
             var txtY = BATTLEVIEW_COMMANDTXT_Y + i * BATTLEVIEW_COMMANDINTERVAL;
             ctxFlip.fillRect(txtX - 1, txtY - 1, BATTLEVIEW_COMMANDTXT_W + 3, BATTLEVIEW_COMMANDTXT_H + 3);
             ctxFlip.fillStyle = 'rgb(255, 255, 255)';
+            if (isHighLight == 0) {
+                ctxFlip.fillStyle = 'rgb(191, 191, 191)';
+            }
             ctxFlip.fillRect(txtX, txtY, BATTLEVIEW_COMMANDTXT_W, BATTLEVIEW_COMMANDTXT_H);
             if (isHighLight > 0) {
                 ctxFlip.fillStyle = 'rgb(0, 0, 0)';
@@ -1522,7 +1525,7 @@ BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
         var commandNum = Math.floor((mouseY - BATTLEVIEW_COMMANDTXT_Y) / BATTLEVIEW_COMMANDINTERVAL);
         var isSelectable = this.isSelected(ud, commandNum);
         if (isSelectable == 0) {
-            // コマンド選択に戻す
+            // 選択不能をクリック→コマンド選択に戻す
             this.moveCheckComState(this.state, BATTLEVIEW_COMSTATE_PRECHOICE);
             return -1;
         } else {
@@ -1557,6 +1560,10 @@ BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
                 break;
                 case BATTLEVIEW_COMMANDNUM_CHANGE:arguments//交代
                     this.moveCheckComState(this.state, BATTLEVIEW_COMSTATE_CHANGE);
+                    return -1;
+                break;
+                default:arguments
+                    // ボタンのない場所をクリックした場合ここ
                     return -1;
                 break;
             }

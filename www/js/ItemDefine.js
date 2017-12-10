@@ -6,7 +6,8 @@ var ItemDefine = function() {
     this.eqType = -1;
     this.eqSyurui = -1;
     this.lv = 0;//武器レベル
-    this.money = 0;//買い値
+    this.price = 0;//買い値
+    this.alwaysBuy = false;//無条件で購入できるか
     this.crt = 0;
     this.rat = 0;//割合ダメージ
     this.rdf = 0;//割合軽減
@@ -35,6 +36,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.lv = 1;
                 idef.str = 5;
                 idef.hit = 11;
+                idef.alwaysBuy = true;
             break;
             case 1:arguments
                 idef.namae = "中級剣";
@@ -71,6 +73,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.lv = 1;
                 idef.str = 9;
                 idef.hit = 3;
+                idef.alwaysBuy = true;
             break;
             case 1:arguments
                 idef.namae = "戦士の槍";
@@ -105,6 +108,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.namae = "大量生産の槌";
                 idef.price = 90;
                 idef.lv = 1;
+                idef.alwaysBuy = true;
             break;
             case 1:arguments
                 idef.namae = "ビッグクラブ";
@@ -138,6 +142,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.price = 160;
                 idef.lv = 1;
                 idef.str = 2;
+                idef.alwaysBuy = true;
             break;
             case 1:arguments
                 idef.namae = "クロスボウ";
@@ -169,6 +174,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.lv = 1;
                 idef.hit = 5;
                 idef.rat = 4;
+                idef.alwaysBuy = true;
             break;
             case 1:arguments
                 idef.namae = "裏社会の匕首";
@@ -205,6 +211,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.price = 190;
                 idef.lv = 1;
                 idef.str = 13;
+                idef.alwaysBuy = true;
             break;
             case 1:arguments
                 idef.namae = "闘士のバンド";
@@ -237,6 +244,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.price = 200;
                 idef.lv = 1;
                 idef.def = 7;
+                idef.alwaysBuy = true;
             break;
             case 1:arguments
                 idef.namae = "青銅の盾";
@@ -272,6 +280,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.price = 200;
                 idef.lv = 1;
                 idef.mat = 8;
+                idef.alwaysBuy = true;
             break;
             case 1:arguments
                 idef.namae = "赤のオーブ";
@@ -304,6 +313,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.lv = 1;
                 idef.mat = 4;
                 idef.hit = 3;
+                idef.alwaysBuy = true;
             break;
             case 1:arguments
                 idef.namae = "豪雨の書";
@@ -340,6 +350,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.lv = 1;
                 idef.mat = 1;
                 idef.hit = 10;
+                idef.alwaysBuy = true;
             break;
             case 1:arguments
                 idef.namae = "木枯らしの杖";
@@ -375,6 +386,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.lv = 1;
                 idef.mat = 5;
                 idef.mdf = 6;
+                idef.alwaysBuy = true;
             break;
             case 1:arguments
                 idef.namae = "地の入門帳";
@@ -410,21 +422,25 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.namae = "体力の紅茶";
                 idef.text = "1人のHPを全回復する";
                 idef.price = 180;
+                idef.alwaysBuy = true;
             break;
             case ITEM_SYURUI_KOUSUI:arguments
                 idef.namae = "気力の香水";
                 idef.text = "1人の気力を全回復する";
                 idef.price = 180;
+                idef.alwaysBuy = true;
             break;
             case ITEM_SYURUI_JIAI:arguments
                 idef.namae = "新薬「慈愛」";
                 idef.text = "全員のHPを全回復する";
                 idef.price = 180;
+                idef.alwaysBuy = true;
             break;
             case ITEM_SYURUI_MUJIN:arguments
                 idef.namae = "劇薬「無尽活力」";
                 idef.text = "全員の気力を全回復する";
                 idef.price = 180;
+                idef.alwaysBuy = true;
             break;
         }
         break;
@@ -559,10 +575,43 @@ ItemDefine.getReverseItemIndex = function(itemMap, eqType, idx) {
     return retEqSyurui;// -1の場合「見つからなかった」
 }
 
+// 指定種類の中で、購入可能なi番目の武器はなにか?(スタートは0)
+ItemDefine.getReverseItemIndexForBuy = function(itemMap, eqType, idx) {
+    var retEqSyurui = -1;
+    var tempIndex = -1;
+    for (var i = 0; i < ITEM_SYURUI_MAX; i++) {
+        var tempItem = new ItemDefine();
+        ItemDefine.init(eqType, i, tempItem);
+        var canBuy = tempItem.canBuy();
+                
+        if (tempItem.namae == "テスト武器") {
+            // 以降、定義されたアイテムなし
+            break;
+        } else if (!canBuy) {
+            // このアイテムは購入不能
+            continue;
+        } else {
+            tempIndex++;
+            if (idx == tempIndex) {
+                retEqSyurui = i;
+            }
+        }
+    }
+    return retEqSyurui;// -1の場合「見つからなかった」
+}
+
 ItemDefine.hasPoison = function(eqType, eqSyurui) {
     return false;
 }
 
 ItemDefine.hasStun = function(eqType, eqSyurui) {
     return false;
+}
+
+ItemDefine.prototype.canBuy = function() {
+    var ret = false;
+    if (this.alwaysBuy) {
+        ret = true;
+    }
+    return ret;
 }

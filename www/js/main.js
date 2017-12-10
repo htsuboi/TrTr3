@@ -38,6 +38,12 @@ ud.push(u6);
 
 //itemMap.set({eqType:ITEM_TYPE_SWORD, eqSyurui:ITEM_SYURUI_SWORD1}, {equipNum: 2, allNum:3});
 var tempItem = new ItemDefine();
+for (var i = ITEM_TYPE_SWORD; i <= ITEM_TYPE_DOGU; i++) {
+    for (var j = 0; j < ITEM_SYURUI_MAX; j++) {
+        ItemDefine.init(i, j, tempItem);
+        itemMap.set(tempItem.namae, 0);
+    }
+}
 ItemDefine.init(ITEM_TYPE_SWORD, 0, tempItem);
 itemMap.set(tempItem.namae, 1);
 ItemDefine.init(ITEM_TYPE_SWORD, 1, tempItem);
@@ -46,10 +52,12 @@ ItemDefine.init(ITEM_TYPE_SWORD, 2, tempItem);
 itemMap.set(tempItem.namae, 4);
 ItemDefine.init(ITEM_TYPE_SWORD, 3, tempItem);
 itemMap.set(tempItem.namae, 4);
-ItemDefine.init(ITEM_TYPE_SPEAR, 0, tempItem);
-itemMap.set(tempItem.namae, 0);
 ItemDefine.init(ITEM_TYPE_SPEAR, 1, tempItem);
 itemMap.set(tempItem.namae, 2);
+ItemDefine.init(ITEM_TYPE_SPEAR, 2, tempItem);
+itemMap.set(tempItem.namae, 0);
+ItemDefine.init(ITEM_TYPE_SPEAR, 3, tempItem);
+itemMap.set(tempItem.namae, 3);
 ItemDefine.init(ITEM_TYPE_DOGU, ITEM_SYURUI_KOUCHA, tempItem);
 itemMap.set(tempItem.namae, 1);
 ItemDefine.init(ITEM_TYPE_DOGU, ITEM_SYURUI_KOUSUI, tempItem);
@@ -58,7 +66,6 @@ ItemDefine.init(ITEM_TYPE_DOGU, ITEM_SYURUI_JIAI, tempItem);
 itemMap.set(tempItem.namae, 1);
 ItemDefine.init(ITEM_TYPE_DOGU, ITEM_SYURUI_MUJIN, tempItem);
 itemMap.set(tempItem.namae, 1);
-//itemMap.set({eqType:ITEM_TYPE_SWORD, eqSyurui:ITEM_SYURUI_SWORD2}, {equipNum: 4, allNum:5});
 
 var intervalId;
 intervalId = setInterval(calcAndPaint, 20);
@@ -89,8 +96,6 @@ function clickPage(e) {
     var nextGameMode = -1;
     var mouseX = e.pageX;
     var mouseY = e.pageY;
-    //var mouseX = 15;
-    //var mouseY = 20;
     switch(gameMode) {
         case GAMEMODE_TITLE:arguments
             nextGameMode = tv.clk(mouseX, mouseY);
