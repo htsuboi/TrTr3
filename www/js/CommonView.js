@@ -6,6 +6,8 @@ var CommonView = function(x, y, border, appearTime) {
 CommonView.staticCanvas = function() {
     if (typeof arguments.callee.cv == 'undefined') {
         arguments.callee.cv = document.getElementById('gameCanvas');
+        arguments.callee.cv.setAttribute('width', window.innerWidth);
+        arguments.callee.cv.setAttribute('height', window.innerHeight);
         arguments.callee.cv.style.visibility = "visible";
     }
     return arguments.callee.cv;
@@ -14,6 +16,8 @@ CommonView.staticCanvas = function() {
 CommonView.staticCanvasFlip = function() {
     if (typeof arguments.callee.cvForFlip == 'undefined') {
         arguments.callee.cvForFlip = document.getElementById('gameCanvasFlip');
+        arguments.callee.cvForFlip.setAttribute('width', window.innerWidth);
+        arguments.callee.cvForFlip.setAttribute('height', window.innerHeight);
         arguments.callee.cvForFlip.style.visibility = "hidden";
     }
     return arguments.callee.cvForFlip;

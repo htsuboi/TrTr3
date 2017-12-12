@@ -5,6 +5,7 @@ var EventView = function() {
     this.tempBuySellType = ITEM_TYPE_SWORD;// 売買時、どの武器を表示するか
     this.tempBuySellSyurui = 0;
     this.tempBuySellNum = 1;
+    this.tempProcMap = -1;
     this.tempSaveNum = 1;//何番にセーブするか
     this.ENDCOUNTER = 1000;// ここに到達するまでは画面作りかけ状態
     this.MAXCOUNTER = 1100;// 画面完成後、ENDCOUNTER～MAXCOUNTERまでの値をぐるぐるしてアニメーションさせる
@@ -20,6 +21,7 @@ EventView.prototype.init = function () {
     this.tempBuySellType = ITEM_TYPE_SWORD;// 売買時、どの武器を表示するか
     this.tempBuySellSyurui = 0;
     this.tempBuySellNum = 1;
+    this.tempProcMap = -1;
     this.tempSaveNum = 1;//何番にセーブするか
     this.cantOpCounter = 0;
     this.money = 0;// 「所持金」データはここに保持
@@ -30,6 +32,10 @@ EventView.prototype.calc = function(ud, itemMap) {
     this.counter++;
     if (this.counter > this.MAXCOUNTER) {
         this.counter = this.ENDCOUNTER;
+    }
+    
+    if (this.cantOpCounter > 0) {
+        this.cantOpCounter--;
     }
 }
 
@@ -114,6 +120,13 @@ EventView.prototype.paint = function(ud, itemMap) {
             ctxFlip.font = "12px 'MS Pゴシック'";
             ctxFlip.fillStyle = 'rgb(0, 0, 0)';
             ctxFlip.fillText(text, x, y + 10);
+        }
+        if (this.comState == EVENTVIEW_COMSTATE_PROC_MAPCHOICE) {
+            // 非表示部分
+            var kezuriX = 3 * this.cantOpCounter;
+            ctxFlip.fillStyle = 'rgb(63, 63, 223)';
+            ctxFlip.fillRect(EVENTVIEW_MAP_X - 5 + kezuriX, EVENTVIEW_MAP_Y - 3, EVENTVIEW_MAP_EXTEND * 224 - 2 * kezuriX + 10, EVENTVIEW_MAP_EXTEND * 160 + 6);
+            ctxFlip.drawImage(EventView.getMapImg(), kezuriX, 0, 224 - 2 * kezuriX, 160, EVENTVIEW_MAP_X + kezuriX, EVENTVIEW_MAP_Y, EVENTVIEW_MAP_EXTEND * 224 - 2 * kezuriX, EVENTVIEW_MAP_EXTEND * 160);
         }
         if (this.comState == EVENTVIEW_COMSTATE_BUY_WEAPCHOICE || this.comState == EVENTVIEW_COMSTATE_SELL_WEAPCHOICE) {
             ctxFlip.fillStyle = 'rgb(63, 63, 223)';
@@ -321,6 +334,11 @@ EventView.prototype.clk = function(mouseX, mouseY) {
                 return -1;
             } else {
                 switch(commandNum) {
+                    case EVENTVIEW_COMMANDNUM_PROC:arguments
+                        this.tempBuySellNum = 1;
+                        this.cantOpCounter = EVENTVIEW_PROC_MAXCOUNTER;
+                        this.comState = EVENTVIEW_COMSTATE_PROC_MAPCHOICE;
+                    break;
                     case EVENTVIEW_COMMANDNUM_BUY:arguments
                         this.tempBuySellType = ITEM_TYPE_SWORD;// とりあえず剣を表示
                         this.tempBuySellSyurui = ItemDefine.getReverseItemIndexForBuy(itemMap, this.tempBuySellType, 0);
@@ -506,3 +524,11 @@ EventView.prototype.maxBuySell = function(itemMap, eqType, eqSyurui, isBuy) {
         return tempItemNum;
     }
 }
+
+EventView.getMapImg = function() {
+    if (typeof arguments.callee.mapImg == 'undefined') {
+        arguments.callee.mapImg = new Image();
+        arguments.callee.mapImg.src = "img/map.png";
+    }
+    return arguments.callee.mapImg;
+};
