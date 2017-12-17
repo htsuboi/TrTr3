@@ -26,8 +26,7 @@ var UnitDefine = function() {
     this.aiForRange = 0;//どれだけのリターン差で射程伸ばしするか
     this.aiForAgain = 0;//必要値 + どれだけのSPゲージで再行動するか(負の値は「再行動しない」)
     this.skills = [0, 0, 0];
-    //this.skillON = [false, false, false];
-    this.skillON = [true, true, true];
+    this.skillON = [false, false, false];
     this.handEquip = new Array();//手持ち武器
     var sude = {eqType: ITEM_TYPE_SUDE, eqSyurui: 0};
     // 手持ち武器に「素手」を追加
@@ -1159,7 +1158,7 @@ UnitDefine.prototype.hasStun = function(ud) {
 UnitDefine.prototype.hasSkill = function(ud, skill) {
     for (var i = 0; i < ud.length; i++) {
         var u = ud[i];
-        if (u.field == this.field &&  u.side == this.side && u.hp > 0) {
+        if (u.field == this.field && u.side == this.side && u.hp > 0) {
             for (var j = 0; j < 3; j++) {
                 if (u.skills[j] == skill && u.skillON[j] == true) {
                     return true;
@@ -1168,4 +1167,15 @@ UnitDefine.prototype.hasSkill = function(ud, skill) {
         }
     }
     return false;
+}
+
+UnitDefine.getMikataList = function(ud) {
+    var mikataUd = new Array();//ユニットデータ格納
+    for (var i = 0; i < ud.length; i++) {
+        var u = ud[i];
+        if (u.side == BATTLE_MIKATA) {
+            mikataUd.push(u);
+        }
+    }
+    return mikataUd;
 }

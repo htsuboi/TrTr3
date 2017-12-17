@@ -10,31 +10,31 @@ var itemMap = new Map();
 var gameMode = GAMEMODE_TITLE;//0:タイトル 1:ゲームオーバー
 var prevGameMode = GAMEMODE_GAMEOVER;
 tv.init();
-bv.init(1, true);
+bv.init(0, true);
 ev.init();
 gov.init();
-var u = new UnitDefine();
-u.initCommon(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_KNIGHT, BATTLE_MIKATA, BATTLE_OFFENCE, 1, 20, SKILL_HIGHHIT, SKILL_SYONETSU, SKILL_KENJITSU);
+/*var u = new UnitDefine();
+u.initCommon(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_KNIGHT, BATTLE_MIKATA, BATTLE_OFFENCE, 0, 20, SKILL_HIGHHIT, SKILL_SYONETSU, SKILL_KENJITSU);
 ud.push(u);
 var u2 = new UnitDefine();
 u2.initCommon(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_MUSCLE, BATTLE_MIKATA, BATTLE_OFFENCE, 1, 15, SKILL_KEIKAI, SKILL_YOROI, SKILL_KAMAITACHI);
 ud.push(u2);
 var u3 = new UnitDefine();
 u3.initCommon(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_TATEO, BATTLE_MIKATA, BATTLE_OFFENCE, 1, 25, SKILL_HIGHAVO, SKILL_KYOEN, SKILL_KIYOME);
-ud.push(u3);
+ud.push(u3);*/
 var intervalId;
 intervalId = setInterval(calcAndPaint, 20);
-var u4 = new UnitDefine();
+//var u4 = new UnitDefine();
 //u4.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_HAMMER, BATTLE_TEKI, BATTLE_DEFENCE, 1, 20, 0, 0, 0, ITEM_TYPE_HAMMER, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_BACK);
-u4.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_POISON, BATTLE_TEKI, BATTLE_DEFENCE, 1, 20, 0, 0, 0, ITEM_TYPE_SWORD, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_NO, 1.2, 0.1);
-ud.push(u4);
-var u5 = new UnitDefine();
+//u4.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_POISON, BATTLE_TEKI, BATTLE_DEFENCE, 0, 20, 0, 0, 0, ITEM_TYPE_SWORD, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_NO, 1.2, 0.1);
+//ud.push(u4);
+/*var u5 = new UnitDefine();
 //u5.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_PUNCH, BATTLE_TEKI, BATTLE_DEFENCE, 1, 20, 0, 0, 0, ITEM_TYPE_PUNCH, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_FIRST + BATTLEAI_SM_BACK);
 u5.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_STUN, BATTLE_TEKI, BATTLE_DEFENCE, 1, 20, 0, 0, 0, ITEM_TYPE_PUNCH, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_FIRST + BATTLEAI_SM_NO, 1.1, 0.05);
 ud.push(u5);
 var u6 = new UnitDefine();
 u6.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_KNIFE, BATTLE_TEKI, BATTLE_DEFENCE, 1, 20, 0, 0, 0, ITEM_TYPE_KNIFE, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM + BATTLEAI_SM_NO, 1.2, 0.2);
-ud.push(u6);
+ud.push(u6);*/
 
 //itemMap.set({eqType:ITEM_TYPE_SWORD, eqSyurui:ITEM_SYURUI_SWORD1}, {equipNum: 2, allNum:3});
 var tempItem = new ItemDefine();
@@ -107,7 +107,7 @@ function clickPage(e) {
             nextGameMode = gov.clk(mouseX, mouseY);
             break;
         case GAMEMODE_EVENT:arguments
-            nextGameMode = ev.clk(mouseX, mouseY);
+            nextGameMode = ev.clk(mouseX, mouseY, ud, bv);
             break;
     }
     if (nextGameMode >= 0) {
@@ -117,7 +117,6 @@ function clickPage(e) {
                 tv.init();
                 break;
             case GAMEMODE_BATTLE:arguments
-                bv.init(1, true);
                 break;
             case GAMEMODE_GAMEOVER:arguments
                 gov.init();

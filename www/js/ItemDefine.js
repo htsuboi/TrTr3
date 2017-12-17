@@ -1,5 +1,5 @@
 var ItemDefine = function() {
-    this.namae = "テスト武器";
+    this.namae = "";
     this.text = "";//効果の補足説明
     this.px = 0;// 絵でのX座標
     this.py = 0;// 絵でのY座標

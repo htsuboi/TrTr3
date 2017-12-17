@@ -10,13 +10,24 @@ var EventView = function() {
     this.ENDCOUNTER = 1000;// ここに到達するまでは画面作りかけ状態
     this.MAXCOUNTER = 1100;// 画面完成後、ENDCOUNTER～MAXCOUNTERまでの値をぐるぐるしてアニメーションさせる
     this.cantOpCounter = 0;
+    this.message = new Array();// 今回のイベントの全メッセージを格納(表示される毎に無くなっていく)
+    this.printMsg = ["", "", "", "", "", "", ""];// 現在イベントビューに出すべき文字列
     this.money = 0;// 「所持金」データはここに保持
     this.turn = 0;// 「ターン」データはここに保持
+    this.eventID = -1;// 現在のイベント
+    this.px = -1;//イベント用の顔グラの場所(-1は「表示しない」)
+    this.py = -1;//イベント用の顔グラの場所(-1は「表示しない」)
+    this.pSyurui = -1;//イベント用の顔グラの場所(-1は「表示しない」)
+    // fontIDについて、「これまで」各行をどのフォントで表示していたかと、「今」どのフォントで表示すべきかは分けて管理しないといけない
+    this.fontID = [EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL];//イベント文字列の書体
+    this.nowFontID = EVENTVIEW_EVENTFONT_NORMAL;
+    this.fieldMap = new Map();
 };
 
 EventView.prototype.init = function () {
     this.counter = 0;
-    this.state = EVENTVIEW_STATE_COMMAND;
+    this.state = EVENTVIEW_STATE_EVENT;
+    //this.state = EVENTVIEW_STATE_COMMAND;
     this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
     this.tempBuySellType = ITEM_TYPE_SWORD;// 売買時、どの武器を表示するか
     this.tempBuySellSyurui = 0;
@@ -24,8 +35,24 @@ EventView.prototype.init = function () {
     this.tempProcMap = -1;
     this.tempSaveNum = 1;//何番にセーブするか
     this.cantOpCounter = 0;
+    this.message = [];
+    EventMessage.getMessage(EVENTVIEW_EVENTID_OP, this.message);
+    this.printMsg = ["", "", "", "", "", "", ""];// 現在イベントビューに出すべき文字列
     this.money = 0;// 「所持金」データはここに保持
     this.turn = 0;
+    this.eventID = EVENTVIEW_EVENTID_OP;// 現在のイベント
+    this.px = -1;//イベント用の顔グラの場所(-1は「表示しない」)
+    this.py = -1;//イベント用の顔グラの場所(-1は「表示しない」)
+    this.pSyurui = -1;//イベント用の顔グラの場所(-1は「表示しない」)
+    this.fontID = [EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL];//イベント文字列の書体
+    this.nowFontID = EVENTVIEW_EVENTFONT_NORMAL;
+    for (var i = 0; i < EVENTVIEW_MAP_MAX; i++) {
+        var tempField = new FieldDefine();
+        var ret = tempField.init(i);
+        if (ret == 0) {
+            this.fieldMap.set(i, tempField);
+        }
+    }
 }
 
 EventView.prototype.calc = function(ud, itemMap) {
@@ -69,6 +96,45 @@ EventView.prototype.paint = function(ud, itemMap) {
     ctxFlip.fillStyle = 'rgb(179, 179, 239)';
     ctxFlip.fillRect(0, xy2, xy2 , CommonView.staticCanvasFlip().height - xy2);    
     
+    if (this.state == EVENTVIEW_STATE_EVENT) {
+        // マップ表示(引き延ばしなし)
+        ctxFlip.fillStyle = 'rgb(63, 63, 223)';
+        ctxFlip.fillRect(EVENTVIEW_MAP_X - 5, EVENTVIEW_MAP_Y - 3, 224 + 10, 160 + 6);
+        ctxFlip.drawImage(EventView.getMapImg(), 0, 0, 224, 160, EVENTVIEW_MAP_X, EVENTVIEW_MAP_Y, 224, 160);
+        for (var i = 0; i < EVENTVIEW_MAP_MAX; i++) {
+            var tempField = this.fieldMap.get(i);
+            if (tempField != null && tempField.fieldState != EVENTVIEW_FIELD_HIDDEN) {
+                var r = 2;
+                var centerX = EVENTVIEW_MAP_X + tempField.x;
+                var centerY = EVENTVIEW_MAP_Y + tempField.y;        
+                ctxFlip.beginPath();
+                ctxFlip.lineWidth = 2;
+                this.setFieldColor(ctxFlip, tempField.fieldState, true);
+                ctxFlip.arc(centerX, centerY, r, 0, 2 * Math.PI, true);
+                ctxFlip.stroke();
+                this.setFieldColor(ctxFlip, tempField.fieldState, false);
+                ctxFlip.arc(centerX, centerY, r / 2, 0, 2 * Math.PI, true);
+                ctxFlip.stroke();
+            }
+        }
+        
+        var x = EVENTVIEW_SKIP_X;
+        var y = EVENTVIEW_SKIP_Y;
+        var w = EVENTVIEW_SKIP_W;
+        var h = EVENTVIEW_SKIP_H;
+        // スキップボタン
+        ctxFlip.fillStyle = getGladColorRed((this.MAXCOUNTER - this.counter) / 3);
+        ctxFlip.fillRect(x - 1, y - 1, w + 2, h + 2);
+        ctxFlip.fillStyle = 'rgb(255, 255, 255)';
+        ctxFlip.fillRect(x, y, w, h);
+        ctxFlip.font = "16px 'MS Pゴシック'";
+        ctxFlip.fillStyle = 'rgb(0, 0, 0)';
+        ctxFlip.fillText("SKIP", x, y + 16);
+        if (this.px != -1) {
+            // ユニット顔グラ表示
+            ctxFlip.drawImage(UnitDefine.getCharaImg(this.pSyurui), this.px, this.py, 256, 320, EVENTVIEW_UNITPAINT_X, EVENTVIEW_UNITPAINT_Y, EVENTVIEW_UNITPAINT_W, EVENTVIEW_UNITPAINT_H);
+        }
+    }
     if (this.state == EVENTVIEW_STATE_COMMAND) {
         ctxFlip.fillStyle = 'rgb(191, 63, 191)';
         ctxFlip.fillRect(EVENTVIEW_COMMAND_X - 3, EVENTVIEW_COMMAND_Y - 5, (EVENTVIEW_COMMAND_W + EVENTVIEW_COMMAND_DIST) * 7 + 10, EVENTVIEW_COMMAND_H + 10);
@@ -121,12 +187,32 @@ EventView.prototype.paint = function(ud, itemMap) {
             ctxFlip.fillStyle = 'rgb(0, 0, 0)';
             ctxFlip.fillText(text, x, y + 10);
         }
+        // マップ表示
         if (this.comState == EVENTVIEW_COMSTATE_PROC_MAPCHOICE) {
             // 非表示部分
             var kezuriX = 3 * this.cantOpCounter;
             ctxFlip.fillStyle = 'rgb(63, 63, 223)';
             ctxFlip.fillRect(EVENTVIEW_MAP_X - 5 + kezuriX, EVENTVIEW_MAP_Y - 3, EVENTVIEW_MAP_EXTEND * 224 - 2 * kezuriX + 10, EVENTVIEW_MAP_EXTEND * 160 + 6);
             ctxFlip.drawImage(EventView.getMapImg(), kezuriX, 0, 224 - 2 * kezuriX, 160, EVENTVIEW_MAP_X + kezuriX, EVENTVIEW_MAP_Y, EVENTVIEW_MAP_EXTEND * 224 - 2 * kezuriX, EVENTVIEW_MAP_EXTEND * 160);
+            
+            if (this.cantOpCounter == 0) {
+                for (var i = 0; i < EVENTVIEW_MAP_MAX; i++) {
+                    var tempField = this.fieldMap.get(i);
+                    if (tempField != null && tempField.fieldState != EVENTVIEW_FIELD_HIDDEN) {
+                        var r = 4;
+                        var centerX = EVENTVIEW_MAP_X + EVENTVIEW_MAP_EXTEND * tempField.x;
+                        var centerY = EVENTVIEW_MAP_Y + EVENTVIEW_MAP_EXTEND * tempField.y;
+                        ctxFlip.beginPath();
+                        ctxFlip.lineWidth = 2;
+                        this.setFieldColor(ctxFlip, tempField.fieldState, true);
+                        ctxFlip.arc(centerX, centerY, r, 0, 2 * Math.PI, true);
+                        ctxFlip.stroke();
+                        this.setFieldColor(ctxFlip, tempField.fieldState, false);
+                        ctxFlip.arc(centerX, centerY, r / 2, 0, 2 * Math.PI, true);
+                        ctxFlip.stroke();
+                    }
+                }
+            }
         }
         if (this.comState == EVENTVIEW_COMSTATE_BUY_WEAPCHOICE || this.comState == EVENTVIEW_COMSTATE_SELL_WEAPCHOICE) {
             ctxFlip.fillStyle = 'rgb(63, 63, 223)';
@@ -267,6 +353,17 @@ EventView.prototype.paint = function(ud, itemMap) {
     ctxFlip.fillRect(EVENTVIEW_TEXT_X - textMargin, EVENTVIEW_TEXT_Y - textMargin, EVENTVIEW_TEXT_W + 2 * textMargin, EVENTVIEW_TEXT_H + 2 * textMargin);
     ctxFlip.fillStyle = 'rgb(255, 255, 255)';
     ctxFlip.fillRect(EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y, EVENTVIEW_TEXT_W, EVENTVIEW_TEXT_H);
+    if (this.state == EVENTVIEW_STATE_EVENT) {
+        ctxFlip.font = "14px 'MS Pゴシック'";
+        for (var i = 0; i < EVENTVIEW_EVENT_MSGNUM; i++) {
+            ctxFlip.fillStyle = 'rgb(0, 0, 0)';
+            if (this.fontID[i] == EVENTVIEW_EVENTFONT_KAIWA) {
+                ctxFlip.fillStyle = 'rgb(0, 127, 0)';
+            }
+            var interval = 25;
+            ctxFlip.fillText(this.printMsg[i], EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 18 + interval * i);
+        }
+    }
     if (this.state == EVENTVIEW_STATE_COMMAND) {
         ctxFlip.font = "14px 'MS Pゴシック'";
         ctxFlip.fillStyle = 'rgb(0, 0, 0)';
@@ -311,7 +408,7 @@ EventView.prototype.paint = function(ud, itemMap) {
     ctx.putImageData(imageData, 0, 0);
 }
 
-EventView.prototype.clk = function(mouseX, mouseY) {
+EventView.prototype.clk = function(mouseX, mouseY, ud, bv) {
     if (CommonView.printWarnFlag() == true) {
         // 警告表示時はそれを消す
         CommonView.printWarnFlag(false);
@@ -321,6 +418,33 @@ EventView.prototype.clk = function(mouseX, mouseY) {
     //演出中
     if (this.cantOpCounter > 0) {
         return -1;
+    }
+    
+    if (this.state == EVENTVIEW_STATE_EVENT) {
+        if (this.message.length == 0) {
+            var ret = this.endEvent(ud, bv);
+            return ret;
+        } else {
+            // 取り出す文章あり
+            if (mouseX >= EVENTVIEW_SKIP_X && mouseX <= EVENTVIEW_SKIP_X + EVENTVIEW_SKIP_W &&
+                mouseY >= EVENTVIEW_SKIP_Y && mouseY <= EVENTVIEW_SKIP_Y + EVENTVIEW_SKIP_H) {
+                // スキップ
+                while(this.message.length > 0) {
+                    this.printOneMsg();
+                }
+                var ret = this.endEvent(ud, bv);
+                return ret;
+            } else {
+                var isAddMsg = this.printOneMsg();
+                // printOneMsgの結果がメタ文字(実質的な文章追加でない)な場合、文章追加までprintOneMsg
+                while (!isAddMsg) {
+                    isAddMsg = this.printOneMsg();
+                }
+                // 連打時にいきなり処理に進まないよう、一瞬操作不能にする
+                this.cantOpCounter = 10;
+                return -1;
+            }
+        }
     }
     
     if (this.state == EVENTVIEW_STATE_COMMAND) {
@@ -532,3 +656,138 @@ EventView.getMapImg = function() {
     }
     return arguments.callee.mapImg;
 };
+
+// 戻り値は「実質的な文章が追加されたか?」
+EventView.prototype.printOneMsg = function() {
+    var tempMsg = this.message.shift();
+    if (tempMsg.charAt(0) == '@') {
+        // フォント変更を意味するメタ文字
+        var fontID = parseInt(tempMsg.substr(1), 10);
+        this.nowFontID = fontID;
+        return false;
+    }
+    if (tempMsg.charAt(0) == '#') {
+        // 顔グラを設定するメタ文字
+        var faceID = parseInt(tempMsg.substr(1), 10);
+        this.setFace(faceID);
+        return false;
+    }
+    var index = -1;
+    for (var i = 0; i < EVENTVIEW_EVENT_MSGNUM; i++) {
+        if (this.printMsg[i] === "") {
+            // 空きがあるので、その行に表示する。既存行に影響なし
+            index = i;
+            break;
+        }    
+    }
+    if (index != -1) {
+        // 空きがあるので、その行に内容追加する。既存行に影響なし
+        this.fontID[index] = this.nowFontID;
+        this.printMsg[index] = tempMsg;
+    } else {
+        for (var i = 1; i < EVENTVIEW_EVENT_MSGNUM; i++) {
+            // 既存行を1行ずつずらす
+            this.fontID[i - 1] = this.fontID[i];
+            this.printMsg[i - 1] = this.printMsg[i];
+        }
+        // 最終行に今回のメッセージを設定
+        this.fontID[EVENTVIEW_EVENT_MSGNUM - 1] = this.nowFontID;
+        this.printMsg[EVENTVIEW_EVENT_MSGNUM - 1] = tempMsg;
+    }
+    return true;
+}
+
+// 戻り値は「別の画面に遷移」を意味
+EventView.prototype.endEvent = function(ud, bv) {
+    switch(this.eventID) {
+        case EVENTVIEW_EVENTID_OP:arguments
+            bv.init(0, true);
+            u = new UnitDefine();
+            u.initCommon(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_PRINCESS, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 1, SKILL_KEIKAI, SKILL_KIYOME, SKILL_KENJITSU);
+            ud.push(u);
+            tempField = this.fieldMap.get(0);
+            tempField.createEnemy(ud);
+            return GAMEMODE_BATTLE;
+            break;
+    }
+    // イベント終了
+    this.state = EVENTVIEW_STATE_COMMAND;
+    // 連打時にいきなり処理に進まないよう、一瞬操作不能にする
+    this.cantOpCounter = 20;
+    return -1;
+}
+
+EventView.prototype.setFace = function(faceId) {
+    // UnitDefine.prototype.initNamePaintと重複してるが、こちらはモブキャラデータも含む
+    switch(faceId) {
+        case UNIT_SYURUI_NOFACE:arguments
+            this.px = -1;
+            this.py = -1;
+            this.pSyurui = -1;
+            break;
+        case UNIT_SYURUI_SWORD:arguments
+            this.px = 2 * 256;
+            this.py = 0 * 320;
+            this.pSyurui = BATTLE_PSYURUI_ZAKO;
+            break;
+        case UNIT_SYURUI_PRINCESS:arguments
+            this.px = 1 * 256;
+            this.py = 1 * 320;
+            this.pSyurui = BATTLE_PSYURUI_PC;
+            break;
+    }
+}
+
+EventView.prototype.setFieldColor = function(ctxFlip, fieldState, isFirst) {
+    var gladColor = (Math.floor(this.counter / 20)) % 6;
+    switch(fieldState) {
+    case EVENTVIEW_FIELD_MIKATA:arguments
+        if (isFirst) {
+            ctxFlip.strokeStyle = 'rgb(0, 0, 239)';
+        } else {
+            ctxFlip.strokeStyle = 'rgb(119, 119, 239)';
+            if (gladColor == 1 || gladColor == 5) {
+                ctxFlip.strokeStyle = 'rgb(149, 149, 239)';
+            }
+            if (gladColor == 2 || gladColor == 4) {
+                ctxFlip.strokeStyle = 'rgb(179, 179, 239)';
+            }
+            if (gladColor == 3) {
+                ctxFlip.strokeStyle = 'rgb(209, 209, 239)';
+            }
+        }
+        break;
+    case EVENTVIEW_FIELD_TEKI:arguments
+        if (isFirst) {
+            ctxFlip.strokeStyle = 'rgb(239, 0, 0)';
+        } else {
+            ctxFlip.strokeStyle = 'rgb(239, 119, 119)';
+            if (gladColor == 1 || gladColor == 5) {
+                ctxFlip.strokeStyle = 'rgb(239, 149, 149)';
+            }
+            if (gladColor == 2 || gladColor == 4) {
+                ctxFlip.strokeStyle = 'rgb(239, 179, 179)';
+            }
+            if (gladColor == 3) {
+                ctxFlip.strokeStyle = 'rgb(239, 209, 209)';
+            }
+        }
+        break;
+    case EVENTVIEW_FIELD_CHANGING:arguments
+        if (isFirst) {
+            ctxFlip.strokeStyle = 'rgb(0, 239, 0)';
+        } else {
+            ctxFlip.strokeStyle = 'rgb(119, 239, 119)';
+            if (gladColor == 1 || gladColor == 5) {
+                ctxFlip.strokeStyle = 'rgb(149, 239, 149)';
+            }
+            if (gladColor == 2 || gladColor == 4) {
+                ctxFlip.strokeStyle = 'rgb(179, 239, 179)';
+            }
+            if (gladColor == 3) {
+                ctxFlip.strokeStyle = 'rgb(209, 239, 209)';
+            }
+        }
+        break;
+    }
+}
