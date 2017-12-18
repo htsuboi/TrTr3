@@ -196,7 +196,7 @@ TitleView.prototype.paint = function () {
     ctx.putImageData(imageData, 0, 0);
 }
 
-TitleView.prototype.clk = function(mouseX, mouseY) {
+TitleView.prototype.clk = function(mouseX, mouseY, ev, ud, itemMap) {
     if (1 != this.checkCalc()) {
         // 演出を飛ばす
         for (;;) {
@@ -210,16 +210,22 @@ TitleView.prototype.clk = function(mouseX, mouseY) {
         mouseX <= TITLEVIEW_NEWGAME_X + TITLEVIEW_NEWGAME_WIDTH &&
         mouseY >= TITLEVIEW_NEWGAME_Y &&
         mouseY <= TITLEVIEW_NEWGAME_Y + TITLEVIEW_NEWGAME_HEIGHT) {
-        //return GAMEMODE_BATTLE;
+        // ゲーム新規開始
+        ev.init(EVENTVIEW_EVENTID_OP);
+        ud.length = 0;
+        itemMap.clear();
+        var tempItem = new ItemDefine();
+        for (var i = ITEM_TYPE_SWORD; i <= ITEM_TYPE_DOGU; i++) {
+            for (var j = 0; j < ITEM_SYURUI_MAX; j++) {
+                ItemDefine.init(i, j, tempItem);
+                itemMap.set(tempItem.namae, 0);
+            }
+        }
         return GAMEMODE_EVENT;
-        //SaveFileIO.loadFile();
-        //return -1;
     } else if (mouseX >= TITLEVIEW_CONTGAME_X && 
         mouseX <= TITLEVIEW_CONTGAME_X + TITLEVIEW_CONTGAME_WIDTH &&
         mouseY >= TITLEVIEW_CONTGAME_Y &&
         mouseY <= TITLEVIEW_CONTGAME_Y + TITLEVIEW_CONTGAME_HEIGHT){
         return GAMEMODE_GAMEOVER;
-        //SaveFileIO.saveFile();
-        //return -1;
     }
 }

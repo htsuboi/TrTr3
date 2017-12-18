@@ -95,7 +95,6 @@ GameOverView.prototype.calc = function() {
 }
 
 GameOverView.prototype.paint = function () {
-    
     var ctxFlip = CommonView.staticCanvasFlip().getContext('2d');
     ctxFlip.clearRect(0, 0, CommonView.staticCanvasFlip().width, CommonView.staticCanvasFlip().height);
     ctxFlip.fillStyle = 'rgb(15, 15, 15)';
@@ -140,7 +139,7 @@ GameOverView.prototype.paint = function () {
     }
     
     // (全画面共通)アナウンスメッセージ表示
-    TitleStar.paintMessage(ctxFlip);
+    CommonView.paintMessage(ctxFlip);
     
     var imageData = ctxFlip.getImageData(0, 0, CommonView.staticCanvasFlip().width, CommonView.staticCanvasFlip().height);
     var ctx = CommonView.staticCanvas().getContext('2d');
@@ -148,5 +147,8 @@ GameOverView.prototype.paint = function () {
 }
 
 GameOverView.prototype.clk = function(mouseX, mouseY) {
-    return GAMEMODE_TITLE;
+    if (TitleStar.titleCounter() >= this.ENDCOUNTER) {
+        return GAMEMODE_TITLE;
+    }
+    return -1;
 }

@@ -10,9 +10,6 @@ var itemMap = new Map();
 var gameMode = GAMEMODE_TITLE;//0:タイトル 1:ゲームオーバー
 var prevGameMode = GAMEMODE_GAMEOVER;
 tv.init();
-bv.init(0, true);
-ev.init();
-gov.init();
 /*var u = new UnitDefine();
 u.initCommon(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_KNIGHT, BATTLE_MIKATA, BATTLE_OFFENCE, 0, 20, SKILL_HIGHHIT, SKILL_SYONETSU, SKILL_KENJITSU);
 ud.push(u);
@@ -37,14 +34,7 @@ u6.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_KNIFE, BATTLE_TEKI, BATTLE_D
 ud.push(u6);*/
 
 //itemMap.set({eqType:ITEM_TYPE_SWORD, eqSyurui:ITEM_SYURUI_SWORD1}, {equipNum: 2, allNum:3});
-var tempItem = new ItemDefine();
-for (var i = ITEM_TYPE_SWORD; i <= ITEM_TYPE_DOGU; i++) {
-    for (var j = 0; j < ITEM_SYURUI_MAX; j++) {
-        ItemDefine.init(i, j, tempItem);
-        itemMap.set(tempItem.namae, 0);
-    }
-}
-ItemDefine.init(ITEM_TYPE_SWORD, 0, tempItem);
+/*ItemDefine.init(ITEM_TYPE_SWORD, 0, tempItem);
 itemMap.set(tempItem.namae, 1);
 ItemDefine.init(ITEM_TYPE_SWORD, 1, tempItem);
 itemMap.set(tempItem.namae, 3);
@@ -65,20 +55,21 @@ itemMap.set(tempItem.namae, 1);
 ItemDefine.init(ITEM_TYPE_DOGU, ITEM_SYURUI_JIAI, tempItem);
 itemMap.set(tempItem.namae, 1);
 ItemDefine.init(ITEM_TYPE_DOGU, ITEM_SYURUI_MUJIN, tempItem);
-itemMap.set(tempItem.namae, 1);
+itemMap.set(tempItem.namae, 1);*/
 
 var intervalId;
 intervalId = setInterval(calcAndPaint, 20);
 
 // calcはデータ計算のみ、paintは描画のみ
 function calcAndPaint() {
+    var next = {nextGameMode: -1};
     switch(gameMode) {
         case GAMEMODE_TITLE:arguments
             tv.calc();
             tv.paint();
             break;
         case GAMEMODE_BATTLE:arguments
-            bv.calc(ud, itemMap);
+            bv.calc(ud, itemMap, next, ev);
             bv.paint(ud, itemMap);
             break;
         case GAMEMODE_EVENT:arguments
@@ -90,6 +81,17 @@ function calcAndPaint() {
             gov.paint();
             break;
     }
+    if (next.nextGameMode >= 0) {
+        gameMode = next.nextGameMode;
+        switch(gameMode) {
+            case GAMEMODE_TITLE:arguments
+                tv.init();
+                break;
+            case GAMEMODE_GAMEOVER:arguments
+                gov.init();
+                break;
+        }
+    }
 }
 
 function clickPage(e) {
@@ -98,7 +100,7 @@ function clickPage(e) {
     var mouseY = e.pageY;
     switch(gameMode) {
         case GAMEMODE_TITLE:arguments
-            nextGameMode = tv.clk(mouseX, mouseY);
+            nextGameMode = tv.clk(mouseX, mouseY, ev, ud, itemMap);
             break;
         case GAMEMODE_BATTLE:arguments
             nextGameMode = bv.clk(mouseX, mouseY, ud, itemMap);
@@ -107,7 +109,7 @@ function clickPage(e) {
             nextGameMode = gov.clk(mouseX, mouseY);
             break;
         case GAMEMODE_EVENT:arguments
-            nextGameMode = ev.clk(mouseX, mouseY, ud, bv);
+            nextGameMode = ev.clk(mouseX, mouseY, bv, ud, itemMap);
             break;
     }
     if (nextGameMode >= 0) {
@@ -116,13 +118,11 @@ function clickPage(e) {
             case GAMEMODE_TITLE:arguments
                 tv.init();
                 break;
-            case GAMEMODE_BATTLE:arguments
-                break;
             case GAMEMODE_GAMEOVER:arguments
                 gov.init();
                 break;
             case GAMEMODE_EVENT:arguments
-                ev.init();
+                //ev.init(EVENTVIEW_EVENTID_OP);
                 break;
         }
     }

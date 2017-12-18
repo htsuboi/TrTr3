@@ -24,23 +24,24 @@ var EventView = function() {
     this.fieldMap = new Map();
 };
 
-EventView.prototype.init = function () {
+EventView.prototype.init = function (eventID) {
     this.counter = 0;
-    this.state = EVENTVIEW_STATE_EVENT;
-    //this.state = EVENTVIEW_STATE_COMMAND;
-    this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
-    this.tempBuySellType = ITEM_TYPE_SWORD;// 売買時、どの武器を表示するか
-    this.tempBuySellSyurui = 0;
-    this.tempBuySellNum = 1;
-    this.tempProcMap = -1;
-    this.tempSaveNum = 1;//何番にセーブするか
+    if (eventID >= 0) {
+        this.state = EVENTVIEW_STATE_EVENT;
+        this.eventID = eventID;// 現在のイベント
+        EventMessage.getMessage(eventID, this.message);
+    } else {
+        this.state = EVENTVIEW_STATE_COMMAND;
+        this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
+        this.tempBuySellType = ITEM_TYPE_SWORD;// 売買時、どの武器を表示するか
+        this.tempBuySellSyurui = 0;
+        this.tempBuySellNum = 1;
+        this.tempProcMap = -1;
+        this.tempSaveNum = 1;//何番にセーブするか
+        this.message = [];
+    }
     this.cantOpCounter = 0;
-    this.message = [];
-    EventMessage.getMessage(EVENTVIEW_EVENTID_OP, this.message);
     this.printMsg = ["", "", "", "", "", "", ""];// 現在イベントビューに出すべき文字列
-    this.money = 0;// 「所持金」データはここに保持
-    this.turn = 0;
-    this.eventID = EVENTVIEW_EVENTID_OP;// 現在のイベント
     this.px = -1;//イベント用の顔グラの場所(-1は「表示しない」)
     this.py = -1;//イベント用の顔グラの場所(-1は「表示しない」)
     this.pSyurui = -1;//イベント用の顔グラの場所(-1は「表示しない」)
@@ -408,7 +409,7 @@ EventView.prototype.paint = function(ud, itemMap) {
     ctx.putImageData(imageData, 0, 0);
 }
 
-EventView.prototype.clk = function(mouseX, mouseY, ud, bv) {
+EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
     if (CommonView.printWarnFlag() == true) {
         // 警告表示時はそれを消す
         CommonView.printWarnFlag(false);
@@ -422,7 +423,7 @@ EventView.prototype.clk = function(mouseX, mouseY, ud, bv) {
     
     if (this.state == EVENTVIEW_STATE_EVENT) {
         if (this.message.length == 0) {
-            var ret = this.endEvent(ud, bv);
+            var ret = this.endEvent(ud, bv, itemMap);
             return ret;
         } else {
             // 取り出す文章あり
@@ -432,7 +433,7 @@ EventView.prototype.clk = function(mouseX, mouseY, ud, bv) {
                 while(this.message.length > 0) {
                     this.printOneMsg();
                 }
-                var ret = this.endEvent(ud, bv);
+                var ret = this.endEvent(ud, bv, itemMap);
                 return ret;
             } else {
                 var isAddMsg = this.printOneMsg();
@@ -698,7 +699,7 @@ EventView.prototype.printOneMsg = function() {
 }
 
 // 戻り値は「別の画面に遷移」を意味
-EventView.prototype.endEvent = function(ud, bv) {
+EventView.prototype.endEvent = function(ud, bv, itemMap) {
     switch(this.eventID) {
         case EVENTVIEW_EVENTID_OP:arguments
             bv.init(0, true);
@@ -707,7 +708,16 @@ EventView.prototype.endEvent = function(ud, bv) {
             ud.push(u);
             tempField = this.fieldMap.get(0);
             tempField.createEnemy(ud);
+            
+            var tempItem = new ItemDefine();
+            ItemDefine.init(ITEM_TYPE_SWORD, 0, tempItem);
+            itemMap.set(tempItem.namae, 1);
+            ItemDefine.init(ITEM_TYPE_WATER, 0, tempItem);
+            itemMap.set(tempItem.namae, 1);
             return GAMEMODE_BATTLE;
+            break;
+        case EVENTVIEW_EVENTID_OP_LOSE:arguments
+            return GAMEMODE_GAMEOVER;
             break;
     }
     // イベント終了

@@ -78,7 +78,7 @@ EventMessage.getMessage = function(eventNum, message) {
             message.push("　");
             message.push("　かわりに、" + UNIT_NAMAE_PRINCESS + "は後ろに一つの気配を感じた。");
             message.push("敵意、害意…いや、殺気!");
-            message.push("剣術と魔法で鍛えた身のこなしで");
+            message.push("武術と魔法で鍛えた身のこなしで");
             message.push("振り向き、身構える。");
             message.push("#" + UNIT_SYURUI_SWORD);
             message.push("@" + EVENTVIEW_EVENTFONT_KAIWA);
@@ -149,6 +149,49 @@ EventMessage.getMessage = function(eventNum, message) {
             message.push("@" + EVENTVIEW_EVENTFONT_KAIWA);
             message.push("【" + UNIT_NAMAE_PRINCESS + "】");
             message.push("「くっ…暴力には、負けません!」");
+            break;
+        case EVENTVIEW_EVENTID_OP_LOSE:arguments
+            message.push("#" + UNIT_SYURUI_NOFACE);
+            message.push("@" + EVENTVIEW_EVENTFONT_NORMAL);
+            message.push("　" + UNIT_NAMAE_PRINCESS + "は力なく、前に崩れ落ちる。");
+            message.push("#" + UNIT_SYURUI_SWORD);
+            message.push("@" + EVENTVIEW_EVENTFONT_KAIWA);
+            message.push("【男】");
+            message.push("「まったくよ、最初からおとなしくしてれば");
+            message.push("痛い目にあわずに済んだのによ。」");
+            message.push("#" + UNIT_SYURUI_NOFACE);
+            message.push("@" + EVENTVIEW_EVENTFONT_NORMAL);
+            message.push("男はそう言いながら、うつぶせに倒れている");
+            message.push(UNIT_NAMAE_PRINCESS + "の脇腹を蹴った。");
+            message.push("その腕も、足も、背中も血に赤く染まっている。");
+            message.push("#" + UNIT_SYURUI_SWORD);
+            message.push("@" + EVENTVIEW_EVENTFONT_KAIWA);
+            message.push("【男】");
+            message.push("「今から貼りなおせと言っても");
+            message.push("貼りなおせる体じゃねえな。");
+            message.push("まあ、特別に俺様が明日貼りなおしてやる。");
+            message.push("あばよ。お姫様。」");
+            message.push("#" + UNIT_SYURUI_NOFACE);
+            message.push("@" + EVENTVIEW_EVENTFONT_NORMAL);
+            message.push("男は去っていく。");
+            message.push("#" + UNIT_SYURUI_PRINCESS);
+            message.push("@" + EVENTVIEW_EVENTFONT_KAIWA);
+            message.push("【" + UNIT_NAMAE_PRINCESS + "】");
+            message.push("「ウッ、ウゥ…。」");
+            message.push("#" + UNIT_SYURUI_NOFACE);
+            message.push("@" + EVENTVIEW_EVENTFONT_NORMAL);
+            message.push(UNIT_NAMAE_PRINCESS + "は顔を地面に埋めたまま");
+            message.push("静かに肩をふるわせ、泣き続けた。");
+            message.push("　");
+            message.push("　それから数日後、" + UNIT_NAMAE_PRINCESS + "は王室管理課を通じて");
+            message.push("王族の地位返上を申し出た。");
+            message.push("ごく一部の歴史を重んじる者は惜しんだものの");
+            message.push("大きな障害はなく彼女は平民となることが認められた。");
+            message.push("こうして、王族が一人もいなくなったことにより");
+            message.push(EVENTVIEW_COUNTRY + "の王制は、廃止されたのである。");
+            message.push("王女でなくなった" + UNIT_NAMAE_PRINCESS + "がこれから");
+            message.push("どのような人生を歩むのか。");
+            message.push("それは、まだ誰にもわからない。");
             break;
     }
 }

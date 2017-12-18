@@ -354,8 +354,8 @@ UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofO
             this.hitObj = {now:97, amari:0, up:34, upup:21, upupup:25};
             this.avoObj = {now:15, amari:0, up:23, upup:16, upupup:20};
             this.weaps[ITEM_TYPE_SWORD] = 27;
-            this.weaps[ITEM_TYPE_WATER] = 32;
-            this.weaps[ITEM_TYPE_WIND] = 14;
+            this.weaps[ITEM_TYPE_SPEAR] = 13;
+            this.weaps[ITEM_TYPE_WATER] = 34;
         break;
         case UNIT_SYURUI_KNIGHT:arguments
             this.msp = 22;
@@ -377,7 +377,7 @@ UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofO
             this.hitObj = {now:100, amari:0, up:38, upup:9, upupup:16};
             this.avoObj = {now:11, amari:0, up:19, upup:22, upupup:13};
             this.weaps[ITEM_TYPE_SWORD] = 21;
-            this.weaps[ITEM_TYPE_SPEAR] = 24;
+            this.weaps[ITEM_TYPE_SPEAR] = 30;
             this.weaps[ITEM_TYPE_SHIELD] = 20;
         break;
         case UNIT_SYURUI_MUSCLE:arguments
