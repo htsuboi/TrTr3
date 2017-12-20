@@ -130,6 +130,11 @@ BattleView.prototype.initAct = function () {
 };
 
 BattleView.prototype.calc = function(ud, itemMap, next, ev) {
+    if (CommonView.printTutorialFlag() == true) {
+        // チュートリアル表示中はなにもせず画面を固める
+        return;
+    }
+    
     // SPゲージ見た目を実際に近づける
     for (var i = 0; i <= 1; i++) {
         var diffSP = this.spGaugePaint[i] - this.spGauge[i];
@@ -149,8 +154,14 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
         this.cantOpCounter--;
     } else {
         if (unitAtFocus != null) {
+            // originUnitYは「移動演出中の移動元座標」にしか使用しないので、使用後は移動先にあわせる
             this.originalUnitY = unitAtFocus.y;
         }
+    }
+    
+    if (this.turn == BATTLEVIEW_TURN_SKILLSELECT && this.cantOpCounter == 1) {
+        this.turn = BATTLEVIEW_TURN_MIKATA;
+        this.initTurn(ud);
     }
     
     if ((this.turn == BATTLEVIEW_TURN_MIKATA && this.commandState == BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE || 
@@ -507,6 +518,7 @@ BattleView.prototype.paint = function (ud, itemMap) {
                 ctxFlip.stroke();
             }
         }
+        // ここまで背景演出
         ctxFlip.strokeStyle = 'rgb(0, 0, 0)';
         ctxFlip.lineWidth = 1;
         // フィールド描画
@@ -1071,6 +1083,73 @@ BattleView.prototype.paint = function (ud, itemMap) {
                 ctxFlip.fillText(commandTxt, txtX, txtY + 20);
             }
         }
+        // 戦闘開始時演出
+        if (this.turn == BATTLEVIEW_TURN_SKILLSELECT && this.cantOpCounter > 0) {
+            var left = 0;
+            var right = CommonView.staticCanvasFlip().width;
+            var centerX = Math.floor((left + right) / 2);
+            var centerY = Math.floor(CommonView.staticCanvasFlip().height / 2);
+            var top = centerY - 60;
+            var bottom = centerY + 60;
+            if (this.cantOpCounter > 40) {
+                var len = Math.min((BATTLEVIEW_FIRSTTURN_COUNTER - this.cantOpCounter) / (BATTLEVIEW_FIRSTTURN_COUNTER - 60), 1);
+                
+                ctxFlip.strokeStyle = 'rgb(0, 0, 255)';
+                ctxFlip.lineWidth = 5;
+                if (this.cantOpCounter < BATTLEVIEW_FIRSTTURN_COUNTER / 1.2) {
+                    ctxFlip.strokeStyle = 'rgb(63, 127, 255)';
+                    ctxFlip.lineWidth = 10;
+                }
+                if (this.cantOpCounter < BATTLEVIEW_FIRSTTURN_COUNTER / 1.4) {
+                    ctxFlip.strokeStyle = 'rgb(127, 191, 255)';
+                    ctxFlip.lineWidth = 20;
+                }
+                ctxFlip.beginPath();
+                ctxFlip.moveTo(left, bottom);
+                var destX = left + len * (centerX - left);
+                var destY = bottom + len * (centerY - bottom);
+                ctxFlip.lineTo(destX, destY);
+                ctxFlip.closePath();
+                ctxFlip.stroke();
+                
+                ctxFlip.strokeStyle = 'rgb(255, 0, 0)';
+                ctxFlip.lineWidth = 5;
+                if (this.cantOpCounter < BATTLEVIEW_FIRSTTURN_COUNTER / 1.2) {
+                    ctxFlip.strokeStyle = 'rgb(255, 127, 63)';
+                    ctxFlip.lineWidth = 10;
+                }
+                if (this.cantOpCounter < BATTLEVIEW_FIRSTTURN_COUNTER / 1.4) {
+                    ctxFlip.strokeStyle = 'rgb(255, 191, 127)';
+                    ctxFlip.lineWidth = 20;
+                }
+                ctxFlip.beginPath();
+                ctxFlip.moveTo(right, top);
+                var destX = right - len * (right - centerX);
+                var destY = top - len * (top - centerY);
+                ctxFlip.lineTo(destX, destY);
+                ctxFlip.closePath();
+                ctxFlip.stroke();
+            } else {
+                var circleNum = 10;
+                var r = 3 + Math.floor(this.cantOpCounter / 2);
+                for (var i = 0; i < circleNum; i++) {
+                    if (Math.abs(circleNum / 2 - i) < (40 - this.cantOpCounter) / 10) {
+                        continue;
+                    }
+                    ctxFlip.beginPath();
+                    if (i < circleNum / 2) {
+                        ctxFlip.fillStyle = 'rgb(127, 191, 255)';
+                    } else {
+                        ctxFlip.fillStyle = 'rgb(255, 191, 127)';
+                    }
+                    ctxFlip.lineWidth = Math.floor(r / 2);
+                    var circleX = Math.floor((left * (circleNum - i) + right * i) / circleNum);
+                    var circleY = Math.floor((bottom * (circleNum - i) + top * i) / circleNum);
+                    ctxFlip.arc(circleX, circleY, r, 0, 2 * Math.PI, false);
+                    ctxFlip.fill();
+                }
+            }
+        }
     }
     
     // (全画面共通)アナウンスメッセージ表示
@@ -1414,15 +1493,16 @@ BattleView.prototype.shibouUnit = function(deadU, ud) {
 };
 
 BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
-
-    if (CommonView.printWarnFlag() == true) {
-        // 警告表示時はそれを消す
-        CommonView.printWarnFlag(false);
-        return -1;
-    }
     
     //演出中
     if (this.cantOpCounter > 0) {
+        return -1;
+    }
+    
+    if (mouseX >= ALLVIEW_TUTORIALFLAG_X && mouseX <= ALLVIEW_TUTORIALFLAG_X + ALLVIEW_TUTORIALFLAG_W &&
+        mouseY >= ALLVIEW_TUTORIALFLAG_Y && mouseY <=ALLVIEW_TUTORIALFLAG_Y + ALLVIEW_TUTORIALFLAG_H) {
+        // (全画面共通)初回チュートリアル表示非表示の切り替え
+        CommonView.shouldTutorialFlag(!CommonView.shouldTutorialFlag());
         return -1;
     }
     
@@ -1437,7 +1517,6 @@ BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
     if (this.infoUnit != null && mouseX >= BATTLEVIEW_UNITTXT_X && mouseX <= BATTLEVIEW_UNITTXT_X + BATTLEVIEW_UNITTXT_W
         && mouseY >= BATTLEVIEW_UNITTXT_Y && mouseY <= BATTLEVIEW_UNITTXT_Y + BATTLEVIEW_UNITTXT_H) {
         var mouseYIndex = Math.floor((mouseY - (BATTLEVIEW_UNITTXT_Y + 25)) / BATTLEVIEW_UNITTXT_YINTERVAL);
-        //CommonView.addMessage("mouse:" + mouseYIndex, 60);
         // mouseYIndex:19～21にスキル説明が来ているのは完全に現在のステータス画面実装依存
         if (19 <= mouseYIndex && mouseYIndex <= 21) {
             this.battleMsg = ["", "", "", ""];
@@ -1744,8 +1823,9 @@ BattleView.prototype.decide = function(mouseX, mouseY, ud, itemMap) {
                 }
             }
         }
-        this.turn = BATTLEVIEW_TURN_MIKATA;
-        this.initTurn(ud);
+        /*this.turn = BATTLEVIEW_TURN_MIKATA;
+        this.initTurn(ud);*/
+        this.cantOpCounter = BATTLEVIEW_FIRSTTURN_COUNTER;
         return -1;
     } else if (this.turn == BATTLEVIEW_TURN_MIKATA && this.commandState == BATTLEVIEW_COMSTATE_ACT_WEAPCHOICE) {
         if (this.tempEqTypeForPaint == ITEM_TYPE_TEMOCHI) {

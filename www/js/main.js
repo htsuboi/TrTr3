@@ -98,6 +98,18 @@ function clickPage(e) {
     var nextGameMode = -1;
     var mouseX = e.pageX;
     var mouseY = e.pageY;
+    //(全画面共通)
+    if (CommonView.printTutorialFlag() == true) {
+        // チュートリアル表示時はそれを消す
+        CommonView.printTutorialFlag(false);
+        return -1;
+    }
+    
+    if (CommonView.printWarnFlag() == true) {
+        // 警告表示時はそれを消す
+        CommonView.printWarnFlag(false);
+        return -1;
+    }
     switch(gameMode) {
         case GAMEMODE_TITLE:arguments
             nextGameMode = tv.clk(mouseX, mouseY, ev, ud, itemMap);

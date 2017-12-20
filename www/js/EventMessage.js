@@ -32,7 +32,7 @@ EventMessage.getMessage = function(eventNum, message) {
             message.push("すっかり遅くなってしまいました。");
             message.push("ですが、今からでもやるしかありません。");
             message.push("それが王女のつとめ…。");
-            message.push("今の私の唯一の、王女の証なのですから。)");
+            message.push("今の私が持つ、唯一の王女の証なのですから。)");
             message.push("#" + UNIT_SYURUI_NOFACE);
             message.push("@" + EVENTVIEW_EVENTFONT_NORMAL);
             message.push("　公園の中央にある掲示板。");
@@ -82,7 +82,7 @@ EventMessage.getMessage = function(eventNum, message) {
             message.push("振り向き、身構える。");
             message.push("#" + UNIT_SYURUI_SWORD);
             message.push("@" + EVENTVIEW_EVENTFONT_KAIWA);
-            message.push("【男】");
+            message.push("【剣を持った男】");
             message.push("「なーにやってんだ、てめぇ!");
             message.push("俺達が苦労して貼ったのを、全部剥がすとはよ。」");
             message.push("#" + UNIT_SYURUI_NOFACE);
@@ -96,7 +96,7 @@ EventMessage.getMessage = function(eventNum, message) {
             message.push("政治色を含んだものは、禁止の決まりです!」");
             message.push("#" + UNIT_SYURUI_SWORD);
             message.push("@" + EVENTVIEW_EVENTFONT_KAIWA);
-            message.push("【男】");
+            message.push("【剣を持った男】");
             message.push("「なるほどな。");
             message.push("じゃ、何でてめえは");
             message.push(EVENTVIEW_SOSHIKI + "のポスターだけ剥がすんだ?");
@@ -106,7 +106,7 @@ EventMessage.getMessage = function(eventNum, message) {
             message.push("答えられない" + UNIT_NAMAE_PRINCESS + "。");
             message.push("#" + UNIT_SYURUI_SWORD);
             message.push("@" + EVENTVIEW_EVENTFONT_KAIWA);
-            message.push("【男】");
+            message.push("【剣を持った男】");
             message.push("「まあ、黙るしかねえよな。");
             message.push("悪いがこっちは全部調べてんだ。");
             message.push("おめぇが王女様ってことも、");
@@ -117,7 +117,7 @@ EventMessage.getMessage = function(eventNum, message) {
             message.push(UNIT_NAMAE_PRINCESS + "の視線が、わずかにうつむく。");
             message.push("#" + UNIT_SYURUI_SWORD);
             message.push("@" + EVENTVIEW_EVENTFONT_KAIWA);
-            message.push("【男】");
+            message.push("【剣を持った男】");
             message.push("「まあいい、俺も手荒なことは");
             message.push("できればしたくねえ。");
             message.push("今夜剥がしたポスターを元通りにして");
@@ -141,7 +141,7 @@ EventMessage.getMessage = function(eventNum, message) {
             message.push("それを見た" + UNIT_NAMAE_PRINCESS + "も、勇気を奮い起こして構える。");
             message.push("#" + UNIT_SYURUI_SWORD);
             message.push("@" + EVENTVIEW_EVENTFONT_KAIWA);
-            message.push("【男】");
+            message.push("【剣を持った男】");
             message.push("「あんな連中に義理立てする理由が");
             message.push("俺にはわからんが…。");
             message.push("そういうことなら、痛い目にあってもらうぜ!」");
@@ -156,7 +156,7 @@ EventMessage.getMessage = function(eventNum, message) {
             message.push("　" + UNIT_NAMAE_PRINCESS + "は力なく、前に崩れ落ちる。");
             message.push("#" + UNIT_SYURUI_SWORD);
             message.push("@" + EVENTVIEW_EVENTFONT_KAIWA);
-            message.push("【男】");
+            message.push("【剣を持った男】");
             message.push("「まったくよ、最初からおとなしくしてれば");
             message.push("痛い目にあわずに済んだのによ。」");
             message.push("#" + UNIT_SYURUI_NOFACE);
@@ -166,10 +166,8 @@ EventMessage.getMessage = function(eventNum, message) {
             message.push("その腕も、足も、背中も血に赤く染まっている。");
             message.push("#" + UNIT_SYURUI_SWORD);
             message.push("@" + EVENTVIEW_EVENTFONT_KAIWA);
-            message.push("【男】");
-            message.push("「今から貼りなおせと言っても");
-            message.push("貼りなおせる体じゃねえな。");
-            message.push("まあ、特別に俺様が明日貼りなおしてやる。");
+            message.push("【剣を持った男】");
+            message.push("「今から貼りなおせと言うのは勘弁してやる。")
             message.push("あばよ。お姫様。」");
             message.push("#" + UNIT_SYURUI_NOFACE);
             message.push("@" + EVENTVIEW_EVENTFONT_NORMAL);
@@ -191,7 +189,16 @@ EventMessage.getMessage = function(eventNum, message) {
             message.push(EVENTVIEW_COUNTRY + "の王制は、廃止されたのである。");
             message.push("王女でなくなった" + UNIT_NAMAE_PRINCESS + "がこれから");
             message.push("どのような人生を歩むのか。");
-            message.push("それは、まだ誰にもわからない。");
+            message.push("それは、誰にもわからない。");
+            break;
+        case EVENTVIEW_EVENTID_OP_WIN:arguments
+            message.push("#" + UNIT_SYURUI_PRINCESS);
+            message.push("@" + EVENTVIEW_EVENTFONT_KAIWA);
+            message.push("【" + UNIT_NAMAE_PRINCESS + "】");
+            message.push("「勝ちです。私の…勝ちです!」");
+            message.push("#" + UNIT_SYURUI_NOFACE);
+            message.push("@" + EVENTVIEW_EVENTFONT_NORMAL);
+            message.push("緊張と少しの興奮を含んだ、" + UNIT_NAMAE_PRINCESS + "の声が響く。");
             break;
     }
 }

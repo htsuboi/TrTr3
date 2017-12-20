@@ -221,6 +221,10 @@ TitleView.prototype.clk = function(mouseX, mouseY, ev, ud, itemMap) {
                 itemMap.set(tempItem.namae, 0);
             }
         }
+        if (CommonView.addTutorial(COMMONVIEW_TUTORIALID_GSTART, true)) {
+            // チュートリアル初回表示時は、なにもせずリターン
+            return -1;   
+        }
         return GAMEMODE_EVENT;
     } else if (mouseX >= TITLEVIEW_CONTGAME_X && 
         mouseX <= TITLEVIEW_CONTGAME_X + TITLEVIEW_CONTGAME_WIDTH &&

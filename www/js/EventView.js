@@ -12,7 +12,7 @@ var EventView = function() {
     this.cantOpCounter = 0;
     this.message = new Array();// 今回のイベントの全メッセージを格納(表示される毎に無くなっていく)
     this.printMsg = ["", "", "", "", "", "", ""];// 現在イベントビューに出すべき文字列
-    this.money = 0;// 「所持金」データはここに保持
+    this.money = 400;// 「所持金」データはここに保持
     this.turn = 0;// 「ターン」データはここに保持
     this.eventID = -1;// 現在のイベント
     this.px = -1;//イベント用の顔グラの場所(-1は「表示しない」)
@@ -34,7 +34,7 @@ EventView.prototype.init = function (eventID) {
         this.state = EVENTVIEW_STATE_COMMAND;
         this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
         this.tempBuySellType = ITEM_TYPE_SWORD;// 売買時、どの武器を表示するか
-        this.tempBuySellSyurui = 0;
+        this.tempBuySellSyurui = -1;
         this.tempBuySellNum = 1;
         this.tempProcMap = -1;
         this.tempSaveNum = 1;//何番にセーブするか
@@ -57,6 +57,11 @@ EventView.prototype.init = function (eventID) {
 }
 
 EventView.prototype.calc = function(ud, itemMap) {
+    if (CommonView.printTutorialFlag() == true) {
+        // チュートリアル表示中はなにもせず画面を固める
+        return;
+    }
+    
     this.counter++;
     if (this.counter > this.MAXCOUNTER) {
         this.counter = this.ENDCOUNTER;
@@ -136,6 +141,31 @@ EventView.prototype.paint = function(ud, itemMap) {
             ctxFlip.drawImage(UnitDefine.getCharaImg(this.pSyurui), this.px, this.py, 256, 320, EVENTVIEW_UNITPAINT_X, EVENTVIEW_UNITPAINT_Y, EVENTVIEW_UNITPAINT_W, EVENTVIEW_UNITPAINT_H);
         }
     }
+    
+    if (this.shouldDecideCancel()) {
+        // コマンド表示
+        for (var i = 0; i <= 1; i++) {
+            ctxFlip.fillStyle = getGladColorRed((this.MAXCOUNTER - this.counter) / 3);
+            var txtX = EVENTVIEW_COMMANDTXT_X;
+            var txtY = EVENTVIEW_COMMANDTXT_Y + i * EVENTVIEW_COMMANDINTERVAL;
+            ctxFlip.fillRect(txtX - 1, txtY - 1, EVENTVIEW_COMMANDTXT_W + 3, EVENTVIEW_COMMANDTXT_H + 3);
+            ctxFlip.fillStyle = 'rgb(255, 255, 255)';
+            ctxFlip.fillRect(txtX, txtY, EVENTVIEW_COMMANDTXT_W, EVENTVIEW_COMMANDTXT_H);
+            ctxFlip.fillStyle = 'rgb(0, 0, 0)';
+            ctxFlip.font = "16px 'MS Pゴシック'";
+            var commandTxt = "";
+            switch(i) {
+            case 0:arguments
+                commandTxt = "決定";
+                break;
+            case 1:arguments
+                commandTxt = "戻る";
+                break;
+            }
+            ctxFlip.fillText(commandTxt, txtX, txtY + 20);
+        }
+    }
+    
     if (this.state == EVENTVIEW_STATE_COMMAND) {
         ctxFlip.fillStyle = 'rgb(191, 63, 191)';
         ctxFlip.fillRect(EVENTVIEW_COMMAND_X - 3, EVENTVIEW_COMMAND_Y - 5, (EVENTVIEW_COMMAND_W + EVENTVIEW_COMMAND_DIST) * 7 + 10, EVENTVIEW_COMMAND_H + 10);
@@ -351,9 +381,11 @@ EventView.prototype.paint = function(ud, itemMap) {
     //メッセージウィンドウの表示
     ctxFlip.fillStyle = 'rgb(15, 15, 15)';
     var textMargin = 2 + Math.floor((this.counter % 50 - 25) / 10);
-    ctxFlip.fillRect(EVENTVIEW_TEXT_X - textMargin, EVENTVIEW_TEXT_Y - textMargin, EVENTVIEW_TEXT_W + 2 * textMargin, EVENTVIEW_TEXT_H + 2 * textMargin);
+    var textX = (this.state == EVENTVIEW_STATE_COMMAND ? EVENTVIEW_TEXT_X : EVENTVIEW_TEXT_X_EVENT);
+    var textW = (this.state == EVENTVIEW_STATE_COMMAND ? EVENTVIEW_TEXT_W : EVENTVIEW_TEXT_W_EVENT);    
+    ctxFlip.fillRect(textX - textMargin, EVENTVIEW_TEXT_Y - textMargin, textW + 2 * textMargin, EVENTVIEW_TEXT_H + 2 * textMargin);
     ctxFlip.fillStyle = 'rgb(255, 255, 255)';
-    ctxFlip.fillRect(EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y, EVENTVIEW_TEXT_W, EVENTVIEW_TEXT_H);
+    ctxFlip.fillRect(textX, EVENTVIEW_TEXT_Y, textW, EVENTVIEW_TEXT_H);
     if (this.state == EVENTVIEW_STATE_EVENT) {
         ctxFlip.font = "14px 'MS Pゴシック'";
         for (var i = 0; i < EVENTVIEW_EVENT_MSGNUM; i++) {
@@ -362,7 +394,7 @@ EventView.prototype.paint = function(ud, itemMap) {
                 ctxFlip.fillStyle = 'rgb(0, 127, 0)';
             }
             var interval = 25;
-            ctxFlip.fillText(this.printMsg[i], EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 18 + interval * i);
+            ctxFlip.fillText(this.printMsg[i], textX, EVENTVIEW_TEXT_Y + 18 + interval * i);
         }
     }
     if (this.state == EVENTVIEW_STATE_COMMAND) {
@@ -410,16 +442,36 @@ EventView.prototype.paint = function(ud, itemMap) {
 }
 
 EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
-    if (CommonView.printWarnFlag() == true) {
-        // 警告表示時はそれを消す
-        CommonView.printWarnFlag(false);
-        return -1;
-    }
-    
     //演出中
     if (this.cantOpCounter > 0) {
         return -1;
     }
+    
+    if (mouseX >= ALLVIEW_TUTORIALFLAG_X && mouseX <= ALLVIEW_TUTORIALFLAG_X + ALLVIEW_TUTORIALFLAG_W &&
+        mouseY >= ALLVIEW_TUTORIALFLAG_Y && mouseY <=ALLVIEW_TUTORIALFLAG_Y + ALLVIEW_TUTORIALFLAG_H) {
+        // (全画面共通)初回チュートリアル表示非表示の切り替え
+        CommonView.shouldTutorialFlag(!CommonView.shouldTutorialFlag());
+        return -1;
+    }
+    
+    // 決定、戻るボタンを押す
+    if (this.shouldDecideCancel() && mouseX >= EVENTVIEW_COMMANDTXT_X && mouseX <= EVENTVIEW_COMMANDTXT_X + EVENTVIEW_COMMANDTXT_W) {
+        var commandNum = Math.floor((mouseY - EVENTVIEW_COMMANDTXT_Y) / EVENTVIEW_COMMANDINTERVAL);
+        switch(commandNum) {
+            case 0:arguments//次へ
+                this.decide(mouseX, mouseY, bv, ud, itemMap);
+                return -1;
+            break;
+            case 1:arguments//戻る
+                this.cancel(mouseX, mouseY, bv, ud, itemMap);
+                return -1;
+            break;
+            default:arguments
+                // なにもせず先に進む
+            break;
+        }
+    }
+            
     
     if (this.state == EVENTVIEW_STATE_EVENT) {
         if (this.message.length == 0) {
@@ -450,17 +502,12 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
     
     if (this.state == EVENTVIEW_STATE_COMMAND) {
         // 全体コマンド選択
-        if (mouseY >= EVENTVIEW_COMMAND_Y && mouseY <= EVENTVIEW_COMMAND_Y + EVENTVIEW_COMMAND_H) {
+        if (this.comState == EVENTVIEW_COMSTATE_PRECHOICE && mouseY >= EVENTVIEW_COMMAND_Y && mouseY <= EVENTVIEW_COMMAND_Y + EVENTVIEW_COMMAND_H) {
             var commandNum = Math.floor((mouseX - EVENTVIEW_COMMAND_X) / (EVENTVIEW_COMMAND_W + EVENTVIEW_COMMAND_DIST));
             var isSelectable = this.isSelected(ud, commandNum);
-            if (isSelectable == 0) {
-                // 選択不能をクリック→最初の選択に戻す
-                this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
-                return -1;
-            } else {
+            if (isSelectable == 1) {
                 switch(commandNum) {
                     case EVENTVIEW_COMMANDNUM_PROC:arguments
-                        this.tempBuySellNum = 1;
                         this.cantOpCounter = EVENTVIEW_PROC_MAXCOUNTER;
                         this.comState = EVENTVIEW_COMSTATE_PROC_MAPCHOICE;
                     break;
@@ -477,12 +524,12 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                         this.comState = EVENTVIEW_COMSTATE_SELL_WEAPCHOICE;
                     break;
                     case EVENTVIEW_COMMANDNUM_SAVE:arguments
+                        this.tempSaveNum = -1;
                         this.comState = EVENTVIEW_COMSTATE_SAVE_FILECHOICE;
-                        //SaveFileIO.saveFile(2, this, itemMap);
                     break;
                     case EVENTVIEW_COMMANDNUM_LOAD:arguments
+                        this.tempSaveNum = -1;
                         this.comState = EVENTVIEW_COMSTATE_LOAD_FILECHOICE;
-                        //SaveFileIO.loadFile(2, this, itemMap);
                     break;
                     default:arguments
                         // ボタンのない場所をクリックした場合ここ
@@ -541,20 +588,7 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                             CommonView.addWarn("所持数は" + (this.tempBuySellType == ITEM_TYPE_DOGU ? 1 : 7) + "個までです。");
                             return -1;
                         } else {
-                            var tempItem = new ItemDefine();
-                            ItemDefine.init(this.tempBuySellType, this.tempBuySellSyurui, tempItem);
-                            var needPrice = tempItem.price * this.tempBuySellNum;
-                            if (this.money < needPrice) {
-                                CommonView.addWarn("所持金が足りません。");
-                                return -1;
-                            }
-                            // 残った所持数
-                            var tempItemNum = itemMap.get(tempItem.namae);
-                            itemMap.set(tempItem.namae, tempItemNum + this.tempBuySellNum);
-                            this.tempBuySellSyurui = ItemDefine.getReverseItemIndexForBuy(itemMap, this.tempBuySellType, 0);
-                            this.money -= needPrice;
-                            this.tempBuySellNum = 1;
-                            CommonView.addWarn("購入しました。");
+                            this.tempBuySellNum = x + 1;
                             return -1;
                         }
                     } else {
@@ -563,21 +597,8 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                             CommonView.addWarn("所持数より多く売却できません。");
                             return -1;
                         } else {
-                            if (this.tempBuySellNum == x + 1) {
-                                var tempItem = new ItemDefine();
-                                ItemDefine.init(this.tempBuySellType, this.tempBuySellSyurui, tempItem);
-                                // 残った所持数
-                                var tempItemNum = itemMap.get(tempItem.namae);
-                                itemMap.set(tempItem.namae, tempItemNum - this.tempBuySellNum);
-                                this.tempBuySellSyurui = ItemDefine.getReverseItemIndex(itemMap, this.tempBuySellType, 0);
-                                this.money += Math.floor(EVENTVIEW_SELL_RATE * tempItem.price * this.tempBuySellNum);
-                                this.tempBuySellNum = 1;
-                                CommonView.addWarn("売却しました。");
-                                return -1;
-                            } else {
-                                this.tempBuySellNum = x + 1;
-                                return -1;
-                            }
+                            this.tempBuySellNum = x + 1;
+                            return -1;
                         }
                     }
                 }
@@ -585,7 +606,6 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
         }
         if (this.comState == EVENTVIEW_COMSTATE_SAVE_FILECHOICE || this.comState == EVENTVIEW_COMSTATE_LOAD_FILECHOICE) {
             var x = Math.floor((mouseX - EVENTVIEW_COMMAND_X) / (EVENTVIEW_COMMAND_W + EVENTVIEW_COMMAND_DIST));
-            var doSaveLoad = false;
             var nowIndex = -1;
             // セーブファイル選択(1～6)
             if (mouseY >= EVENTVIEW_BUYSELLCOMMAND_Y && mouseY <= EVENTVIEW_BUYSELLCOMMAND_Y + EVENTVIEW_COMMAND_H) {
@@ -604,21 +624,8 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                 CommonView.addWarn("その番号のファイルがありません!");
                 return -1;
             }
-            if (this.tempSaveNum == nowIndex) {
-                doSaveLoad = true;
-            } else {
-                this.tempSaveNum = nowIndex;
-                return -1;
-            }
-            if (doSaveLoad) {
-                if (this.comState == EVENTVIEW_COMSTATE_SAVE_FILECHOICE) {
-                    SaveFileIO.saveFile(this.tempSaveNum, this, itemMap);
-                } else {
-                    SaveFileIO.loadFile(this.tempSaveNum, this, itemMap);
-                }
-                this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
-                return -1;
-            }
+            this.tempSaveNum = nowIndex;
+            return -1;
         }
     }
 }
@@ -629,6 +636,7 @@ EventView.prototype.isSelected = function(ud, i) {
         return 1;
     } else {
         if (Math.floor(this.comState / 10) == i) {
+            // 選択中
             return 2;
         }
     }
@@ -705,8 +713,9 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             bv.init(0, true);
             u = new UnitDefine();
             u.initCommon(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_PRINCESS, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 1, SKILL_KEIKAI, SKILL_KIYOME, SKILL_KENJITSU);
+            
             ud.push(u);
-            tempField = this.fieldMap.get(0);
+            var tempField = this.fieldMap.get(0);
             tempField.createEnemy(ud);
             
             var tempItem = new ItemDefine();
@@ -714,7 +723,7 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             itemMap.set(tempItem.namae, 1);
             ItemDefine.init(ITEM_TYPE_WATER, 0, tempItem);
             itemMap.set(tempItem.namae, 1);
-            return GAMEMODE_BATTLE;
+            //return GAMEMODE_BATTLE;
             break;
         case EVENTVIEW_EVENTID_OP_LOSE:arguments
             return GAMEMODE_GAMEOVER;
@@ -743,6 +752,11 @@ EventView.prototype.setFace = function(faceId) {
         case UNIT_SYURUI_PRINCESS:arguments
             this.px = 1 * 256;
             this.py = 1 * 320;
+            this.pSyurui = BATTLE_PSYURUI_PC;
+            break;
+        case UNIT_SYURUI_KNIGHT:arguments
+            this.px = 1 * 256;
+            this.py = 0 * 320;
             this.pSyurui = BATTLE_PSYURUI_PC;
             break;
     }
@@ -800,4 +814,79 @@ EventView.prototype.setFieldColor = function(ctxFlip, fieldState, isFirst) {
         }
         break;
     }
+}
+
+// 決定、戻るボタンを出すべきか
+EventView.prototype.shouldDecideCancel = function() {
+    if (this.state == EVENTVIEW_STATE_COMMAND && this.comState != EVENTVIEW_COMSTATE_PRECHOICE) {
+        return true;
+    }
+    return false;
+}
+
+EventView.prototype.decide = function(mouseX, mouseY, bv, ud, itemMap) {
+    if (this.comState == EVENTVIEW_COMSTATE_BUY_WEAPCHOICE) {
+        if (this.tempBuySellSyurui != -1 && this.tempBuySellNum > 0) {
+            var tempItem = new ItemDefine();
+            ItemDefine.init(this.tempBuySellType, this.tempBuySellSyurui, tempItem);
+            var needPrice = tempItem.price * this.tempBuySellNum;
+            if (this.money < needPrice) {
+                CommonView.addWarn("所持金が足りません。");
+                return -1;
+            }
+            // 所持数追加
+            var tempItemNum = itemMap.get(tempItem.namae);
+            itemMap.set(tempItem.namae, tempItemNum + this.tempBuySellNum);
+            this.tempBuySellSyurui = ItemDefine.getReverseItemIndexForBuy(itemMap, this.tempBuySellType, 0);
+            this.money -= needPrice;
+            this.tempBuySellNum = 1;
+            CommonView.addWarn("購入しました。");
+        } else if (this.tempBuySellSyurui == -1) {
+            CommonView.addWarn("購入アイテムを選んでください。");
+            return -1;
+        }
+    }
+    if (this.comState == EVENTVIEW_COMSTATE_SELL_WEAPCHOICE) {
+        if (this.tempBuySellSyurui != -1 && this.tempBuySellNum > 0) {
+            var tempItem = new ItemDefine();
+            ItemDefine.init(this.tempBuySellType, this.tempBuySellSyurui, tempItem);
+            // 所持数削減
+            var tempItemNum = itemMap.get(tempItem.namae);
+            itemMap.set(tempItem.namae, tempItemNum - this.tempBuySellNum);
+            this.tempBuySellSyurui = ItemDefine.getReverseItemIndex(itemMap, this.tempBuySellType, 0);
+            this.money += Math.floor(EVENTVIEW_SELL_RATE * tempItem.price * this.tempBuySellNum);
+            this.tempBuySellNum = 1;
+            CommonView.addWarn("売却しました。");
+            return -1;
+        } else if (this.tempBuySellSyurui == -1) {
+            CommonView.addWarn("売却アイテムを選んでください。");
+            return -1;
+        }
+    }
+    
+    if (this.comState == EVENTVIEW_COMSTATE_SAVE_FILECHOICE) {
+        if (this.tempSaveNum >= 0) {
+            SaveFileIO.saveFile(this.tempSaveNum, this, itemMap);
+            this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
+            return -1;
+        } else {
+            CommonView.addWarn("正しいファイル番号を選んでください。");
+            return -1;
+        }
+    }
+    if (this.comState == EVENTVIEW_COMSTATE_LOAD_FILECHOICE) {
+        if (this.tempSaveNum >= 0) {
+            SaveFileIO.loadFile(this.tempSaveNum, this, itemMap);
+            this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
+            return -1;
+        } else {
+            CommonView.addWarn("正しいファイル番号を選んでください。");
+            return -1;
+        }
+    }
+}
+
+EventView.prototype.cancel = function(mouseX, mouseY, bv, ud, itemMap) {
+    this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
+    return -1;
 }
