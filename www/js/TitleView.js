@@ -211,6 +211,7 @@ TitleView.prototype.clk = function(mouseX, mouseY, ev, ud, itemMap) {
         mouseY >= TITLEVIEW_NEWGAME_Y &&
         mouseY <= TITLEVIEW_NEWGAME_Y + TITLEVIEW_NEWGAME_HEIGHT) {
         // ゲーム新規開始
+        ev.gameStart();
         ev.init(EVENTVIEW_EVENTID_OP);
         ud.length = 0;
         itemMap.clear();

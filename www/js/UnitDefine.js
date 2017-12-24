@@ -10,8 +10,8 @@ var UnitDefine = function() {
     this.lv = 1;
     this.side = BATTLE_MIKATA;//BATTLE_MIKATA or BATTLE_TEKI
     this.isBoss = false;
-    this.eqType = 0;
-    this.eqSyurui = 0;
+    this.eqType = -1;
+    this.eqSyurui = -1;
     this.crt = 0;
     this.luck = 0;
     this.rat = 0;//割合ダメージ
@@ -1178,4 +1178,18 @@ UnitDefine.getMikataList = function(ud) {
         }
     }
     return mikataUd;
+}
+
+// 味方全員全回復(イベント用)
+UnitDefine.recoverMikata = function(ud) {
+    var mikataUd = this.getMikataList(ud);
+    for (var i = 0; i < mikataUd.length; i++) {
+        var u = mikataUd[i];
+        u.hp = u.mhpObj.now;
+        u.sp = u.msp;
+        u.field = -1;
+        u.eqType = -1;
+        u.eqSyurui = -1;
+        u.skillON = [false, false, false];
+    }
 }

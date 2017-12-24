@@ -1,4 +1,32 @@
 var EventView = function() {
+    this.gameStart();
+    /*this.counter = 0;
+    this.state = EVENTVIEW_STATE_COMMAND;
+    this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
+    this.tempBuySellType = ITEM_TYPE_SWORD;// 売買時、どの武器を表示するか
+    this.tempBuySellSyurui = 0;
+    this.tempBuySellNum = 1;
+    this.tempProcMap = -1;
+    this.tempSaveNum = 1;//何番にセーブするか
+    this.ENDCOUNTER = 1000;// ここに到達するまでは画面作りかけ状態
+    this.MAXCOUNTER = 1100;// 画面完成後、ENDCOUNTER～MAXCOUNTERまでの値をぐるぐるしてアニメーションさせる
+    this.cantOpCounter = 0;
+    this.message = new Array();// 今回のイベントの全メッセージを格納(表示される毎に無くなっていく)
+    this.doneEvent = new Array();//実行済みのイベントIDが入る
+    this.printMsg = ["", "", "", "", "", "", ""];// 現在イベントビューに出すべき文字列
+    this.money = 400;// 「所持金」データはここに保持
+    this.turn = 0;// 「ターン」データはここに保持
+    this.eventID = -1;// 現在のイベント
+    this.px = -1;//イベント用の顔グラの場所(-1は「表示しない」)
+    this.py = -1;//イベント用の顔グラの場所(-1は「表示しない」)
+    this.pSyurui = -1;//イベント用の顔グラの場所(-1は「表示しない」)
+    // fontIDについて、「これまで」各行をどのフォントで表示していたかと、「今」どのフォントで表示すべきかは分けて管理しないといけない
+    this.fontID = [EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL];//イベント文字列の書体
+    this.nowFontID = EVENTVIEW_EVENTFONT_NORMAL;
+    this.fieldMap = new Map();*/
+};
+
+EventView.prototype.gameStart = function () {
     this.counter = 0;
     this.state = EVENTVIEW_STATE_COMMAND;
     this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
@@ -11,6 +39,7 @@ var EventView = function() {
     this.MAXCOUNTER = 1100;// 画面完成後、ENDCOUNTER～MAXCOUNTERまでの値をぐるぐるしてアニメーションさせる
     this.cantOpCounter = 0;
     this.message = new Array();// 今回のイベントの全メッセージを格納(表示される毎に無くなっていく)
+    this.doneEvent = new Array();//実行済みのイベントIDが入る
     this.printMsg = ["", "", "", "", "", "", ""];// 現在イベントビューに出すべき文字列
     this.money = 400;// 「所持金」データはここに保持
     this.turn = 0;// 「ターン」データはここに保持
@@ -29,6 +58,7 @@ EventView.prototype.init = function (eventID) {
     if (eventID >= 0) {
         this.state = EVENTVIEW_STATE_EVENT;
         this.eventID = eventID;// 現在のイベント
+        this.message = [];
         EventMessage.getMessage(eventID, this.message);
     } else {
         this.state = EVENTVIEW_STATE_COMMAND;
@@ -454,6 +484,14 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
         return -1;
     }
     
+    var tutorialID = this.selectTutorial();
+    if (tutorialID != -1) {
+        // チュートリアルを表示すべきなら、表示してリターン
+        if (CommonView.addTutorial(tutorialID, true)) {
+            return -1;
+        }
+    }
+    
     // 決定、戻るボタンを押す
     if (this.shouldDecideCancel() && mouseX >= EVENTVIEW_COMMANDTXT_X && mouseX <= EVENTVIEW_COMMANDTXT_X + EVENTVIEW_COMMANDTXT_W) {
         var commandNum = Math.floor((mouseY - EVENTVIEW_COMMANDTXT_Y) / EVENTVIEW_COMMANDINTERVAL);
@@ -708,13 +746,14 @@ EventView.prototype.printOneMsg = function() {
 
 // 戻り値は「別の画面に遷移」を意味
 EventView.prototype.endEvent = function(ud, bv, itemMap) {
+    this.doneEvent.push(this.eventID);
     switch(this.eventID) {
         case EVENTVIEW_EVENTID_OP:arguments
             bv.init(0, true);
             u = new UnitDefine();
             u.initCommon(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_PRINCESS, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 1, SKILL_KEIKAI, SKILL_KIYOME, SKILL_KENJITSU);
-            
             ud.push(u);
+            
             var tempField = this.fieldMap.get(0);
             tempField.createEnemy(ud);
             
@@ -723,9 +762,37 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             itemMap.set(tempItem.namae, 1);
             ItemDefine.init(ITEM_TYPE_WATER, 0, tempItem);
             itemMap.set(tempItem.namae, 1);
-            //return GAMEMODE_BATTLE;
+            return GAMEMODE_BATTLE;
+            break;
+        case EVENTVIEW_EVENTID_OP_WIN:arguments
+            bv.init(0, true);
+            // ヤナエを全回復
+            UnitDefine.recoverMikata(ud);
+            
+            u = new UnitDefine();
+            u.initCommon(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_KNIGHT, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 1, SKILL_HIGHHIT, SKILL_SYONETSU, SKILL_KENJITSU);
+            ud.push(u);
+            //var tempField = this.fieldMap.get(0);
+            //tempField.createEnemy(ud);
+            // createEnemyは1フィールドにつき1回しか使えない
+            var u2 = new UnitDefine();
+            u2.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_SWORD, BATTLE_TEKI, BATTLE_DEFENCE, 0, 1, 0, 0, 0, ITEM_TYPE_SWORD, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_NO, 1.2, -1);
+            ud.push(u2);
+            var u3 = new UnitDefine();
+            u3.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_BOW, BATTLE_TEKI, BATTLE_DEFENCE, 0, 1, 0, 0, 0, ITEM_TYPE_BOW, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM + BATTLEAI_SM_NO, 1.4, -1);
+            ud.push(u3);
+            
+            var tempItem = new ItemDefine();
+            ItemDefine.init(ITEM_TYPE_SWORD, 0, tempItem);
+            var tempItemNum = itemMap.get(tempItem.namae);
+            itemMap.set(tempItem.namae, tempItemNum + 1);
+            
+            ItemDefine.init(ITEM_TYPE_SPEAR, 0, tempItem);
+            itemMap.set(tempItem.namae, 1);
+            return GAMEMODE_BATTLE;
             break;
         case EVENTVIEW_EVENTID_OP_LOSE:arguments
+        case EVENTVIEW_EVENTID_OP_LOSE2:arguments
             return GAMEMODE_GAMEOVER;
             break;
     }
@@ -747,6 +814,11 @@ EventView.prototype.setFace = function(faceId) {
         case UNIT_SYURUI_SWORD:arguments
             this.px = 2 * 256;
             this.py = 0 * 320;
+            this.pSyurui = BATTLE_PSYURUI_ZAKO;
+            break;
+        case UNIT_SYURUI_BOW:arguments
+            this.px = 2 * 256;
+            this.py = 2 * 320;
             this.pSyurui = BATTLE_PSYURUI_ZAKO;
             break;
         case UNIT_SYURUI_PRINCESS:arguments
@@ -888,5 +960,27 @@ EventView.prototype.decide = function(mouseX, mouseY, bv, ud, itemMap) {
 
 EventView.prototype.cancel = function(mouseX, mouseY, bv, ud, itemMap) {
     this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
+    return -1;
+}
+
+EventView.prototype.decideNextEvent = function(isWin) {
+    if (isWin) {
+        // 戦闘勝利
+        return EVENTVIEW_EVENTID_OP_WIN;
+    } else {
+        // 戦闘敗北
+        if (this.doneEvent.indexOf(EVENTVIEW_EVENTID_OP_WIN) == -1) {
+            return EVENTVIEW_EVENTID_OP_LOSE;
+        } else {
+            return EVENTVIEW_EVENTID_OP_LOSE2;
+        }
+    }
+    return -1;
+}
+
+EventView.prototype.selectTutorial = function() {
+    if (this.state == EVENTVIEW_STATE_EVENT) {
+        return COMMONVIEW_TUTORIALID_EVENT;   
+    }
     return -1;
 }

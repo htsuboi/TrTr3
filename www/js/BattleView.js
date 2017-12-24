@@ -277,9 +277,6 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
                 // 決着がついていない
                 this.initAct();
                 this.moveCheckComState(BATTLEVIEW_STATE_SECONDMOVE, BATTLEVIEW_COMSTATE_PRECHOICE);
-            } else {
-                ev.init(EVENTVIEW_EVENTID_OP_LOSE);
-                next.nextGameMode = GAMEMODE_EVENT;
             }
         }
     }
@@ -643,7 +640,7 @@ BattleView.prototype.paint = function (ud, itemMap) {
                         ctxFlip.fillStyle = 'rgb(223, 255, 223)';
                     break;
                 }
-                ctxFlip.fillRect(BATTLEVIEW_UNITSELECT_X - 6, tempY - 6, 2 * BATTLEVIEW_UNITSELECT_W + BATTLEVIEW_UNITSELECT_WINTERVAL + 12, 2 * BATTLEVIEW_UNITSELECT_H + BATTLEVIEW_UNITSELECT_HINTERVAL + 12);
+                ctxFlip.fillRect(BATTLEVIEW_UNITSELECT_X - 6, tempY - 5, 2 * BATTLEVIEW_UNITSELECT_W + BATTLEVIEW_UNITSELECT_WINTERVAL + 12, 2 * BATTLEVIEW_UNITSELECT_H + BATTLEVIEW_UNITSELECT_HINTERVAL + 10);
                 var u = this.tempMikata[i];
                 ctxFlip.font = "11px 'MS Pゴシック'";
                 ctxFlip.fillStyle = 'rgb(0, 0, 0)';           
@@ -661,7 +658,7 @@ BattleView.prototype.paint = function (ud, itemMap) {
                     ctxFlip.font = "11px 'MS Pゴシック'";
                     ctxFlip.fillText(SkillDefine.getSkillName(u.skills[j]), x, y + 11);
                     ctxFlip.font = "8px 'MS Pゴシック'";
-                    ctxFlip.fillText((u.skillON[j] == true ? "ON" : "OFF"), x + 30, y + 11 + 12);
+                    ctxFlip.fillText((u.skillON[j] == true ? "ON" : "OFF"), x + 30, y + 11 + 11);
                 }
                 tempY += 2 * BATTLEVIEW_UNITSELECT_H + 2 * BATTLEVIEW_UNITSELECT_HINTERVAL;
             }
@@ -1412,7 +1409,7 @@ BattleView.prototype.searchAtXY = function(x, y, ud) {
 BattleView.prototype.endBattleCheck = function(ud) {
     var shibouSide = this.isZenmetsu(ud);
     if (shibouSide == BATTLE_TEKI) {
-        CommonView.addMessage("戦闘勝利! " + this.winExp, 60);
+        CommonView.addMessage("戦闘に勝利した! 経験値:" + this.winExp, 60);
         var remainMikata = this.calcRemain(BATTLE_MIKATA, ud);
         var getExp = this.winExp;
         switch(remainMikata) {
@@ -1434,7 +1431,7 @@ BattleView.prototype.endBattleCheck = function(ud) {
         return BATTLE_MIKATA;
     }
     if (shibouSide == BATTLE_MIKATA) {
-        CommonView.addMessage("戦闘敗北!", 60);
+        CommonView.addMessage("戦闘に敗北した!", 60);
         this.turn = BATTLEVIEW_TURN_LOSEBATTLE;
         this.counter = 0;
         return BATTLE_TEKI;
@@ -1492,7 +1489,7 @@ BattleView.prototype.shibouUnit = function(deadU, ud) {
     return;
 };
 
-BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
+BattleView.prototype.clk = function(mouseX, mouseY, ev, ud, itemMap) {
     
     //演出中
     if (this.cantOpCounter > 0) {
@@ -1504,6 +1501,26 @@ BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
         // (全画面共通)初回チュートリアル表示非表示の切り替え
         CommonView.shouldTutorialFlag(!CommonView.shouldTutorialFlag());
         return -1;
+    }
+    
+    var tutorialID = this.selectTutorial();
+    if (tutorialID != -1) {
+        // チュートリアルを表示すべきなら、表示してリターン
+        if (CommonView.addTutorial(tutorialID, true)) {
+            return -1;
+        }
+    }
+    
+    if (this.turn == BATTLEVIEW_TURN_WINBATTLE && this.counter >= this.WINCOUNTER) {
+        var eventId = ev.decideNextEvent(true);
+        ev.init(eventId);
+        return GAMEMODE_EVENT;
+    }
+    
+    if (this.turn == BATTLEVIEW_TURN_LOSEBATTLE && this.counter >= this.LOSECOUNTER) {
+        var eventId = ev.decideNextEvent(false);
+        ev.init(eventId);
+        return GAMEMODE_EVENT;
     }
     
     // 操作可能なターン以外
@@ -1733,10 +1750,16 @@ BattleView.prototype.clk = function(mouseX, mouseY, ud, itemMap) {
                         this.spGauge[BATTLE_MIKATA] -= requireCost;
                         // とりあえず手持ち武器を表示
                         this.tempEqTypeForPaint = ITEM_TYPE_TEMOCHI;
-                        // とりあえず最初の武器を暫定装備(必ず「素手」)
-                        var handEquip0 = focusUnit.handEquip[0];
-                        this.tempEqTypeForEquip = handEquip0.eqType;
-                        this.tempEqSyurui = handEquip0.eqSyurui;
+                        if (focusUnit.eqType != -1 && focusUnit.eqSyurui != -1) {
+                            // 前回の武器を暫定装備
+                            this.tempEqTypeForEquip = focusUnit.eqType;
+                            this.tempEqSyurui = focusUnit.eqSyurui;
+                        } else {
+                            // とりあえず最初の武器を暫定装備(必ず「素手」)
+                            var handEquip0 = focusUnit.handEquip[0];
+                            this.tempEqTypeForEquip = handEquip0.eqType;
+                            this.tempEqSyurui = handEquip0.eqSyurui;
+                        }
                         this.moveCheckComState(this.state, BATTLEVIEW_COMSTATE_ACT_WEAPCHOICE);
                     } else {
                         CommonView.addWarn("SPゲージが再行動コストに足りません");
@@ -2049,3 +2072,13 @@ BattleView.prototype.checkTempMikata = function(tempUnit) {
     }
     return ret;
 };
+
+BattleView.prototype.selectTutorial = function() {
+    if (this.turn == BATTLEVIEW_TURN_UNITSELECT) {
+        return COMMONVIEW_TUTORIALID_UNITSELECT;   
+    }
+    if (this.turn == BATTLEVIEW_TURN_SKILLSELECT) {
+        return COMMONVIEW_TUTORIALID_SKILLSELECT;   
+    }
+    return -1;
+}

@@ -34,6 +34,17 @@ CommonView.msgCounter = function(v) {
     return arguments.callee.msgCount;
 };
 
+// 演出用カウンタ
+CommonView.paintCounter = function(v) {
+    if (typeof arguments.callee.paintCount == 'undefined') {
+        arguments.callee.paintCount = 0;
+    }
+    if (typeof(v) != 'undefined') {
+        arguments.callee.paintCount = v;
+    }
+    return arguments.callee.paintCount;
+};
+
 CommonView.printWarnFlag = function(v) {
     if (typeof arguments.callee.printWarnFlag == 'undefined') {
         arguments.callee.printWarnFlag = false;
@@ -144,6 +155,10 @@ CommonView.tutorials = function(v) {
 
 // 全画面共通のアナウンスメッセージ表示 およびチュートリアル制御ボタン表示
 CommonView.paintMessage = function(ctxFlip) {
+    CommonView.paintCounter(CommonView.paintCounter() + 1);
+    if (CommonView.paintCounter() == ALLVIEW_PAINTCOUNTER_MAX) {
+        CommonView.paintCounter(0);
+    }
     var nowMsgCounter = CommonView.msgCounter();
     var nowMessages = CommonView.messages();
     var warnMessages = CommonView.warns();
@@ -192,7 +207,12 @@ CommonView.paintMessage = function(ctxFlip) {
         var MESSAGE_W = (CommonView.tutorialPoint().w == -1 ? 310 : CommonView.tutorialPoint().w);
         var MESSAGE_H = (CommonView.tutorialPoint().h == -1 ? 300 : CommonView.tutorialPoint().h);
         ctxFlip.fillStyle = 'rgb(239, 0, 0)';
-        ctxFlip.fillRect(MESSAGE_X - 1, MESSAGE_Y - 1, MESSAGE_W + 3, MESSAGE_H + 3);
+        if ((Math.floor(CommonView.paintCounter() / 24) % 2) == 1) {
+            ctxFlip.fillStyle = 'rgb(0, 0, 239)';
+        }
+        
+        var margin = Math.abs((Math.floor(CommonView.paintCounter() / 12) % 5 - 2));
+        ctxFlip.fillRect(MESSAGE_X - 2 * margin, MESSAGE_Y - 2 * margin, MESSAGE_W + 4 * margin, MESSAGE_H + 4 * margin);
         ctxFlip.fillStyle = 'rgb(255, 255, 255)';
         ctxFlip.fillRect(MESSAGE_X, MESSAGE_Y, MESSAGE_W, MESSAGE_H);
         ctxFlip.font = "14px 'MS Pゴシック'";
@@ -201,6 +221,24 @@ CommonView.paintMessage = function(ctxFlip) {
             ctxFlip.fillText(tutorialMessages[i], MESSAGE_X, MESSAGE_Y + 20 + 20 * i);
         }
         ctxFlip.fillText("【確認したら画面をタッチしてください。】", MESSAGE_X, MESSAGE_Y + 20 + 20 * tutorialMessages.length);
+        
+        if (CommonView.redPoint().x != -1) {
+            var red_X = CommonView.redPoint().x - margin;
+            var red_Y = CommonView.redPoint().y - margin;
+            var red_W = CommonView.redPoint().w + 2 * margin;
+            var red_H = CommonView.redPoint().h + 2 * margin;
+            ctxFlip.strokeStyle = 'rgb(239, 0, 0)';
+            ctxFlip.strokeRect(red_X, red_Y, red_W, red_H);
+        }
+        
+        if (CommonView.bluePoint().x != -1) {
+            var blue_X = CommonView.bluePoint().x - margin;
+            var blue_Y = CommonView.bluePoint().y - margin;
+            var blue_W = CommonView.bluePoint().w + 2 * margin;
+            var blue_H = CommonView.bluePoint().h + 2 * margin;
+            ctxFlip.strokeStyle = 'rgb(0, 0, 239)';
+            ctxFlip.strokeRect(blue_X, blue_Y, blue_W, blue_H);
+        }
     }
     
     ctxFlip.fillStyle = 'rgb(127, 127, 127)';

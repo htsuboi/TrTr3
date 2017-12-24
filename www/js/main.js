@@ -115,7 +115,7 @@ function clickPage(e) {
             nextGameMode = tv.clk(mouseX, mouseY, ev, ud, itemMap);
             break;
         case GAMEMODE_BATTLE:arguments
-            nextGameMode = bv.clk(mouseX, mouseY, ud, itemMap);
+            nextGameMode = bv.clk(mouseX, mouseY, ev, ud, itemMap);
             break;
         case GAMEMODE_GAMEOVER:arguments
             nextGameMode = gov.clk(mouseX, mouseY);
