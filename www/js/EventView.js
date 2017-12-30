@@ -1,29 +1,5 @@
 var EventView = function() {
     this.gameStart();
-    /*this.counter = 0;
-    this.state = EVENTVIEW_STATE_COMMAND;
-    this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
-    this.tempBuySellType = ITEM_TYPE_SWORD;// 売買時、どの武器を表示するか
-    this.tempBuySellSyurui = 0;
-    this.tempBuySellNum = 1;
-    this.tempProcMap = -1;
-    this.tempSaveNum = 1;//何番にセーブするか
-    this.ENDCOUNTER = 1000;// ここに到達するまでは画面作りかけ状態
-    this.MAXCOUNTER = 1100;// 画面完成後、ENDCOUNTER～MAXCOUNTERまでの値をぐるぐるしてアニメーションさせる
-    this.cantOpCounter = 0;
-    this.message = new Array();// 今回のイベントの全メッセージを格納(表示される毎に無くなっていく)
-    this.doneEvent = new Array();//実行済みのイベントIDが入る
-    this.printMsg = ["", "", "", "", "", "", ""];// 現在イベントビューに出すべき文字列
-    this.money = 400;// 「所持金」データはここに保持
-    this.turn = 0;// 「ターン」データはここに保持
-    this.eventID = -1;// 現在のイベント
-    this.px = -1;//イベント用の顔グラの場所(-1は「表示しない」)
-    this.py = -1;//イベント用の顔グラの場所(-1は「表示しない」)
-    this.pSyurui = -1;//イベント用の顔グラの場所(-1は「表示しない」)
-    // fontIDについて、「これまで」各行をどのフォントで表示していたかと、「今」どのフォントで表示すべきかは分けて管理しないといけない
-    this.fontID = [EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL];//イベント文字列の書体
-    this.nowFontID = EVENTVIEW_EVENTFONT_NORMAL;
-    this.fieldMap = new Map();*/
 };
 
 EventView.prototype.gameStart = function () {
@@ -34,12 +10,15 @@ EventView.prototype.gameStart = function () {
     this.tempBuySellSyurui = 0;
     this.tempBuySellNum = 1;
     this.tempProcMap = -1;
-    this.tempSaveNum = 1;//何番にセーブするか
+    this.tempSaveNum = -1;//何番にセーブするか
+    this.tempBookNum = -1;//どの本を読むか
     this.ENDCOUNTER = 1000;// ここに到達するまでは画面作りかけ状態
     this.MAXCOUNTER = 1100;// 画面完成後、ENDCOUNTER～MAXCOUNTERまでの値をぐるぐるしてアニメーションさせる
     this.cantOpCounter = 0;
     this.message = new Array();// 今回のイベントの全メッセージを格納(表示される毎に無くなっていく)
     this.doneEvent = new Array();//実行済みのイベントIDが入る
+    this.haveBook = new Array();//所持している本のイベントIDが入る
+    this.haveBook.push(EVENTVIEW_BOOKID_KINGDEATH);
     this.printMsg = ["", "", "", "", "", "", ""];// 現在イベントビューに出すべき文字列
     this.money = 400;// 「所持金」データはここに保持
     this.turn = 0;// 「ターン」データはここに保持
@@ -198,8 +177,8 @@ EventView.prototype.paint = function(ud, itemMap) {
     
     if (this.state == EVENTVIEW_STATE_COMMAND) {
         ctxFlip.fillStyle = 'rgb(191, 63, 191)';
-        ctxFlip.fillRect(EVENTVIEW_COMMAND_X - 3, EVENTVIEW_COMMAND_Y - 5, (EVENTVIEW_COMMAND_W + EVENTVIEW_COMMAND_DIST) * 7 + 10, EVENTVIEW_COMMAND_H + 10);
-        for (var i = 0; i < 7; i ++) {
+        ctxFlip.fillRect(EVENTVIEW_COMMAND_X - 3, EVENTVIEW_COMMAND_Y - 5, EVENTVIEW_COMMAND_W * 8 + EVENTVIEW_COMMAND_DIST * 7 + 10, EVENTVIEW_COMMAND_H + 10);
+        for (var i = 0; i < 8; i ++) {
             var x = EVENTVIEW_COMMAND_X + i * (EVENTVIEW_COMMAND_W + EVENTVIEW_COMMAND_DIST);
             var y = EVENTVIEW_COMMAND_Y;
             var w = EVENTVIEW_COMMAND_W;
@@ -240,6 +219,9 @@ EventView.prototype.paint = function(ud, itemMap) {
                 break;
             case EVENTVIEW_COMMANDNUM_LOAD:arguments
                 text = "ロード";
+                break;
+            case EVENTVIEW_COMMANDNUM_BOOK:arguments
+                text = "書籍";
                 break;
             default:arguments
                 break;
@@ -406,6 +388,29 @@ EventView.prototype.paint = function(ud, itemMap) {
                 ctxFlip.fillText(i, x + 10, y + 17);
             }
         }
+        if (this.comState == EVENTVIEW_COMSTATE_BOOKCHOICE){
+            for (var i = 0; i < this.haveBook.length; i++) {
+                var x = EVENTVIEW_BOOK_X;
+                var y = EVENTVIEW_BOOK_Y + (EVENTVIEW_BOOK_H + EVENTVIEW_BOOK_INTERVAL) * i;
+                var w = EVENTVIEW_BOOK_W;
+                var h = EVENTVIEW_BOOK_H;
+                ctxFlip.fillStyle = 'rgb(0, 0, 0)';
+                var isHighLight = (i == this.tempBookNum);
+                if (isHighLight > 0) {
+                    ctxFlip.fillStyle = getGladColorRed((this.MAXCOUNTER - this.counter) / 3);
+                }
+                ctxFlip.fillRect(x - 1, y - 1, w + 2, h + 2);
+                ctxFlip.fillStyle = 'rgb(255, 255, 255)';
+                ctxFlip.fillRect(x, y, w, h);
+                ctxFlip.font = "12px 'MS Pゴシック'";
+                ctxFlip.fillStyle = 'rgb(0, 0, 0)';
+                var eventID = this.haveBook[i];
+                var tempMessage = [];
+                EventMessage.getMessage(eventID, tempMessage);
+                // 本の内容の最初を表示(1行目、2行目はメタ文字なので3行目)
+                ctxFlip.fillText(tempMessage[2], x + 5, y + 12);
+            }
+        }
     }
     
     //メッセージウィンドウの表示
@@ -569,6 +574,10 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                         this.tempSaveNum = -1;
                         this.comState = EVENTVIEW_COMSTATE_LOAD_FILECHOICE;
                     break;
+                    case EVENTVIEW_COMMANDNUM_BOOK:arguments
+                        this.tempBookNum = -1;
+                        this.comState = EVENTVIEW_COMSTATE_BOOKCHOICE;
+                    break;
                     default:arguments
                         // ボタンのない場所をクリックした場合ここ
                         return -1;
@@ -663,6 +672,16 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                 return -1;
             }
             this.tempSaveNum = nowIndex;
+            return -1;
+        }
+        if (this.comState == EVENTVIEW_COMSTATE_BOOKCHOICE) {
+            var y = Math.floor((mouseY - EVENTVIEW_BOOK_Y) / (EVENTVIEW_BOOK_H + EVENTVIEW_BOOK_INTERVAL));
+            var nowIndex = -1;
+            if (y >= 0 && y < this.haveBook.length) {
+                nowIndex = y;
+            }
+
+            this.tempBookNum = nowIndex;
             return -1;
         }
     }
@@ -953,6 +972,15 @@ EventView.prototype.decide = function(mouseX, mouseY, bv, ud, itemMap) {
             return -1;
         } else {
             CommonView.addWarn("正しいファイル番号を選んでください。");
+            return -1;
+        }
+    }
+    if (this.comState == EVENTVIEW_COMSTATE_BOOKCHOICE) {
+        if (this.tempBookNum >= 0) {
+            this.init(this.haveBook[this.tempBookNum]);
+            return -1;
+        } else {
+            CommonView.addWarn("読みたい本を選んでください。");
             return -1;
         }
     }

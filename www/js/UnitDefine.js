@@ -353,8 +353,9 @@ UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofO
             this.mdfObj = {now:21, amari:0, up:18, upup:20, upupup:13};
             this.hitObj = {now:97, amari:0, up:34, upup:21, upupup:25};
             this.avoObj = {now:15, amari:0, up:23, upup:16, upupup:20};
-            this.weaps[ITEM_TYPE_SWORD] = 27;
-            this.weaps[ITEM_TYPE_SPEAR] = 13;
+            this.weaps[ITEM_TYPE_SWORD] = 24;
+            this.weaps[ITEM_TYPE_SPEAR] = 7;
+            this.weaps[ITEM_TYPE_WIND] = 28;
             this.weaps[ITEM_TYPE_WATER] = 34;
         break;
         case UNIT_SYURUI_KNIGHT:arguments
