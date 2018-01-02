@@ -110,6 +110,7 @@ function clickPage(e) {
         CommonView.printWarnFlag(false);
         return -1;
     }
+    try {
     switch(gameMode) {
         case GAMEMODE_TITLE:arguments
             nextGameMode = tv.clk(mouseX, mouseY, ev, ud, itemMap);
@@ -123,6 +124,9 @@ function clickPage(e) {
         case GAMEMODE_EVENT:arguments
             nextGameMode = ev.clk(mouseX, mouseY, bv, ud, itemMap);
             break;
+    }}
+    catch (e) {
+        CommonView.addWarn(e);
     }
     if (nextGameMode >= 0) {
         gameMode = nextGameMode;

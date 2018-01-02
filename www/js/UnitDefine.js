@@ -97,7 +97,7 @@ UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofO
             this.defObj = {now:10, amari:0, up:12, upup:10, upupup:1 + (difficulty > GAME_DIFFICULTY_HARD ? 9 : 0)};
             this.mdfObj = {now:8, amari:0, up:10, upup:13 + (difficulty > GAME_DIFFICULTY_HARD ? 3 : 0), upupup:7};
             this.hitObj = {now:97 + (difficulty > GAME_DIFFICULTY_NORMAL ? 3 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), amari:0, up:32 + (difficulty > GAME_DIFFICULTY_HARD ? 3 : 0), upup:12 + (difficulty > GAME_DIFFICULTY_NORMAL ? 4 : 0), upupup:19};
-            this.avoObj = {now:17, amari:0, up:18, upup:12, upupup:5};
+            this.avoObj = {now:15, amari:0, up:19, upup:12, upupup:5};
         break;
         case UNIT_SYURUI_SPEAR:arguments
             this.crt = 3 + (difficulty > GAME_DIFFICULTY_HARD ? 2 : 0);
@@ -133,7 +133,7 @@ UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofO
             this.defObj = {now:13, amari:0, up:18 + (difficulty > GAME_DIFFICULTY_NORMAL ? 7 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), upup:10, upupup:12};
             this.mdfObj = {now:8 + (difficulty > GAME_DIFFICULTY_HARD ? 3 : 0), amari:0, up:13 + (difficulty > GAME_DIFFICULTY_NORMAL ? 5 : 0), upup:13, upupup:7};
             this.hitObj = {now:94, amari:0, up:27, upup:10 + (difficulty > GAME_DIFFICULTY_NORMAL ? 6 : 0), upupup:17 + (difficulty > GAME_DIFFICULTY_HARD ? 5 : 0)};
-            this.avoObj = {now:15, amari:0, up:20, upup:8, upupup:2};
+            this.avoObj = {now:14, amari:0, up:16, upup:8, upupup:2};
         break;
         case UNIT_SYURUI_HAMMER:arguments
             this.crt = 2;
@@ -351,7 +351,7 @@ UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofO
             this.magObj = {now:28, amari:0, up:24, upup:22, upupup:14};
             this.defObj = {now:20, amari:0, up:22, upup:16, upupup:13};
             this.mdfObj = {now:21, amari:0, up:18, upup:20, upupup:13};
-            this.hitObj = {now:97, amari:0, up:34, upup:21, upupup:25};
+            this.hitObj = {now:104, amari:0, up:30, upup:25, upupup:25};
             this.avoObj = {now:15, amari:0, up:23, upup:16, upupup:20};
             this.weaps[ITEM_TYPE_SWORD] = 24;
             this.weaps[ITEM_TYPE_SPEAR] = 7;
@@ -375,7 +375,7 @@ UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofO
             this.magObj = {now:8, amari:0, up:5, upup:11, upupup:8};
             this.defObj = {now:25, amari:0, up:29, upup:16, upupup:17};
             this.mdfObj = {now:18, amari:0, up:18, upup:15, upupup:9};
-            this.hitObj = {now:100, amari:0, up:38, upup:9, upupup:16};
+            this.hitObj = {now:107, amari:0, up:36, upup:10, upupup:16};
             this.avoObj = {now:11, amari:0, up:19, upup:22, upupup:13};
             this.weaps[ITEM_TYPE_SWORD] = 21;
             this.weaps[ITEM_TYPE_SPEAR] = 30;

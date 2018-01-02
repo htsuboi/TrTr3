@@ -279,27 +279,27 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.namae = "火の練習帳";
                 idef.price = 200;
                 idef.lv = 1;
-                idef.mat = 8;
+                idef.mag = 8;
                 idef.alwaysBuy = true;
             break;
             case 1:arguments
                 idef.namae = "赤のオーブ";
                 idef.price = 700;
                 idef.lv = 9;
-                idef.mat = 22;
+                idef.mag = 22;
             break;
             case 2:arguments
                 idef.namae = "紅のオーブ";
                 idef.price = 1460;
                 idef.lv = 20;
-                idef.mat = 39;
+                idef.mag = 39;
                 idef.rat = 2;
             break;
             case 3:arguments
                 idef.namae = "朱のオーブ";
                 idef.price = 2840;
                 idef.lv = 30;
-                idef.mat = 58;
+                idef.mag = 58;
                 idef.rat = 3;
             break;
         }
@@ -311,7 +311,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.namae = "水の練習帳";
                 idef.price = 260;
                 idef.lv = 1;
-                idef.mat = 4;
+                idef.mag = 4;
                 idef.hit = 3;
                 idef.alwaysBuy = true;
             break;
@@ -319,14 +319,14 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.namae = "豪雨の書";
                 idef.price = 800;
                 idef.lv = 11;
-                idef.mat = 11;
+                idef.mag = 11;
                 idef.hit = 11;
             break;
             case 2:arguments
                 idef.namae = "渦潮の書";
                 idef.price = 1530;
                 idef.lv = 22;
-                idef.mat = 25;
+                idef.mag = 25;
                 idef.hit = 21;
                 idef.rat = 1;
             break;
@@ -334,7 +334,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.namae = "清水の書";
                 idef.price = 3000;
                 idef.lv = 32;
-                idef.mat = 39;
+                idef.mag = 39;
                 idef.hit = 29;
                 idef.rat = 1;
                 idef.mdf = 10;
@@ -348,7 +348,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.namae = "風の練習帳";
                 idef.price = 170;
                 idef.lv = 1;
-                idef.mat = 1;
+                idef.mag = 1;
                 idef.hit = 10;
                 idef.alwaysBuy = true;
             break;
@@ -356,14 +356,14 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.namae = "木枯らしの杖";
                 idef.price = 630;
                 idef.lv = 6;
-                idef.mat = 8;
+                idef.mag = 8;
                 idef.hit = 23;
             break;
             case 2:arguments
                 idef.namae = "吹き荒れる杖";
                 idef.price = 1280;
                 idef.lv = 20;
-                idef.mat = 20;
+                idef.mag = 20;
                 idef.hit = 37;
                 idef.rat = 1;
             break;
@@ -371,7 +371,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.namae = "嵐の杖";
                 idef.price = 2680;
                 idef.lv = 28;
-                idef.mat = 35;
+                idef.mag = 35;
                 idef.hit = 55;
                 idef.rat = 2;
             break;
@@ -384,7 +384,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.namae = "地の練習帳";
                 idef.price = 180;
                 idef.lv = 1;
-                idef.mat = 5;
+                idef.mag = 5;
                 idef.mdf = 6;
                 idef.alwaysBuy = true;
             break;
@@ -392,7 +392,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.namae = "地の入門帳";
                 idef.price = 610;
                 idef.lv = 7;
-                idef.mat = 14;
+                idef.mag = 14;
                 idef.mdf = 18;
                 idef.rdf = 1;
             break;
@@ -400,7 +400,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.namae = "地の本番帳";
                 idef.price = 1350;
                 idef.lv = 23;
-                idef.mat = 25;
+                idef.mag = 25;
                 idef.def = 6;
                 idef.mdf = 22;
                 idef.rdf = 2;
@@ -409,7 +409,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
                 idef.namae = "地の決戦帳";
                 idef.price = 2560;
                 idef.lv = 34;
-                idef.mat = 37;
+                idef.mag = 37;
                 idef.def = 20;
                 idef.mdf = 33;
                 idef.rdf = 3;

@@ -8,13 +8,14 @@ EventView.prototype.gameStart = function () {
     this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
     this.tempBuySellType = ITEM_TYPE_SWORD;// 売買時、どの武器を表示するか
     this.tempBuySellSyurui = 0;
-    this.tempBuySellNum = 1;
+    this.tempBuySellNum = -1;
     this.tempProcMap = -1;
     this.tempSaveNum = -1;//何番にセーブするか
     this.tempBookNum = -1;//どの本を読むか
     this.ENDCOUNTER = 1000;// ここに到達するまでは画面作りかけ状態
     this.MAXCOUNTER = 1100;// 画面完成後、ENDCOUNTER～MAXCOUNTERまでの値をぐるぐるしてアニメーションさせる
     this.cantOpCounter = 0;
+    this.textCounter = 0;// イベント画面で文字列をだんだん表示
     this.message = new Array();// 今回のイベントの全メッセージを格納(表示される毎に無くなっていく)
     this.doneEvent = new Array();//実行済みのイベントIDが入る
     this.haveBook = new Array();//所持している本のイベントIDが入る
@@ -44,12 +45,13 @@ EventView.prototype.init = function (eventID) {
         this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
         this.tempBuySellType = ITEM_TYPE_SWORD;// 売買時、どの武器を表示するか
         this.tempBuySellSyurui = -1;
-        this.tempBuySellNum = 1;
+        this.tempBuySellNum = -1;
         this.tempProcMap = -1;
         this.tempSaveNum = 1;//何番にセーブするか
         this.message = [];
     }
     this.cantOpCounter = 0;
+    this.textCounter = 0;
     this.printMsg = ["", "", "", "", "", "", ""];// 現在イベントビューに出すべき文字列
     this.px = -1;//イベント用の顔グラの場所(-1は「表示しない」)
     this.py = -1;//イベント用の顔グラの場所(-1は「表示しない」)
@@ -78,6 +80,13 @@ EventView.prototype.calc = function(ud, itemMap) {
     
     if (this.cantOpCounter > 0) {
         this.cantOpCounter--;
+    }
+    
+    if (this.state == EVENTVIEW_STATE_EVENT) {
+        this.textCounter++;
+        if (this.textCounter > EVENTVIEW_TEXT_W_EVENT) {
+            this.textCounter = EVENTVIEW_TEXT_W_EVENT;
+        }
     }
 }
 
@@ -430,6 +439,10 @@ EventView.prototype.paint = function(ud, itemMap) {
             }
             var interval = 25;
             ctxFlip.fillText(this.printMsg[i], textX, EVENTVIEW_TEXT_Y + 18 + interval * i);
+            if (i == EVENTVIEW_EVENT_MSGNUM - 1 || this.printMsg[i + 1].length == 0) {
+                ctxFlip.fillStyle = 'rgb(255, 255, 255)';
+                ctxFlip.fillRect(textX + this.textCounter, EVENTVIEW_TEXT_Y + interval * i, EVENTVIEW_TEXT_W_EVENT - this.textCounter, interval);
+            }
         }
     }
     if (this.state == EVENTVIEW_STATE_COMMAND) {
@@ -457,6 +470,8 @@ EventView.prototype.paint = function(ud, itemMap) {
             }
         }
         if (this.comState == EVENTVIEW_COMSTATE_SAVE_FILECHOICE || this.comState == EVENTVIEW_COMSTATE_LOAD_FILECHOICE){
+            ctxFlip.font = "16px 'MS Pゴシック'";
+            ctxFlip.fillStyle = 'rgb(0, 0, 0)';
             var checks = SaveFileIO.checkFile(this.tempSaveNum);
             if ("timeStamp" in checks) {
                 ctxFlip.fillText(checks.timeStamp, EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15);
@@ -464,6 +479,8 @@ EventView.prototype.paint = function(ud, itemMap) {
                 ctxFlip.fillText("ファイルがありません。", EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15);
             }
         }
+        ctxFlip.font = "14px 'MS Pゴシック'";
+        ctxFlip.fillStyle = 'rgb(0, 0, 0)';
         ctxFlip.fillText("所持金　" + this.money + "ウォッツ", EVENTVIEW_TEXT_X + 10, EVENTVIEW_TEXT_Y + EVENTVIEW_TEXT_H - 20);
         ctxFlip.fillText("ターン　" + this.turn, EVENTVIEW_TEXT_X + 200, EVENTVIEW_TEXT_Y + EVENTVIEW_TEXT_H - 20);
     }
@@ -498,7 +515,8 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
     }
     
     // 決定、戻るボタンを押す
-    if (this.shouldDecideCancel() && mouseX >= EVENTVIEW_COMMANDTXT_X && mouseX <= EVENTVIEW_COMMANDTXT_X + EVENTVIEW_COMMANDTXT_W) {
+    if (this.shouldDecideCancel() && mouseX >= EVENTVIEW_COMMANDTXT_X && mouseX <= EVENTVIEW_COMMANDTXT_X + EVENTVIEW_COMMANDTXT_W &&
+        mouseY >= EVENTVIEW_COMMANDTXT_Y && mouseY <= EVENTVIEW_COMMANDTXT_Y + EVENTVIEW_COMMANDTXT_H * 2 + EVENTVIEW_COMMANDINTERVAL) {
         var commandNum = Math.floor((mouseY - EVENTVIEW_COMMANDTXT_Y) / EVENTVIEW_COMMANDINTERVAL);
         switch(commandNum) {
             case 0:arguments//次へ
@@ -518,6 +536,11 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
     
     if (this.state == EVENTVIEW_STATE_EVENT) {
         if (this.message.length == 0) {
+            if (this.textCounter < EVENTVIEW_TEXT_W_EVENT) {
+                // イベント最終行を表示しきっていない場合、表示しきってreturn
+                this.textCounter = EVENTVIEW_TEXT_W_EVENT;
+                return -1;
+            }
             var ret = this.endEvent(ud, bv, itemMap);
             return ret;
         } else {
@@ -531,6 +554,7 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                 var ret = this.endEvent(ud, bv, itemMap);
                 return ret;
             } else {
+                this.textCounter = 0;
                 var isAddMsg = this.printOneMsg();
                 // printOneMsgの結果がメタ文字(実質的な文章追加でない)な場合、文章追加までprintOneMsg
                 while (!isAddMsg) {
@@ -557,13 +581,13 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                     case EVENTVIEW_COMMANDNUM_BUY:arguments
                         this.tempBuySellType = ITEM_TYPE_SWORD;// とりあえず剣を表示
                         this.tempBuySellSyurui = ItemDefine.getReverseItemIndexForBuy(itemMap, this.tempBuySellType, 0);
-                        this.tempBuySellNum = 1;
+                        this.tempBuySellNum = -1;
                         this.comState = EVENTVIEW_COMSTATE_BUY_WEAPCHOICE;
                     break;
                     case EVENTVIEW_COMMANDNUM_SELL:arguments
                         this.tempBuySellType = ITEM_TYPE_SWORD;// とりあえず剣を表示
                         this.tempBuySellSyurui = ItemDefine.getReverseItemIndex(itemMap, this.tempBuySellType, 0);
-                        this.tempBuySellNum = 1;
+                        this.tempBuySellNum = -1;
                         this.comState = EVENTVIEW_COMSTATE_SELL_WEAPCHOICE;
                     break;
                     case EVENTVIEW_COMMANDNUM_SAVE:arguments
@@ -586,6 +610,26 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                 return -1;
             }
         }
+        if (this.comState == EVENTVIEW_COMSTATE_PROC_MAPCHOICE) {
+            for (var i = 0; i < EVENTVIEW_MAP_MAX; i++) {
+                var tempField = this.fieldMap.get(i);
+                if (tempField != null && tempField.fieldState == EVENTVIEW_FIELD_TEKI) {
+                    var centerX = EVENTVIEW_MAP_X + EVENTVIEW_MAP_EXTEND * tempField.x;
+                    var centerY = EVENTVIEW_MAP_Y + EVENTVIEW_MAP_EXTEND * tempField.y;
+                    if (Math.abs(mouseX - centerX) < 5 && Math.abs(mouseY - centerY) < 5){
+                        if (this.checkFieldEvent(i)) {
+                            // イベント後に戦闘。処理はendEvent側に記述
+                            return;
+                        } else {
+                            var tempField = this.fieldMap.get(i);
+                            tempField.createEnemy(ud);// 最初の進攻時はこれで敵が作られる。取り返すときは、もともと攻めてきた敵を倒す
+                            bv.init(i, true);
+                            return GAMEMODE_BATTLE;
+                        }
+                    }
+                }
+            }
+        }
         if (this.comState == EVENTVIEW_COMSTATE_BUY_WEAPCHOICE || this.comState == EVENTVIEW_COMSTATE_SELL_WEAPCHOICE) {
             var x = Math.floor((mouseX - EVENTVIEW_COMMAND_X) / (EVENTVIEW_COMMAND_W + EVENTVIEW_COMMAND_DIST));
             // アイテムタイプ選択(剣～拳)
@@ -593,7 +637,7 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                 if (x >= 0 && x <= 5) {
                     this.tempBuySellType = x + ITEM_TYPE_SWORD;
                     this.tempBuySellSyurui = (this.comState == EVENTVIEW_COMSTATE_BUY_WEAPCHOICE ? ItemDefine.getReverseItemIndexForBuy(itemMap, this.tempBuySellType, 0) : ItemDefine.getReverseItemIndex(itemMap, this.tempBuySellType, 0));
-                    this.tempBuySellNum = 1;
+                    this.tempBuySellNum = -1;
                     return -1;
                 }
                 return -1;
@@ -605,7 +649,7 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                 if (x >= 0 && x <= maxX) {
                     this.tempBuySellType = x + ITEM_TYPE_SHIELD;
                     this.tempBuySellSyurui = (this.comState == EVENTVIEW_COMSTATE_BUY_WEAPCHOICE ? ItemDefine.getReverseItemIndexForBuy(itemMap, this.tempBuySellType, 0) : ItemDefine.getReverseItemIndex(itemMap, this.tempBuySellType, 0));
-                    this.tempBuySellNum = 1;
+                    this.tempBuySellNum = -1;
                     return -1;
                 }
                 return -1;
@@ -621,7 +665,7 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                 }
                 if (newSyurui != -1) {
                     this.tempBuySellSyurui = newSyurui;
-                    this.tempBuySellNum = 1;
+                    this.tempBuySellNum = -1;
                     return -1;
                 }
                 return -1;
@@ -768,12 +812,13 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
     this.doneEvent.push(this.eventID);
     switch(this.eventID) {
         case EVENTVIEW_EVENTID_OP:arguments
-            bv.init(0, true);
+            var fieldNum = 0;
+            bv.init(fieldNum, true);
             u = new UnitDefine();
             u.initCommon(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_PRINCESS, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 1, SKILL_KEIKAI, SKILL_KIYOME, SKILL_KENJITSU);
             ud.push(u);
             
-            var tempField = this.fieldMap.get(0);
+            var tempField = this.fieldMap.get(fieldNum);
             tempField.createEnemy(ud);
             
             var tempItem = new ItemDefine();
@@ -782,9 +827,9 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             ItemDefine.init(ITEM_TYPE_WATER, 0, tempItem);
             itemMap.set(tempItem.namae, 1);
             return GAMEMODE_BATTLE;
-            break;
         case EVENTVIEW_EVENTID_OP_WIN:arguments
-            bv.init(0, true);
+            var fieldNum = 0;
+            bv.init(fieldNum, true);
             // ヤナエを全回復
             UnitDefine.recoverMikata(ud);
             
@@ -795,10 +840,10 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             //tempField.createEnemy(ud);
             // createEnemyは1フィールドにつき1回しか使えない
             var u2 = new UnitDefine();
-            u2.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_SWORD, BATTLE_TEKI, BATTLE_DEFENCE, 0, 1, 0, 0, 0, ITEM_TYPE_SWORD, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_NO, 1.2, -1);
+            u2.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_SWORD, BATTLE_TEKI, BATTLE_DEFENCE, fieldNum, 1, 0, 0, 0, ITEM_TYPE_SWORD, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_NO, 1.2, -1);
             ud.push(u2);
             var u3 = new UnitDefine();
-            u3.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_BOW, BATTLE_TEKI, BATTLE_DEFENCE, 0, 1, 0, 0, 0, ITEM_TYPE_BOW, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM + BATTLEAI_SM_NO, 1.4, -1);
+            u3.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_BOW, BATTLE_TEKI, BATTLE_DEFENCE, fieldNum, 1, 0, 0, 0, ITEM_TYPE_BOW, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM + BATTLEAI_SM_NO, 1.4, -1);
             ud.push(u3);
             
             var tempItem = new ItemDefine();
@@ -809,11 +854,20 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             ItemDefine.init(ITEM_TYPE_SPEAR, 0, tempItem);
             itemMap.set(tempItem.namae, 1);
             return GAMEMODE_BATTLE;
+        case EVENTVIEW_EVENTID_OP_WIN2:arguments
+            // ヤナエ、サキスを全回復
+            UnitDefine.recoverMikata(ud);
             break;
         case EVENTVIEW_EVENTID_OP_LOSE:arguments
         case EVENTVIEW_EVENTID_OP_LOSE2:arguments
             return GAMEMODE_GAMEOVER;
-            break;
+        case EVENTVIEW_EVENTID_STAGE1_KANRIKA:arguments
+            var fieldNum = 1;
+            bv.init(fieldNum, true);
+            
+            var tempField = this.fieldMap.get(fieldNum);
+            tempField.createEnemy(ud);
+            return GAMEMODE_BATTLE;
     }
     // イベント終了
     this.state = EVENTVIEW_STATE_COMMAND;
@@ -838,6 +892,16 @@ EventView.prototype.setFace = function(faceId) {
         case UNIT_SYURUI_BOW:arguments
             this.px = 2 * 256;
             this.py = 2 * 320;
+            this.pSyurui = BATTLE_PSYURUI_ZAKO;
+            break;
+        case UNIT_SYURUI_SHIELD:arguments
+            this.px = 1 * 256;
+            this.py = 1 * 320;
+            this.pSyurui = BATTLE_PSYURUI_ZAKO;
+            break;
+        case UNIT_SYURUI_MAGIC:arguments
+            this.px = 3 * 256;
+            this.py = 0 * 320;
             this.pSyurui = BATTLE_PSYURUI_ZAKO;
             break;
         case UNIT_SYURUI_PRINCESS:arguments
@@ -930,7 +994,7 @@ EventView.prototype.decide = function(mouseX, mouseY, bv, ud, itemMap) {
             itemMap.set(tempItem.namae, tempItemNum + this.tempBuySellNum);
             this.tempBuySellSyurui = ItemDefine.getReverseItemIndexForBuy(itemMap, this.tempBuySellType, 0);
             this.money -= needPrice;
-            this.tempBuySellNum = 1;
+            this.tempBuySellNum = -1;
             CommonView.addWarn("購入しました。");
         } else if (this.tempBuySellSyurui == -1) {
             CommonView.addWarn("購入アイテムを選んでください。");
@@ -946,7 +1010,7 @@ EventView.prototype.decide = function(mouseX, mouseY, bv, ud, itemMap) {
             itemMap.set(tempItem.namae, tempItemNum - this.tempBuySellNum);
             this.tempBuySellSyurui = ItemDefine.getReverseItemIndex(itemMap, this.tempBuySellType, 0);
             this.money += Math.floor(EVENTVIEW_SELL_RATE * tempItem.price * this.tempBuySellNum);
-            this.tempBuySellNum = 1;
+            this.tempBuySellNum = -1;
             CommonView.addWarn("売却しました。");
             return -1;
         } else if (this.tempBuySellSyurui == -1) {
@@ -957,7 +1021,7 @@ EventView.prototype.decide = function(mouseX, mouseY, bv, ud, itemMap) {
     
     if (this.comState == EVENTVIEW_COMSTATE_SAVE_FILECHOICE) {
         if (this.tempSaveNum >= 0) {
-            SaveFileIO.saveFile(this.tempSaveNum, this, itemMap);
+            SaveFileIO.saveFile(this.tempSaveNum, this, ud, itemMap);
             this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
             return -1;
         } else {
@@ -967,7 +1031,7 @@ EventView.prototype.decide = function(mouseX, mouseY, bv, ud, itemMap) {
     }
     if (this.comState == EVENTVIEW_COMSTATE_LOAD_FILECHOICE) {
         if (this.tempSaveNum >= 0) {
-            SaveFileIO.loadFile(this.tempSaveNum, this, itemMap);
+            SaveFileIO.loadFile(this.tempSaveNum, this, ud, itemMap);
             this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
             return -1;
         } else {
@@ -991,15 +1055,36 @@ EventView.prototype.cancel = function(mouseX, mouseY, bv, ud, itemMap) {
     return -1;
 }
 
+// イベント発生するならtrue
+EventView.prototype.checkFieldEvent = function(fieldNum) {
+    switch(fieldNum) {
+        case 1:arguments
+        return this.trueIfAbsent(EVENTVIEW_EVENTID_STAGE1_KANRIKA);
+    }
+}
+
+// イベント未発生ならtrueを返しイベント発生
+EventView.prototype.trueIfAbsent = function(eventNum) {
+    if (this.doneEvent.indexOf(eventNum) != -1) {
+        return false;
+    }
+    this.init(eventNum);
+    return true;
+}
+
 EventView.prototype.decideNextEvent = function(isWin) {
     if (isWin) {
         // 戦闘勝利
-        return EVENTVIEW_EVENTID_OP_WIN;
+        if (this.doneEvent.indexOf(EVENTVIEW_EVENTID_OP_WIN) == -1) {
+            return EVENTVIEW_EVENTID_OP_WIN;
+        } else if (this.doneEvent.indexOf(EVENTVIEW_EVENTID_OP_WIN2) == -1) {
+            return EVENTVIEW_EVENTID_OP_WIN2;
+        }
     } else {
         // 戦闘敗北
         if (this.doneEvent.indexOf(EVENTVIEW_EVENTID_OP_WIN) == -1) {
             return EVENTVIEW_EVENTID_OP_LOSE;
-        } else {
+        } else if (this.doneEvent.indexOf(EVENTVIEW_EVENTID_OP_WIN2) == -1) {
             return EVENTVIEW_EVENTID_OP_LOSE2;
         }
     }

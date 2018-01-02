@@ -30,8 +30,8 @@ FieldDefine.prototype.init = function(position) {
             this.dfY = 111;
         break;
         case 1:arguments
-            this.ofMap = "abcabcabc";
-            this.dfMap = "deffedkkk";
+            this.ofMap = "dcbdcaccb";
+            this.dfMap = "dahbchahh";
             this.x = EVENTVIEW_STAGE1_X;
             this.y = EVENTVIEW_STAGE1_Y - EVENTVIEW_MAP_INTERVAL;
             this.fieldState = EVENTVIEW_FIELD_TEKI;
@@ -51,11 +51,20 @@ FieldDefine.prototype.createEnemy = function(ud) {
     if (this.isEnemyAppear) {
         return;
     }
+    this.isEnemyAppear = true;
     switch(this.position) {
         case 0:arguments
             var u = new UnitDefine();
-            u.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_SWORD, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 1, 0, 0, 0, ITEM_TYPE_SWORD, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_NO, 1.2, -1);
+            u.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_SWORD, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 1, 0, 0, 0, ITEM_TYPE_SWORD, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_NO, 1.2, -1);
             ud.push(u);
+        break;
+        case 1:arguments
+            var u = new UnitDefine();
+            u.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_SHIELD, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 2, 0, 0, 0, ITEM_TYPE_SHIELD, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_FIRST + BATTLEAI_SM_NO, 1.2, -1);
+            ud.push(u);
+            var u2 = new UnitDefine();
+            u2.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_MAGIC, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 1, 0, 0, 0, ITEM_TYPE_FIRE, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM + BATTLEAI_SM_NO, 1.2, -1);
+            ud.push(u2);
         break;
         default:arguments
             // この番号にマップなし
