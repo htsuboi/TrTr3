@@ -14,6 +14,12 @@ SaveFileIO.saveFile = function(fileNo, ev, ud, itemMap) {
     localStorage.setItem("TrTr3unitData" + fileNo, JSON.stringify(ud));
     localStorage.setItem("TrTr3eventView" + fileNo, JSON.stringify(ev));
     // Mapはローカルストレージ保存できないので、単なる連想配列にする
+    var plainField = {};
+    for (var [key, value] of ev.fieldMap) {
+        plainField[key] = value;
+    }
+    localStorage.setItem("TrTr3eventViewFM" + fileNo, JSON.stringify(plainField));
+    
     var plainMap = {};
     for (var [key, value] of itemMap) {
         plainMap[key] = value;
@@ -31,9 +37,18 @@ SaveFileIO.loadFile = function(fileNo, ev, ud, itemMap) {
     for (var name in tempEv) {
         ev[name] = tempEv[name];
     }
+    var tempEvFM = JSON.parse(localStorage.getItem("TrTr3eventViewFM" + fileNo));
+    ev.fieldMap = new Map();
+    for (var name in tempEvFM) {
+        var fd = new FieldDefine();
+        Object.assign(fd, tempEvFM[name]);
+        ev.fieldMap.set(parseInt(name, 10), fd);
+    }
     var plainUD = JSON.parse(localStorage.getItem("TrTr3unitData" + fileNo));
-    for (var name in plainUD) {
-        ud.push(name);
+    for (var i = 0; i < plainUD.length; i++) {
+        var u = new UnitDefine();
+        Object.assign(u, plainUD[i]);
+        ud.push(u);
     }
     var plainIM = JSON.parse(localStorage.getItem("TrTr3itemMap" + fileNo));
     for (var name in plainIM) {

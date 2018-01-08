@@ -821,6 +821,12 @@ UnitDefine.getCharaImg = function(pSyurui) {
             arguments.callee.pcImg.src = "img/PC.png";
         }
         return arguments.callee.pcImg;
+    case BATTLE_PSYURUI_NPC:arguments
+        if (typeof arguments.callee.npcImg == 'undefined') {
+            arguments.callee.npcImg = new Image();
+            arguments.callee.npcImg.src = "img/NPC.png";
+        }
+        return arguments.callee.npcImg;
     default:arguments
         printWarn('no CharaImg : pSyurui' + pSyurui);  
     return null;

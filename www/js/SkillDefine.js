@@ -67,10 +67,12 @@ SkillDefine.getMessage = function(skill) {
     case SKILL_YOROI:arguments
         return "鎧通し";
     case SKILL_KYOEN:arguments
-        return "狂宴";
+        return "狂宴";*/
     case SKILL_SYONETSU:arguments
-        return "焦熱波";
-    case SKILL_AKURO:arguments
+        skillTxt.push("ダメージの" + SKILL_SYONETSU_RATE + "%をターゲット以外の");
+        skillTxt.push("敵に与える(トドメ不可)");
+        break;
+    /*case SKILL_AKURO:arguments
         return "悪路踏破";
     case SKILL_TAIEN:arguments
         return "対遠防御";*/

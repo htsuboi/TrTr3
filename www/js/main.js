@@ -63,23 +63,28 @@ intervalId = setInterval(calcAndPaint, 20);
 // calcはデータ計算のみ、paintは描画のみ
 function calcAndPaint() {
     var next = {nextGameMode: -1};
-    switch(gameMode) {
-        case GAMEMODE_TITLE:arguments
-            tv.calc();
-            tv.paint();
-            break;
-        case GAMEMODE_BATTLE:arguments
-            bv.calc(ud, itemMap, next, ev);
-            bv.paint(ud, itemMap);
-            break;
-        case GAMEMODE_EVENT:arguments
-            ev.calc(ud, itemMap);
-            ev.paint(ud, itemMap);
-            break;
-        case GAMEMODE_GAMEOVER:arguments
-            gov.calc();
-            gov.paint();
-            break;
+    try {
+        switch(gameMode) {
+            case GAMEMODE_TITLE:arguments
+                tv.calc();
+                tv.paint();
+                break;
+            case GAMEMODE_BATTLE:arguments
+                bv.calc(ud, itemMap, next, ev);
+                bv.paint(ud, itemMap);
+                break;
+            case GAMEMODE_EVENT:arguments
+                ev.calc(ud, itemMap);
+                ev.paint(ud, itemMap);
+                break;
+            case GAMEMODE_GAMEOVER:arguments
+                gov.calc();
+                gov.paint();
+                break;
+        }
+    }
+    catch (e) {
+        CommonView.addWarn(e);
     }
     if (next.nextGameMode >= 0) {
         gameMode = next.nextGameMode;
@@ -111,20 +116,21 @@ function clickPage(e) {
         return -1;
     }
     try {
-    switch(gameMode) {
-        case GAMEMODE_TITLE:arguments
-            nextGameMode = tv.clk(mouseX, mouseY, ev, ud, itemMap);
-            break;
-        case GAMEMODE_BATTLE:arguments
-            nextGameMode = bv.clk(mouseX, mouseY, ev, ud, itemMap);
-            break;
-        case GAMEMODE_GAMEOVER:arguments
-            nextGameMode = gov.clk(mouseX, mouseY);
-            break;
-        case GAMEMODE_EVENT:arguments
-            nextGameMode = ev.clk(mouseX, mouseY, bv, ud, itemMap);
-            break;
-    }}
+        switch(gameMode) {
+            case GAMEMODE_TITLE:arguments
+                nextGameMode = tv.clk(mouseX, mouseY, ev, ud, itemMap);
+                break;
+            case GAMEMODE_BATTLE:arguments
+                nextGameMode = bv.clk(mouseX, mouseY, ev, ud, itemMap);
+                break;
+            case GAMEMODE_GAMEOVER:arguments
+                nextGameMode = gov.clk(mouseX, mouseY);
+                break;
+            case GAMEMODE_EVENT:arguments
+                nextGameMode = ev.clk(mouseX, mouseY, bv, ud, itemMap);
+                break;
+        }
+    }
     catch (e) {
         CommonView.addWarn(e);
     }

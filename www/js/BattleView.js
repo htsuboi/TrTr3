@@ -74,9 +74,7 @@ BattleView.prototype.init = function(position, isOffence) {
     this.state = BATTLEVIEW_STATE_FIRSTMOVE;
     this.commandState = BATTLEVIEW_COMSTATE_PRECHOICE;
     this.cantOpCounter = 0;// 演出のため操作不能な時間
-    this.spGauge = [0, 0];// 味方、敵のspゲージ
     this.tempMikata = new Array();// 最初の参戦ユニット決定時にのみ使用
-    this.spGaugePaint = [0, 0];// 味方、敵のspゲージ(表示用　実際のゲージはspGauge)
     this.winExp = 0;//戦闘勝利時のExp
     this.winMoney = 0;//戦闘勝利時の金
     // 手持ち武器の選択時、tempEquipTypeForPaintは「ITEM_TYPE_TEMOCHI」だが、tempEqTypeForEquipは手持ち武器の種類により変わる
@@ -164,12 +162,13 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
         this.initTurn(ud);
     }
     
-    if ((this.turn == BATTLEVIEW_TURN_MIKATA && this.commandState == BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE || 
+    if (((this.turn == BATTLEVIEW_TURN_MIKATA && this.commandState == BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE) || 
        (this.turn == BATTLEVIEW_TURN_TEKI && this.state == BATTLEVIEW_STATE_ACTSTART)) && this.cantOpCounter > 0) {
         // 攻撃処理中
         var tempIndex = 0;
         // trueなら攻撃、falseならアイテム使用/なにもしない
-        var isAttack = (this.tempEqTypeForEquip != ITEM_TYPE_DOGU && this.tempEqTypeForEquip != ITEM_TYPE_NOTHING ? true :false);
+        var isAttack = ((this.turn == BATTLEVIEW_TURN_TEKI || (this.tempEqTypeForEquip != ITEM_TYPE_DOGU && this.tempEqTypeForEquip != ITEM_TYPE_NOTHING)) ? true :false);
+        //var isAttack = ((this.tempEqTypeForEquip != ITEM_TYPE_DOGU && this.tempEqTypeForEquip != ITEM_TYPE_NOTHING) ? true :false);
         var tempItem = new ItemDefine();
         ItemDefine.init(this.tempEqTypeForEquip, this.tempEqSyurui, tempItem);
         if (this.cantOpCounter > BATTLE_BATTLEMSG_SECOND + 5) {
@@ -177,8 +176,10 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
         }
         if (this.cantOpCounter <= BATTLE_BATTLEMSG_SECOND + 5) {
             if (isAttack) {
-                this.battleMsg[tempIndex++] = unitAtFocus.namae + "は" + this.tempTargetUnit.namae + "に攻撃した。";
-            } else {
+                if (this.tempTargetUnit != null) {
+                    this.battleMsg[tempIndex++] = unitAtFocus.namae + "は" + this.tempTargetUnit.namae + "に攻撃した。";
+                }
+            } else {              
                 if (this.tempEqTypeForEquip == ITEM_TYPE_DOGU) {
                     //アイテム使用
                     this.battleMsg[tempIndex++] = unitAtFocus.namae + "は" + tempItem.namae + "を使った。";
@@ -190,46 +191,51 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
         }
         if (this.cantOpCounter <= BATTLE_BATTLEMSG_SECOND) {
             if (isAttack) {
-                if (!this.tempResult.isHit) {
-                    this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "は攻撃をかわした。";
-                } else {
-                    if (this.tempResult.isCrt) {
-                       this.battleMsg[tempIndex++] = "クリティカル!"; 
-                    }
-                    if (this.tempResult.damage == 0) {
-                        this.battleMsg[tempIndex++] = "ダメージが通らない!";
+                if (this.tempTargetUnit != null) {
+                    if (!this.tempResult.isHit) {
+                        this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "は攻撃をかわした。";
                     } else {
-                        this.battleMsg[tempIndex++] = this.tempResult.damage + "ダメージ!";
+                        if (this.tempResult.isCrt) {
+                           this.battleMsg[tempIndex++] = "クリティカル!"; 
+                        }
+                        if (this.tempResult.damage == 0) {
+                            this.battleMsg[tempIndex++] = "ダメージが通らない!";
+                        } else {
+                            this.battleMsg[tempIndex++] = this.tempResult.damage + "ダメージ!";
+                        }
                     }
                 }
             }
         }
+    
         if (this.cantOpCounter == BATTLE_BATTLEMSG_THIRD) {
             if (isAttack && this.tempResult.isHit) {
-                // ダメージ・毒・麻痺
-                if (unitAtFocus.hasSkill(ud, SKILL_SYONETSU)) {
-                    for (var i = 0; i < ud.length; i++) {
-                        var u = ud[i];
-                        if (u.side == this.tempTargetUnit.side && u.field == this.tempTargetUnit.field && !u.equalUnit(this.tempTargetUnit)) {
-                            u.hp = Math.max(u.hp - Math.floor(0.01 * SKILL_SYONETSU_RATE * this.tempResult.damage), 1);
+                if (this.tempTargetUnit != null) {
+                    // ダメージ・毒・麻痺
+                    if (unitAtFocus.hasSkill(ud, SKILL_SYONETSU)) {
+                        for (var i = 0; i < ud.length; i++) {
+                            var u = ud[i];
+                            if (u.side == this.tempTargetUnit.side && u.field == this.tempTargetUnit.field && !u.equalUnit(this.tempTargetUnit)) {
+                                u.hp = Math.max(u.hp - Math.floor(0.01 * SKILL_SYONETSU_RATE * this.tempResult.damage), 1);
+                            }
                         }
                     }
-                }
-                this.tempTargetUnit.hp = Math.max(this.tempTargetUnit.hp - this.tempResult.damage, 0);
-                if (this.tempTargetUnit.hp == 0) {
-                    this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "は倒れた!";
-                } else {
-                    if (this.tempResult.isPoison && this.tempResult.isStun) {
-                        this.tempTargetUnit.isPoison = true;
-                        this.tempTargetUnit.isStun = true;
-                        this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "は毒と麻痺を受けた!";
-                    } else if (this.tempResult.isPoison) {
-                        this.tempTargetUnit.isPoison = true;
-                        this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "は毒を受けた!";
-                    } else if (this.tempResult.isStun) {
-                        this.tempTargetUnit.isStun = true;
-                        this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "は麻痺を受けた!";
-                    } 
+                    this.tempTargetUnit.hp = Math.max(this.tempTargetUnit.hp - this.tempResult.damage, 0);
+                    if (this.tempTargetUnit.hp == 0) {
+                        this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "は倒れた!";
+                    } else {
+                        if (this.tempResult.isPoison && this.tempResult.isStun) {
+                            this.tempTargetUnit.isPoison = true;
+                            this.tempTargetUnit.isStun = true;
+                            this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "は毒と麻痺を受けた!";
+                        } else if (this.tempResult.isPoison) {
+                            this.tempTargetUnit.isPoison = true;
+                            this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "は毒を受けた!";
+                        } else if (this.tempResult.isStun) {
+                            this.tempTargetUnit.isStun = true;
+                            this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "は麻痺を受けた!";
+                        } 
+                    }
                 }
             } 
             if (!isAttack){
@@ -271,7 +277,8 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
                 this.shibouUnit(this.tempTargetUnit, ud);
             }
         }
-        if (this.cantOpCounter == 1) {
+        // 攻撃実行後のチェック
+        if (this.tempTargetUnit != null && this.cantOpCounter == 1) {
             var endCheck = this.endBattleCheck(ud);
             if (endCheck == -1) {
                 // 決着がついていない
@@ -576,7 +583,6 @@ BattleView.prototype.paint = function (ud, itemMap) {
                 }
             }
         }
-        
         // 地形メッセージ表示
         ctxFlip.fillStyle = getGladColor((this.MAXCOUNTER - this.counter) / 6);
         ctxFlip.fillRect(BATTLEVIEW_FIELDTXT_X - 2, BATTLEVIEW_FIELDTXT_Y - 2, BATTLEVIEW_FIELDTXT_W + 5, BATTLEVIEW_FIELDTXT_H + 5);
@@ -624,7 +630,6 @@ BattleView.prototype.paint = function (ud, itemMap) {
                 ctxFlip.fillText(unitText, x, y + 11);
             }
         }
-        
         // スキル一覧表示
         if (this.turn == BATTLEVIEW_TURN_SKILLSELECT) {
             var tempY = BATTLEVIEW_UNITSELECT_Y;
@@ -671,16 +676,17 @@ BattleView.prototype.paint = function (ud, itemMap) {
             ctxFlip.fillStyle = 'rgb(255, 255, 255)';
             ctxFlip.fillRect(BATTLEVIEW_SPGAUGE_X, BATTLEVIEW_SPGAUGE_Y, BATTLEVIEW_SPGAUGE_W, BATTLEVIEW_SPGAUGE_H);
             ctxFlip.fillStyle = 'rgb(0, 0, 0)';
-            ctxFlip.fillText("P:", BATTLEVIEW_SPGAUGE_X, BATTLEVIEW_SPGAUGE_Y + 10);
-            ctxFlip.fillText(this.spGauge[BATTLE_MIKATA], BATTLEVIEW_SPGAUGE_X + 105, BATTLEVIEW_SPGAUGE_Y + 10);
-            ctxFlip.fillText("E:", BATTLEVIEW_SPGAUGE_X, BATTLEVIEW_SPGAUGE_Y + 25);
-            ctxFlip.fillText(this.spGauge[BATTLE_TEKI], BATTLEVIEW_SPGAUGE_X + 105, BATTLEVIEW_SPGAUGE_Y + 25);
+            ctxFlip.font = "11px 'MS Pゴシック'";
+            ctxFlip.fillText("【SPゲージ】", BATTLEVIEW_SPGAUGE_X, BATTLEVIEW_SPGAUGE_Y + 10);
+            ctxFlip.fillText("P:", BATTLEVIEW_SPGAUGE_X, BATTLEVIEW_SPGAUGE_Y + 25);
+            ctxFlip.fillText(this.spGauge[BATTLE_MIKATA], BATTLEVIEW_SPGAUGE_X + 105, BATTLEVIEW_SPGAUGE_Y + 25);
+            ctxFlip.fillText("E:", BATTLEVIEW_SPGAUGE_X, BATTLEVIEW_SPGAUGE_Y + 40);
+            ctxFlip.fillText(this.spGauge[BATTLE_TEKI], BATTLEVIEW_SPGAUGE_X + 105, BATTLEVIEW_SPGAUGE_Y + 40);
             ctxFlip.fillStyle = 'rgb(0, 0, 239)';
-            ctxFlip.fillRect(BATTLEVIEW_SPGAUGE_X + 15, BATTLEVIEW_SPGAUGE_Y + 4, 80 * this.spGaugePaint[BATTLE_MIKATA] / BATTLE_SPGAUGE_MAX, 5);
+            ctxFlip.fillRect(BATTLEVIEW_SPGAUGE_X + 15, BATTLEVIEW_SPGAUGE_Y + 19, 80 * this.spGaugePaint[BATTLE_MIKATA] / BATTLE_SPGAUGE_MAX, 5);
             ctxFlip.fillStyle = 'rgb(239, 0, 0)';
-            ctxFlip.fillRect(BATTLEVIEW_SPGAUGE_X + 15, BATTLEVIEW_SPGAUGE_Y + 19, 80 * this.spGaugePaint[BATTLE_TEKI] / BATTLE_SPGAUGE_MAX, 5);
+            ctxFlip.fillRect(BATTLEVIEW_SPGAUGE_X + 15, BATTLEVIEW_SPGAUGE_Y + 34, 80 * this.spGaugePaint[BATTLE_TEKI] / BATTLE_SPGAUGE_MAX, 5);
         }
-
         for (var i = 0; i < ud.length; i++) {
             var u = ud[i];
             if (u.field == this.field) {
@@ -876,7 +882,6 @@ BattleView.prototype.paint = function (ud, itemMap) {
                 }
             }
         }
-        
         // 手番ユニットの強調
         if (this.turn == BATTLEVIEW_TURN_MIKATA || this.turn == BATTLEVIEW_TURN_TEKI) {
             for (var i = 0; i <= 4; i++) {
@@ -908,12 +913,10 @@ BattleView.prototype.paint = function (ud, itemMap) {
                 ctxFlip.stroke();
             }
         }
-        
         // ユニットステータス表示
         if (this.infoUnit != null) {
             this.unitMsg(this.infoUnit, ctxFlip);
         }
-        
         if (this.commandState == BATTLEVIEW_COMSTATE_ACT_WEAPCHOICE) {
             // 装備可能なアイテム選択(i == 0は「手持ち」)
             for (var i = 0; i <= ITEM_EQMAX; i++) {
@@ -1011,7 +1014,6 @@ BattleView.prototype.paint = function (ud, itemMap) {
                 }
             }   
         }
-        
         if (this.shouldDecideCancel()) {
             // コマンド表示
             for (var i = 0; i <= 1; i++) {
@@ -1148,10 +1150,8 @@ BattleView.prototype.paint = function (ud, itemMap) {
             }
         }
     }
-    
     // (全画面共通)アナウンスメッセージ表示
     CommonView.paintMessage(ctxFlip);
-    
     var imageData = ctxFlip.getImageData(0, 0, CommonView.staticCanvasFlip().width, CommonView.staticCanvasFlip().height);
     var ctx = CommonView.staticCanvas().getContext('2d');
     ctx.putImageData(imageData, 0, 0);
@@ -1283,7 +1283,6 @@ BattleView.prototype.unitMsg = function (u, ctxFlip) {
     ctxFlip.fillRect(BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y, BATTLEVIEW_UNITTXT_W, BATTLEVIEW_UNITTXT_H);
     ctxFlip.fillStyle = 'rgb(0, 0, 0)';
     ctxFlip.font = "11px 'MS Pゴシック'";
-    
     var battleStatus = u.calcBattleStr();// 装備品込みのステータスと装備名を取得
     var focusUnit = this.getUnitAtFocus(ud); 
     if (this.turn == BATTLEVIEW_TURN_UNITSELECT || this.turn == BATTLEVIEW_TURN_SKILLSELECT) {
@@ -1303,7 +1302,7 @@ BattleView.prototype.unitMsg = function (u, ctxFlip) {
     ctxFlip.fillText(u.namae, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20);
     ctxFlip.fillText("Lv" + u.lv, BATTLEVIEW_UNITTXT_X + 75, BATTLEVIEW_UNITTXT_Y + 20);//Lv
     ctxFlip.fillText(battleStatus.namae, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);//装備品
-    ctxFlip.fillText("ドロップアイテム", BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);//ドロップアイテム
+    ctxFlip.fillText("　", BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);//ドロップアイテム
     ctxFlip.fillText("HP:" + u.hp + "/" + u.mhpObj.now, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
     if (u.side == BATTLE_MIKATA) {
         ctxFlip.fillText("気力:" + u.sp + "/" + u.msp, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
@@ -1512,13 +1511,13 @@ BattleView.prototype.clk = function(mouseX, mouseY, ev, ud, itemMap) {
     }
     
     if (this.turn == BATTLEVIEW_TURN_WINBATTLE && this.counter >= this.WINCOUNTER) {
-        var eventId = ev.decideNextEvent(true);
+        var eventId = ev.decideNextEvent(true, this.field);
         ev.init(eventId);
         return GAMEMODE_EVENT;
     }
     
     if (this.turn == BATTLEVIEW_TURN_LOSEBATTLE && this.counter >= this.LOSECOUNTER) {
-        var eventId = ev.decideNextEvent(false);
+        var eventId = ev.decideNextEvent(false, this.field);
         ev.init(eventId);
         return GAMEMODE_EVENT;
     }
@@ -1585,6 +1584,7 @@ BattleView.prototype.clk = function(mouseX, mouseY, ev, ud, itemMap) {
         var unitIndex = Math.floor(yIndex / 2);//2行ごとに別のユニットのスキル選択になる
         if (this.tempMikata.length > unitIndex) {
             var tempUnit = this.tempMikata[unitIndex];
+            this.infoUnit = tempUnit;
             var skillIndex = xIndex * 2 + (yIndex % 2) - 1;//ユニット名をクリックすることがあるが、このときskillIndexは-1
             if (skillIndex >= 0) {
                 if (tempUnit.skillON[skillIndex] == false) {
@@ -2079,6 +2079,12 @@ BattleView.prototype.selectTutorial = function() {
     }
     if (this.turn == BATTLEVIEW_TURN_SKILLSELECT) {
         return COMMONVIEW_TUTORIALID_SKILLSELECT;   
+    }
+    if (this.turn == BATTLEVIEW_TURN_MIKATA && this.commandState == BATTLEVIEW_COMSTATE_PRECHOICE) {
+        return COMMONVIEW_TUTORIALID_BATTLEMAIN;   
+    }
+    if (this.turn == BATTLEVIEW_TURN_MIKATA && this.commandState == BATTLEVIEW_COMSTATE_MOVE) {
+        return COMMONVIEW_TUTORIALID_BATTLEMOVE;   
     }
     return -1;
 }

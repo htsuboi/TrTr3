@@ -109,6 +109,17 @@ CommonView.bluePoint = function(v) {
     return arguments.callee.bluePoint;
 };
 
+// チュートリアル表示中の紫枠座標(-1は表示しない)
+CommonView.purplePoint = function(v) {
+    if (typeof arguments.callee.purplePoint == 'undefined') {
+        arguments.callee.purplePoint = {x: -1, y: -1, w: -1, h: -1};
+    }
+    if (typeof(v) != 'undefined') {
+        arguments.callee.purplePoint = v;
+    }
+    return arguments.callee.purplePoint;
+};
+
 // 表示済みのチュートリアルを格納
 CommonView.printedTutorial = function(v) {
     if (typeof arguments.callee.printedTutorial == 'undefined') {
@@ -239,6 +250,15 @@ CommonView.paintMessage = function(ctxFlip) {
             ctxFlip.strokeStyle = 'rgb(0, 0, 239)';
             ctxFlip.strokeRect(blue_X, blue_Y, blue_W, blue_H);
         }
+        
+        if (CommonView.purplePoint().x != -1) {
+            var purple_X = CommonView.purplePoint().x - margin;
+            var purple_Y = CommonView.purplePoint().y - margin;
+            var purple_W = CommonView.purplePoint().w + 2 * margin;
+            var purple_H = CommonView.purplePoint().h + 2 * margin;
+            ctxFlip.strokeStyle = 'rgb(239, 0, 239)';
+            ctxFlip.strokeRect(purple_X, purple_Y, purple_W, purple_H);
+        }
     }
     
     ctxFlip.fillStyle = 'rgb(127, 127, 127)';
@@ -314,6 +334,7 @@ CommonView.addTutorial = function(tutorialID, onlyFirst) {
     CommonView.tutorialPoint({x: -1, y: -1, w: -1, h: -1});
     CommonView.redPoint({x: -1, y: -1, w: -1, h: -1});
     CommonView.bluePoint({x: -1, y: -1, w: -1, h: -1});
+    CommonView.purplePoint({x: -1, y: -1, w: -1, h: -1});
     TutorialMessage.getMessage(tutorialID, CommonView.tutorials());
     CommonView.printTutorialFlag(true);
     // 表示済みのチュートリアルに追加

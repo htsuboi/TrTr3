@@ -11,6 +11,7 @@ EventView.prototype.gameStart = function () {
     this.tempBuySellNum = -1;
     this.tempProcMap = -1;
     this.tempSaveNum = -1;//何番にセーブするか
+    this.tempMapNum = -1;//どのマップにカーソルをあわせるか
     this.tempBookNum = -1;//どの本を読むか
     this.ENDCOUNTER = 1000;// ここに到達するまでは画面作りかけ状態
     this.MAXCOUNTER = 1100;// 画面完成後、ENDCOUNTER～MAXCOUNTERまでの値をぐるぐるしてアニメーションさせる
@@ -19,7 +20,7 @@ EventView.prototype.gameStart = function () {
     this.message = new Array();// 今回のイベントの全メッセージを格納(表示される毎に無くなっていく)
     this.doneEvent = new Array();//実行済みのイベントIDが入る
     this.haveBook = new Array();//所持している本のイベントIDが入る
-    this.haveBook.push(EVENTVIEW_BOOKID_KINGDEATH);
+    this.pushBook(EVENTVIEW_BOOKID_KINGDEATH);
     this.printMsg = ["", "", "", "", "", "", ""];// 現在イベントビューに出すべき文字列
     this.money = 400;// 「所持金」データはここに保持
     this.turn = 0;// 「ターン」データはここに保持
@@ -31,6 +32,13 @@ EventView.prototype.gameStart = function () {
     this.fontID = [EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL];//イベント文字列の書体
     this.nowFontID = EVENTVIEW_EVENTFONT_NORMAL;
     this.fieldMap = new Map();
+    for (var i = 0; i < EVENTVIEW_MAP_MAX; i++) {
+        var tempField = new FieldDefine();
+        var ret = tempField.init(i);
+        if (ret == 0) {
+            this.fieldMap.set(i, tempField);
+        }
+    }
 };
 
 EventView.prototype.init = function (eventID) {
@@ -43,6 +51,7 @@ EventView.prototype.init = function (eventID) {
     } else {
         this.state = EVENTVIEW_STATE_COMMAND;
         this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
+        this.tempMapNum = -1;
         this.tempBuySellType = ITEM_TYPE_SWORD;// 売買時、どの武器を表示するか
         this.tempBuySellSyurui = -1;
         this.tempBuySellNum = -1;
@@ -58,13 +67,6 @@ EventView.prototype.init = function (eventID) {
     this.pSyurui = -1;//イベント用の顔グラの場所(-1は「表示しない」)
     this.fontID = [EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL, EVENTVIEW_EVENTFONT_NORMAL];//イベント文字列の書体
     this.nowFontID = EVENTVIEW_EVENTFONT_NORMAL;
-    for (var i = 0; i < EVENTVIEW_MAP_MAX; i++) {
-        var tempField = new FieldDefine();
-        var ret = tempField.init(i);
-        if (ret == 0) {
-            this.fieldMap.set(i, tempField);
-        }
-    }
 }
 
 EventView.prototype.calc = function(ud, itemMap) {
@@ -72,16 +74,13 @@ EventView.prototype.calc = function(ud, itemMap) {
         // チュートリアル表示中はなにもせず画面を固める
         return;
     }
-    
     this.counter++;
     if (this.counter > this.MAXCOUNTER) {
         this.counter = this.ENDCOUNTER;
     }
-    
     if (this.cantOpCounter > 0) {
         this.cantOpCounter--;
     }
-    
     if (this.state == EVENTVIEW_STATE_EVENT) {
         this.textCounter++;
         if (this.textCounter > EVENTVIEW_TEXT_W_EVENT) {
@@ -119,7 +118,6 @@ EventView.prototype.paint = function(ud, itemMap) {
     ctxFlip.fillRect(xy2, CommonView.staticCanvasFlip().height - xy2, CommonView.staticCanvasFlip().width - xy2 , xy2); 
     ctxFlip.fillStyle = 'rgb(179, 179, 239)';
     ctxFlip.fillRect(0, xy2, xy2 , CommonView.staticCanvasFlip().height - xy2);    
-    
     if (this.state == EVENTVIEW_STATE_EVENT) {
         // マップ表示(引き延ばしなし)
         ctxFlip.fillStyle = 'rgb(63, 63, 223)';
@@ -246,9 +244,8 @@ EventView.prototype.paint = function(ud, itemMap) {
             ctxFlip.fillStyle = 'rgb(63, 63, 223)';
             ctxFlip.fillRect(EVENTVIEW_MAP_X - 5 + kezuriX, EVENTVIEW_MAP_Y - 3, EVENTVIEW_MAP_EXTEND * 224 - 2 * kezuriX + 10, EVENTVIEW_MAP_EXTEND * 160 + 6);
             ctxFlip.drawImage(EventView.getMapImg(), kezuriX, 0, 224 - 2 * kezuriX, 160, EVENTVIEW_MAP_X + kezuriX, EVENTVIEW_MAP_Y, EVENTVIEW_MAP_EXTEND * 224 - 2 * kezuriX, EVENTVIEW_MAP_EXTEND * 160);
-            
             if (this.cantOpCounter == 0) {
-                for (var i = 0; i < EVENTVIEW_MAP_MAX; i++) {
+                for (var i = 0; i < EVENTVIEW_MAP_MAX; i++) {  
                     var tempField = this.fieldMap.get(i);
                     if (tempField != null && tempField.fieldState != EVENTVIEW_FIELD_HIDDEN) {
                         var r = 4;
@@ -262,6 +259,21 @@ EventView.prototype.paint = function(ud, itemMap) {
                         this.setFieldColor(ctxFlip, tempField.fieldState, false);
                         ctxFlip.arc(centerX, centerY, r / 2, 0, 2 * Math.PI, true);
                         ctxFlip.stroke();
+                        // 進攻選択中
+                        if (i == this.tempMapNum) {
+                            for (var j = -1; j <= 1; j++) {
+                                ctxFlip.strokeStyle = getGladColorRed((this.MAXCOUNTER - this.counter) / 12);
+                                ctxFlip.lineWidth = 4 - 2 * Math.abs(j);
+                                ctxFlip.beginPath();
+                                ctxFlip.moveTo(centerX, centerY);
+                                var len = 30 - 20 * Math.abs(j);
+                                var destX = centerX + len * Math.cos((0.7 + 0.15 * j) * Math.PI);
+                                var destY = centerY + len * Math.sin((0.7 + 0.15 * j) * Math.PI);
+                                ctxFlip.lineTo(destX, destY);
+                                ctxFlip.closePath();
+                                ctxFlip.stroke();
+                            }
+                        }
                     }
                 }
             }
@@ -469,6 +481,11 @@ EventView.prototype.paint = function(ud, itemMap) {
                 ctxFlip.fillText("【価格】　　" + tempItem.price, EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15 + interval * index);
             }
         }
+        if (this.comState == EVENTVIEW_COMSTATE_WAITCHECK){
+            ctxFlip.font = "18px 'MS Pゴシック'";
+            ctxFlip.fillStyle = 'rgb(0, 0, 0)';
+            ctxFlip.fillText("進攻せずターン終了します。", EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15);
+        }
         if (this.comState == EVENTVIEW_COMSTATE_SAVE_FILECHOICE || this.comState == EVENTVIEW_COMSTATE_LOAD_FILECHOICE){
             ctxFlip.font = "16px 'MS Pゴシック'";
             ctxFlip.fillStyle = 'rgb(0, 0, 0)';
@@ -520,8 +537,8 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
         var commandNum = Math.floor((mouseY - EVENTVIEW_COMMANDTXT_Y) / EVENTVIEW_COMMANDINTERVAL);
         switch(commandNum) {
             case 0:arguments//次へ
-                this.decide(mouseX, mouseY, bv, ud, itemMap);
-                return -1;
+                var decideRet = this.decide(mouseX, mouseY, bv, ud, itemMap);
+                return decideRet;
             break;
             case 1:arguments//戻る
                 this.cancel(mouseX, mouseY, bv, ud, itemMap);
@@ -577,6 +594,7 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                     case EVENTVIEW_COMMANDNUM_PROC:arguments
                         this.cantOpCounter = EVENTVIEW_PROC_MAXCOUNTER;
                         this.comState = EVENTVIEW_COMSTATE_PROC_MAPCHOICE;
+                        this.tempMapNum = -1;
                     break;
                     case EVENTVIEW_COMMANDNUM_BUY:arguments
                         this.tempBuySellType = ITEM_TYPE_SWORD;// とりあえず剣を表示
@@ -589,6 +607,9 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                         this.tempBuySellSyurui = ItemDefine.getReverseItemIndex(itemMap, this.tempBuySellType, 0);
                         this.tempBuySellNum = -1;
                         this.comState = EVENTVIEW_COMSTATE_SELL_WEAPCHOICE;
+                    break;
+                    case EVENTVIEW_COMMANDNUM_WAIT:arguments
+                        this.comState = EVENTVIEW_COMSTATE_WAITCHECK;
                     break;
                     case EVENTVIEW_COMMANDNUM_SAVE:arguments
                         this.tempSaveNum = -1;
@@ -613,18 +634,23 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
         if (this.comState == EVENTVIEW_COMSTATE_PROC_MAPCHOICE) {
             for (var i = 0; i < EVENTVIEW_MAP_MAX; i++) {
                 var tempField = this.fieldMap.get(i);
-                if (tempField != null && tempField.fieldState == EVENTVIEW_FIELD_TEKI) {
+                if (tempField != null) {
                     var centerX = EVENTVIEW_MAP_X + EVENTVIEW_MAP_EXTEND * tempField.x;
                     var centerY = EVENTVIEW_MAP_Y + EVENTVIEW_MAP_EXTEND * tempField.y;
-                    if (Math.abs(mouseX - centerX) < 5 && Math.abs(mouseY - centerY) < 5){
-                        if (this.checkFieldEvent(i)) {
-                            // イベント後に戦闘。処理はendEvent側に記述
-                            return;
-                        } else {
-                            var tempField = this.fieldMap.get(i);
-                            tempField.createEnemy(ud);// 最初の進攻時はこれで敵が作られる。取り返すときは、もともと攻めてきた敵を倒す
-                            bv.init(i, true);
-                            return GAMEMODE_BATTLE;
+                    if (Math.abs(mouseX - centerX) < 5 && Math.abs(mouseY - centerY) < 5){                    
+                        if (tempField.fieldState == EVENTVIEW_FIELD_TEKI) {
+                            if (this.isNearBy(tempField.x, tempField.y)) {
+                                this.tempMapNum = i;
+                                return -1;
+                            } else {
+                                CommonView.addWarn("味方(青)マスに隣接した");
+                                CommonView.addWarn("敵(赤)マスしか進攻できません。");
+                                return -1;
+                            }
+                        } else if (tempField.fieldState == EVENTVIEW_FIELD_MIKATA) {
+                            CommonView.addWarn("味方(青)マスに隣接した");
+                            CommonView.addWarn("敵(赤)マスしか進攻できません。");
+                            return -1;
                         }
                     }
                 }
@@ -809,13 +835,15 @@ EventView.prototype.printOneMsg = function() {
 
 // 戻り値は「別の画面に遷移」を意味
 EventView.prototype.endEvent = function(ud, bv, itemMap) {
+    // TODO:難易度設定
+    var difficulty = GAME_DIFFICULTY_NORMAL;
     this.doneEvent.push(this.eventID);
     switch(this.eventID) {
         case EVENTVIEW_EVENTID_OP:arguments
             var fieldNum = 0;
             bv.init(fieldNum, true);
             u = new UnitDefine();
-            u.initCommon(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_PRINCESS, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 1, SKILL_KEIKAI, SKILL_KIYOME, SKILL_KENJITSU);
+            u.initCommon(ud, difficulty, UNIT_SYURUI_PRINCESS, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 1, SKILL_KEIKAI, SKILL_KIYOME, SKILL_KENJITSU);
             ud.push(u);
             
             var tempField = this.fieldMap.get(fieldNum);
@@ -834,16 +862,16 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             UnitDefine.recoverMikata(ud);
             
             u = new UnitDefine();
-            u.initCommon(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_KNIGHT, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 1, SKILL_HIGHHIT, SKILL_SYONETSU, SKILL_KENJITSU);
+            u.initCommon(ud, difficulty, UNIT_SYURUI_KNIGHT, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 1, SKILL_HIGHHIT, SKILL_SYONETSU, SKILL_KENJITSU);
             ud.push(u);
             //var tempField = this.fieldMap.get(0);
             //tempField.createEnemy(ud);
             // createEnemyは1フィールドにつき1回しか使えない
             var u2 = new UnitDefine();
-            u2.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_SWORD, BATTLE_TEKI, BATTLE_DEFENCE, fieldNum, 1, 0, 0, 0, ITEM_TYPE_SWORD, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_NO, 1.2, -1);
+            u2.initTeki(ud, difficulty, UNIT_SYURUI_SWORD, BATTLE_TEKI, BATTLE_DEFENCE, fieldNum, 1, 0, 0, 0, ITEM_TYPE_SWORD, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_NO, 1.2, -1);
             ud.push(u2);
             var u3 = new UnitDefine();
-            u3.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_BOW, BATTLE_TEKI, BATTLE_DEFENCE, fieldNum, 1, 0, 0, 0, ITEM_TYPE_BOW, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM + BATTLEAI_SM_NO, 1.4, -1);
+            u3.initTeki(ud, difficulty, UNIT_SYURUI_BOW, BATTLE_TEKI, BATTLE_DEFENCE, fieldNum, 1, 0, 0, 0, ITEM_TYPE_BOW, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM + BATTLEAI_SM_NO, 1.4, -1);
             ud.push(u3);
             
             var tempItem = new ItemDefine();
@@ -857,6 +885,7 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
         case EVENTVIEW_EVENTID_OP_WIN2:arguments
             // ヤナエ、サキスを全回復
             UnitDefine.recoverMikata(ud);
+            this.endTurn(ud);
             break;
         case EVENTVIEW_EVENTID_OP_LOSE:arguments
         case EVENTVIEW_EVENTID_OP_LOSE2:arguments
@@ -868,6 +897,11 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             var tempField = this.fieldMap.get(fieldNum);
             tempField.createEnemy(ud);
             return GAMEMODE_BATTLE;
+        case EVENTVIEW_EVENTID_STAGE1_YAKUNIN:arguments
+            this.endTurn(ud);
+            this.pushBook(EVENTVIEW_BOOKID_KINGKANRI);
+            CommonView.addWarn("書籍が追加されました!");
+        break;
     }
     // イベント終了
     this.state = EVENTVIEW_STATE_COMMAND;
@@ -914,10 +948,15 @@ EventView.prototype.setFace = function(faceId) {
             this.py = 0 * 320;
             this.pSyurui = BATTLE_PSYURUI_PC;
             break;
+        case UNIT_SYURUI_YAKUNIN:arguments
+            this.px = 2 * 256;
+            this.py = 1 * 320;
+            this.pSyurui = BATTLE_PSYURUI_NPC;
+            break;
     }
 }
 
-EventView.prototype.setFieldColor = function(ctxFlip, fieldState, isFirst) {
+EventView.prototype.setFieldColor = function(ctxFlip, fieldState, isFirst, index) {
     var gladColor = (Math.floor(this.counter / 20)) % 6;
     switch(fieldState) {
     case EVENTVIEW_FIELD_MIKATA:arguments
@@ -951,6 +990,7 @@ EventView.prototype.setFieldColor = function(ctxFlip, fieldState, isFirst) {
                 ctxFlip.strokeStyle = 'rgb(239, 209, 209)';
             }
         }
+        
         break;
     case EVENTVIEW_FIELD_CHANGING:arguments
         if (isFirst) {
@@ -980,6 +1020,29 @@ EventView.prototype.shouldDecideCancel = function() {
 }
 
 EventView.prototype.decide = function(mouseX, mouseY, bv, ud, itemMap) {
+    
+    if (this.comState == EVENTVIEW_COMSTATE_PROC_MAPCHOICE) {
+        if (this.tempMapNum == -1) {
+            CommonView.addWarn("進攻マスを選んでください。");
+            return -1;
+        } else {
+            if (this.checkFieldEvent(this.tempMapNum)) {
+                // イベント後に戦闘。処理はendEvent側に記述
+                this.tempMapNum = -1;
+                this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
+                return -1;
+            } else {
+                var tempField = this.fieldMap.get(this.tempMapNum);
+                tempField.createEnemy(ud);// 最初の進攻時はこれで敵が作られる。取り返すときは、もともと攻めてきた敵を倒す
+                bv.init(this.tempMapNum, true);
+                this.tempMapNum = -1;
+                this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
+                return GAMEMODE_BATTLE;
+            }
+        }
+    }
+    
+    
     if (this.comState == EVENTVIEW_COMSTATE_BUY_WEAPCHOICE) {
         if (this.tempBuySellSyurui != -1 && this.tempBuySellNum > 0) {
             var tempItem = new ItemDefine();
@@ -1019,6 +1082,12 @@ EventView.prototype.decide = function(mouseX, mouseY, bv, ud, itemMap) {
         }
     }
     
+    if (this.comState == EVENTVIEW_COMSTATE_WAITCHECK) {
+        CommonView.addMessage("1ターン待機しました。", 120);
+        this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
+        this.endTurn(ud);
+        return -1;
+    }
     if (this.comState == EVENTVIEW_COMSTATE_SAVE_FILECHOICE) {
         if (this.tempSaveNum >= 0) {
             SaveFileIO.saveFile(this.tempSaveNum, this, ud, itemMap);
@@ -1072,16 +1141,23 @@ EventView.prototype.trueIfAbsent = function(eventNum) {
     return true;
 }
 
-EventView.prototype.decideNextEvent = function(isWin) {
+EventView.prototype.decideNextEvent = function(isWin, fieldNum) {
+    var tempField = this.fieldMap.get(fieldNum);
     if (isWin) {
         // 戦闘勝利
+        if (tempField.fieldState == EVENTVIEW_FIELD_TEKI) {
+            tempField.fieldState = EVENTVIEW_FIELD_CHANGING;
+        }
         if (this.doneEvent.indexOf(EVENTVIEW_EVENTID_OP_WIN) == -1) {
             return EVENTVIEW_EVENTID_OP_WIN;
         } else if (this.doneEvent.indexOf(EVENTVIEW_EVENTID_OP_WIN2) == -1) {
             return EVENTVIEW_EVENTID_OP_WIN2;
+        } else if (this.doneEvent.indexOf(EVENTVIEW_EVENTID_STAGE1_YAKUNIN) == -1) {
+            return EVENTVIEW_EVENTID_STAGE1_YAKUNIN;
         }
     } else {
         // 戦闘敗北
+        tempField.fieldState = EVENTVIEW_FIELD_TEKI;
         if (this.doneEvent.indexOf(EVENTVIEW_EVENTID_OP_WIN) == -1) {
             return EVENTVIEW_EVENTID_OP_LOSE;
         } else if (this.doneEvent.indexOf(EVENTVIEW_EVENTID_OP_WIN2) == -1) {
@@ -1095,5 +1171,55 @@ EventView.prototype.selectTutorial = function() {
     if (this.state == EVENTVIEW_STATE_EVENT) {
         return COMMONVIEW_TUTORIALID_EVENT;   
     }
+    if (this.state == EVENTVIEW_STATE_COMMAND) {
+        if (this.comState == EVENTVIEW_COMSTATE_PROC_MAPCHOICE) {
+            return COMMONVIEW_TUTORIALID_MAPCHOICE;   
+        }
+    }
     return -1;
+}
+
+// 指定した本を持っていない場合のみ追加
+EventView.prototype.pushBook = function(bookId) {
+    if (this.haveBook.indexOf(bookId) == -1) {
+        this.haveBook.push(bookId);   
+    }
+    return -1;
+}
+
+// いずれかの味方マスに隣接しているか
+EventView.prototype.isNearBy = function(x, y) {
+    for (var i = 0; i < EVENTVIEW_MAP_MAX; i++) {
+        var tempField = this.fieldMap.get(i);
+        if (tempField != null && tempField.fieldState == EVENTVIEW_FIELD_MIKATA) {
+            if ((Math.abs(tempField.x - x) + Math.abs(tempField.y - y)) <= EVENTVIEW_MAP_INTERVAL) { 
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+// ターン終了時
+EventView.prototype.endTurn = function(ud) {
+    this.turn++;
+    for (var i = 0; i < EVENTVIEW_MAP_MAX; i++) {
+        var tempField = this.fieldMap.get(i);
+        if (tempField != null && tempField.fieldState == EVENTVIEW_FIELD_CHANGING) {
+            tempField.fieldState = EVENTVIEW_FIELD_MIKATA;
+        }
+    }
+    var mikataUd = UnitDefine.getMikataList(ud);
+    // 全味方のスキルをOFFにし、手持ち武器解除
+    for (var i = 0; i < mikataUd.length; i++) {
+        var u = mikataUd[i];
+        for (var j = 0; j < 3 ; j++) {
+            u.skillON[j] = false;
+        }
+        u.handEquip = new Array();//手持ち武器
+        var sude = {eqType: ITEM_TYPE_SUDE, eqSyurui: 0};
+        // 手持ち武器に「素手」を追加
+        u.handEquip.push(sude);
+    }
+    return;
 }
