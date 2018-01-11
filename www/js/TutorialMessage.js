@@ -63,21 +63,21 @@ TutorialMessage.getMessage = function(tutorialID, message) {
             CommonView.bluePoint({x: BATTLEVIEW_COMMANDTXT_X, y: BATTLEVIEW_COMMANDTXT_Y, w: BATTLEVIEW_COMMANDTXT_W, h: BATTLEVIEW_COMMANDTXT_H + BATTLEVIEW_COMMANDINTERVAL});            
             CommonView.purplePoint({x: BATTLEVIEW_UNITTXT_X, y: BATTLEVIEW_UNITTXT_Y + 21 *BATTLEVIEW_UNITTXT_YINTERVAL, w: BATTLEVIEW_UNITTXT_W, h: 3 * BATTLEVIEW_UNITTXT_YINTERVAL});            
             message.push("【スキル選択】");
-            message.push(" 各ユニットは、戦闘を有利にする。");
+            message.push(" 各味方ユニットは、戦闘を有利にする");
             message.push("スキルを3個ずつ持っています。");
-            message.push("この画面でONにすることによって");
-            message.push("そのスキルは有効になります。");
+            message.push("この画面でONにすることで有効になります。");
             message.push("ただし、「消費気力」に規定された分だけ");
             message.push("手番終了時に気力を消費します。");
-            message.push("右下のユニット情報の、スキル名を");
-            message.push("タッチすると説明が表示されます。");
             message.push("　左上のスキル一覧から");
             message.push("ONにしたいスキルをタッチしてください。");
             message.push(" 終わったら、左の");
             message.push("「決定」をタッチしてください。");
+            message.push(" なお、戦闘中のすべての画面では");
+            message.push("右下のユニット情報の、スキル名を");
+            message.push("タッチすると説明が表示されます。");
             break;
         case COMMONVIEW_TUTORIALID_BATTLEMAIN:arguments
-            CommonView.tutorialPoint({x: BATTLEVIEW_COMMANDTXT_X + BATTLEVIEW_COMMANDTXT_W + 5, y: BATTLEVIEW_SPGAUGE_Y + BATTLEVIEW_SPGAUGE_H + 10, w: 305, h: 320});
+            CommonView.tutorialPoint({x: BATTLEVIEW_COMMANDTXT_X + BATTLEVIEW_COMMANDTXT_W + 5, y: BATTLEVIEW_SPGAUGE_Y + BATTLEVIEW_SPGAUGE_H + 10, w: 305, h: 350});
             CommonView.redPoint({x: BATTLEVIEW_COMMANDTXT_X, y: BATTLEVIEW_COMMANDTXT_Y, w: BATTLEVIEW_COMMANDTXT_W, h: 5 * BATTLEVIEW_COMMANDINTERVAL});
             CommonView.bluePoint({x: BATTLEVIEW_SPGAUGE_X, y: BATTLEVIEW_SPGAUGE_Y, w: BATTLEVIEW_SPGAUGE_W, h: BATTLEVIEW_SPGAUGE_H});
             message.push("【戦闘システム】");
@@ -90,6 +90,8 @@ TutorialMessage.getMessage = function(tutorialID, message) {
             message.push("");
             message.push(" 味方手番時は、左の5個のコマンドから");
             message.push("選択したいコマンドをタッチします。");
+            message.push("それぞれのコマンドの詳細は");
+            message.push("各コマンドをタッチすると確認できます。");
             message.push("(最初は「行動」で攻撃、を覚えましょう。)");
             message.push("");
             message.push(" また、フィールド内のユニットをタッチすると");

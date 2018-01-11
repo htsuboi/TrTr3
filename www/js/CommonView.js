@@ -217,9 +217,9 @@ CommonView.paintMessage = function(ctxFlip) {
         var MESSAGE_Y = (CommonView.tutorialPoint().y == -1 ? 100 : CommonView.tutorialPoint().y);
         var MESSAGE_W = (CommonView.tutorialPoint().w == -1 ? 310 : CommonView.tutorialPoint().w);
         var MESSAGE_H = (CommonView.tutorialPoint().h == -1 ? 300 : CommonView.tutorialPoint().h);
-        ctxFlip.fillStyle = 'rgb(239, 0, 0)';
+        ctxFlip.fillStyle = 'rgb(127, 127, 127)';
         if ((Math.floor(CommonView.paintCounter() / 24) % 2) == 1) {
-            ctxFlip.fillStyle = 'rgb(0, 0, 239)';
+            ctxFlip.fillStyle = 'rgb(191, 191, 191)';
         }
         
         var margin = Math.abs((Math.floor(CommonView.paintCounter() / 12) % 5 - 2));

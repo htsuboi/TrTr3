@@ -18,9 +18,10 @@ EventView.prototype.gameStart = function () {
     this.cantOpCounter = 0;
     this.textCounter = 0;// イベント画面で文字列をだんだん表示
     this.message = new Array();// 今回のイベントの全メッセージを格納(表示される毎に無くなっていく)
+    this.nextEvent = new Array();//次ターン開始時イベントIDが入る
+    this.nowEvent = new Array();//現在実行すべきイベントIDが入る(nextEventから移動)
     this.doneEvent = new Array();//実行済みのイベントIDが入る
     this.haveBook = new Array();//所持している本のイベントIDが入る
-    this.pushBook(EVENTVIEW_BOOKID_KINGDEATH);
     this.printMsg = ["", "", "", "", "", "", ""];// 現在イベントビューに出すべき文字列
     this.money = 400;// 「所持金」データはここに保持
     this.turn = 0;// 「ターン」データはここに保持
@@ -886,6 +887,10 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             // ヤナエ、サキスを全回復
             UnitDefine.recoverMikata(ud);
             this.endTurn(ud);
+            this.pushBook(EVENTVIEW_BOOKID_KINGDEATH);
+            this.pushBook(EVENTVIEW_BOOKID_KINGKANRI);
+            this.pushBook(EVENTVIEW_BOOKID_ENEMY);
+            this.pushBook(EVENTVIEW_BOOKID_PREKING);
             break;
         case EVENTVIEW_EVENTID_OP_LOSE:arguments
         case EVENTVIEW_EVENTID_OP_LOSE2:arguments
@@ -899,14 +904,31 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             return GAMEMODE_BATTLE;
         case EVENTVIEW_EVENTID_STAGE1_YAKUNIN:arguments
             this.endTurn(ud);
-            this.pushBook(EVENTVIEW_BOOKID_KINGKANRI);
-            CommonView.addWarn("書籍が追加されました!");
+            this.nextEvent.push(EVENTVIEW_EVENTID_STAGE1_MUSCLE);
         break;
+        case EVENTVIEW_EVENTID_STAGE1_MUSCLE:arguments
+            u = new UnitDefine();
+            u.initCommon(ud, difficulty, UNIT_SYURUI_MUSCLE, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 2, SKILL_YOROI, SKILL_KYOEN, SKILL_KENJITSU);
+            ud.push(u);
+
+            break;
     }
-    // イベント終了
-    this.state = EVENTVIEW_STATE_COMMAND;
-    // 連打時にいきなり処理に進まないよう、一瞬操作不能にする
-    this.cantOpCounter = 20;
+    // イベント実行したので、nowEventから消す
+    var nowEventIndex = this.nowEvent.indexOf(this.eventID);
+    if (nowEventIndex != -1) {
+        this.nowEvent.splice(nowEventIndex, 1);
+    }
+    
+    // まだ発生させるべきイベントがある
+    if (this.nowEvent.length > 0) {
+        var nextEvent = this.nowEvent[0];
+        this.init(nextEvent);
+    } else {
+        // イベント終了
+        this.state = EVENTVIEW_STATE_COMMAND;
+        // 連打時にいきなり処理に進まないよう、一瞬操作不能にする
+        this.cantOpCounter = 20;
+    }
     return -1;
 }
 
@@ -945,6 +967,11 @@ EventView.prototype.setFace = function(faceId) {
             break;
         case UNIT_SYURUI_KNIGHT:arguments
             this.px = 1 * 256;
+            this.py = 0 * 320;
+            this.pSyurui = BATTLE_PSYURUI_PC;
+            break;
+        case UNIT_SYURUI_MUSCLE:arguments
+            this.px = 0 * 256;
             this.py = 0 * 320;
             this.pSyurui = BATTLE_PSYURUI_PC;
             break;
@@ -1160,10 +1187,13 @@ EventView.prototype.decideNextEvent = function(isWin, fieldNum) {
         tempField.fieldState = EVENTVIEW_FIELD_TEKI;
         if (this.doneEvent.indexOf(EVENTVIEW_EVENTID_OP_WIN) == -1) {
             return EVENTVIEW_EVENTID_OP_LOSE;
-        } else if (this.doneEvent.indexOf(EVENTVIEW_EVENTID_OP_WIN2) == -1) {
+        } else if (this.doneEvent.indexOf(EVENTVIEW_EVENTID_STAGE1_YAKUNIN) == -1) {
             return EVENTVIEW_EVENTID_OP_LOSE2;
         }
     }
+    // イベントが何も発生しない場合
+    // TODO:防衛戦に行く or endTurnで次ターンの選択
+    this.endTurn(ud);
     return -1;
 }
 
@@ -1182,6 +1212,7 @@ EventView.prototype.selectTutorial = function() {
 // 指定した本を持っていない場合のみ追加
 EventView.prototype.pushBook = function(bookId) {
     if (this.haveBook.indexOf(bookId) == -1) {
+        CommonView.addMessage("書籍を入手しました!", 120);
         this.haveBook.push(bookId);   
     }
     return -1;
@@ -1220,6 +1251,13 @@ EventView.prototype.endTurn = function(ud) {
         var sude = {eqType: ITEM_TYPE_SUDE, eqSyurui: 0};
         // 手持ち武器に「素手」を追加
         u.handEquip.push(sude);
+    }
+    // 「次ターン実施すべきイベント」を、「今回実施すべきイベント」に移動
+    Array.prototype.push.apply(this.nowEvent, this.nextEvent);
+    this.nextEvent = [];
+    if (this.nowEvent.length > 0) {
+        var nextEvent = this.nowEvent[0];
+        this.init(nextEvent);
     }
     return;
 }

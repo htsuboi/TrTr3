@@ -19,7 +19,7 @@ FieldDefine.prototype.init = function(position) {
     this.position = position;
     switch(position) {
         case 0:arguments
-            this.text = "1-0";
+            this.text = "1-1";
             // 前衛前列→前衛中列→前衛後列→中衛前列…
             // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
             this.ofMap = "cabcbbadd";
@@ -31,7 +31,7 @@ FieldDefine.prototype.init = function(position) {
             this.dfY = 111;
         break;
         case 1:arguments
-            this.text = "1-1";
+            this.text = "1-2";
             // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
             this.ofMap = "dcbdcaccb";
             this.dfMap = "dahbchahh";
@@ -42,18 +42,18 @@ FieldDefine.prototype.init = function(position) {
             this.dfY = 123;
         break;
         case 2:arguments
-            this.text = "1-2";
+            this.text = "1-3";
             // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
             this.ofMap = "biaciaaib";
             this.dfMap = "ibaabahab";
-            this.x = EVENTVIEW_STAGE1_X - EVENTVIEW_MAP_INTERVAL;
-            this.y = EVENTVIEW_STAGE1_Y - EVENTVIEW_MAP_INTERVAL;
+            this.x = EVENTVIEW_STAGE1_X;
+            this.y = EVENTVIEW_STAGE1_Y - 2 * EVENTVIEW_MAP_INTERVAL;
             this.fieldState = EVENTVIEW_FIELD_TEKI;
             this.ofY = 112;
             this.dfY = 113;
         break;
         case 3:arguments
-            this.text = "1-3";
+            this.text = "1-4";
             // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
             this.ofMap = "abhiikbha";
             this.dfMap = "hicaacahc";
@@ -64,7 +64,7 @@ FieldDefine.prototype.init = function(position) {
             this.dfY = 211;
         break;
         case 4:arguments
-            this.text = "1-4";
+            this.text = "1-5";
             // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
             this.ofMap = "cbdcaacbh";
             this.dfMap = "abhbiibia";

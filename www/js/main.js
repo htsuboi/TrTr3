@@ -10,55 +10,8 @@ var itemMap = new Map();
 var gameMode = GAMEMODE_TITLE;//0:タイトル 1:ゲームオーバー
 var prevGameMode = GAMEMODE_GAMEOVER;
 tv.init();
-/*var u = new UnitDefine();
-u.initCommon(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_KNIGHT, BATTLE_MIKATA, BATTLE_OFFENCE, 0, 20, SKILL_HIGHHIT, SKILL_SYONETSU, SKILL_KENJITSU);
-ud.push(u);
-var u2 = new UnitDefine();
-u2.initCommon(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_MUSCLE, BATTLE_MIKATA, BATTLE_OFFENCE, 1, 15, SKILL_KEIKAI, SKILL_YOROI, SKILL_KAMAITACHI);
-ud.push(u2);
-var u3 = new UnitDefine();
-u3.initCommon(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_TATEO, BATTLE_MIKATA, BATTLE_OFFENCE, 1, 25, SKILL_HIGHAVO, SKILL_KYOEN, SKILL_KIYOME);
-ud.push(u3);*/
 var intervalId;
-intervalId = setInterval(calcAndPaint, 20);
-//var u4 = new UnitDefine();
-//u4.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_HAMMER, BATTLE_TEKI, BATTLE_DEFENCE, 1, 20, 0, 0, 0, ITEM_TYPE_HAMMER, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_BACK);
-//u4.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_POISON, BATTLE_TEKI, BATTLE_DEFENCE, 0, 20, 0, 0, 0, ITEM_TYPE_SWORD, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_NO, 1.2, 0.1);
-//ud.push(u4);
-/*var u5 = new UnitDefine();
-//u5.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_PUNCH, BATTLE_TEKI, BATTLE_DEFENCE, 1, 20, 0, 0, 0, ITEM_TYPE_PUNCH, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_FIRST + BATTLEAI_SM_BACK);
-u5.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_STUN, BATTLE_TEKI, BATTLE_DEFENCE, 1, 20, 0, 0, 0, ITEM_TYPE_PUNCH, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_FIRST + BATTLEAI_SM_NO, 1.1, 0.05);
-ud.push(u5);
-var u6 = new UnitDefine();
-u6.initTeki(ud, GAME_DIFFICULTY_NORMAL, UNIT_SYURUI_KNIFE, BATTLE_TEKI, BATTLE_DEFENCE, 1, 20, 0, 0, 0, ITEM_TYPE_KNIFE, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM + BATTLEAI_SM_NO, 1.2, 0.2);
-ud.push(u6);*/
-
-//itemMap.set({eqType:ITEM_TYPE_SWORD, eqSyurui:ITEM_SYURUI_SWORD1}, {equipNum: 2, allNum:3});
-/*ItemDefine.init(ITEM_TYPE_SWORD, 0, tempItem);
-itemMap.set(tempItem.namae, 1);
-ItemDefine.init(ITEM_TYPE_SWORD, 1, tempItem);
-itemMap.set(tempItem.namae, 3);
-ItemDefine.init(ITEM_TYPE_SWORD, 2, tempItem);
-itemMap.set(tempItem.namae, 4);
-ItemDefine.init(ITEM_TYPE_SWORD, 3, tempItem);
-itemMap.set(tempItem.namae, 4);
-ItemDefine.init(ITEM_TYPE_SPEAR, 1, tempItem);
-itemMap.set(tempItem.namae, 2);
-ItemDefine.init(ITEM_TYPE_SPEAR, 2, tempItem);
-itemMap.set(tempItem.namae, 0);
-ItemDefine.init(ITEM_TYPE_SPEAR, 3, tempItem);
-itemMap.set(tempItem.namae, 3);
-ItemDefine.init(ITEM_TYPE_DOGU, ITEM_SYURUI_KOUCHA, tempItem);
-itemMap.set(tempItem.namae, 1);
-ItemDefine.init(ITEM_TYPE_DOGU, ITEM_SYURUI_KOUSUI, tempItem);
-itemMap.set(tempItem.namae, 1);
-ItemDefine.init(ITEM_TYPE_DOGU, ITEM_SYURUI_JIAI, tempItem);
-itemMap.set(tempItem.namae, 1);
-ItemDefine.init(ITEM_TYPE_DOGU, ITEM_SYURUI_MUJIN, tempItem);
-itemMap.set(tempItem.namae, 1);*/
-
-var intervalId;
-intervalId = setInterval(calcAndPaint, 20);
+intervalId = setInterval(calcAndPaint, 10);
 
 // calcはデータ計算のみ、paintは描画のみ
 function calcAndPaint() {
@@ -84,7 +37,8 @@ function calcAndPaint() {
         }
     }
     catch (e) {
-        CommonView.addWarn(e);
+        //alert(e);
+    //    CommonView.addWarn(e);
     }
     if (next.nextGameMode >= 0) {
         gameMode = next.nextGameMode;
