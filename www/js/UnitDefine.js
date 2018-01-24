@@ -61,7 +61,9 @@ UnitDefine.prototype.equalUnit = function(u){
 
 // 敵味方共通の初期化
 // ud…既に存在しているユニットが入ったArray。今作成しているユニットは入っていない
-UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3) {
+UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3) {
+    // TODO:難易度設定
+    var difficulty = GAME_DIFFICULTY_NORMAL;
     this.unitSyurui = unitSyurui;
     this.skills[0] = skill1;
     this.skills[1] = skill2;
@@ -334,6 +336,25 @@ UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofO
             this.avoObj = {now:15 + (difficulty > GAME_DIFFICULTY_HARD ? 3 : 0), amari:0, up:19 + (difficulty > GAME_DIFFICULTY_HARD ? 6 : 0), upup:15, upupup:10 + (difficulty > GAME_DIFFICULTY_NORMAL ? 8 : 0)};
         break;
         
+        case UNIT_SYURUI_S1BOSS:arguments
+            this.crt = 0;
+            this.luck = 5;
+            this.rat = 2;//割合ダメージ
+            this.rdf = 0;//割合軽減
+            this.m1Cost = 30;//1移動コスト
+            this.m2Cost = 40;//2移動コスト
+            this.rangeCost = 40;//射程伸ばしコスト
+            this.exAtCost = 120;//再行動コスト
+            this.exp = 10;//経験値
+            this.mhpObj = {now:83, amari:0, up:35 + (difficulty > GAME_DIFFICULTY_NORMAL ? 3 : 0), upup:3, upupup:8};
+            this.strObj = {now:24 + (difficulty > GAME_DIFFICULTY_HARD ? 2 : 0), amari:0, up:20, upup:6, upupup:9};
+            this.magObj = {now:10, amari:0, up:10, upup:0, upupup:0};
+            this.defObj = {now:11, amari:0, up:19, upup:10, upupup:0};
+            this.mdfObj = {now:14, amari:0, up:22, upup:4, upupup:10};
+            this.hitObj = {now:82, amari:0, up:23, upup:7, upupup:2};
+            this.avoObj = {now:20, amari:0, up:25 + (difficulty > GAME_DIFFICULTY_HARD ? 5 : 0), upup:15, upupup:20};
+        break;
+        
         case UNIT_SYURUI_PRINCESS:arguments
             this.msp = 19;
             this.crt = 6;
@@ -468,8 +489,8 @@ UnitDefine.prototype.initCommon = function(ud, difficulty, unitSyurui, side, ofO
     }
 }
 
-UnitDefine.prototype.initTeki = function(ud, difficulty, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3, eqType, eqSyurui, aiType, aiForRange, aiForAgain) {
-    this.initCommon(ud, difficulty, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3, eqType, eqSyurui);
+UnitDefine.prototype.initTeki = function(ud, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3, eqType, eqSyurui, aiType, aiForRange, aiForAgain) {
+    this.initCommon(ud, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3, eqType, eqSyurui);
     this.skillON = [true, true, true];
     this.eqType = eqType;
     this.eqSyurui = eqSyurui;
@@ -603,6 +624,12 @@ UnitDefine.prototype.initNamePaint = function(unitSyurui) {
             this.pSyurui = BATTLE_PSYURUI_ZAKO;
             this.px = 1 * 256;
             this.py = 2 * 320;
+        break;
+        case UNIT_SYURUI_S1BOSS:arguments
+            this.namae = UNIT_NAMAE_S1BOSS;
+            this.pSyurui = BATTLE_PSYURUI_BOSS;
+            this.px = 1 * 256;
+            this.py = 0 * 320;
         break;
         // PC
         case UNIT_SYURUI_PRINCESS:arguments
@@ -827,6 +854,12 @@ UnitDefine.getCharaImg = function(pSyurui) {
             arguments.callee.npcImg.src = "img/NPC.png";
         }
         return arguments.callee.npcImg;
+    case BATTLE_PSYURUI_BOSS:arguments
+        if (typeof arguments.callee.bossImg == 'undefined') {
+            arguments.callee.bossImg = new Image();
+            arguments.callee.bossImg.src = "img/BOSS.png";
+        }
+        return arguments.callee.bossImg;
     default:arguments
         printWarn('no CharaImg : pSyurui' + pSyurui);  
     return null;

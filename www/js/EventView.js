@@ -836,15 +836,13 @@ EventView.prototype.printOneMsg = function() {
 
 // 戻り値は「別の画面に遷移」を意味
 EventView.prototype.endEvent = function(ud, bv, itemMap) {
-    // TODO:難易度設定
-    var difficulty = GAME_DIFFICULTY_NORMAL;
     this.doneEvent.push(this.eventID);
     switch(this.eventID) {
         case EVENTVIEW_EVENTID_OP:arguments
             var fieldNum = 0;
             bv.init(fieldNum, true);
             u = new UnitDefine();
-            u.initCommon(ud, difficulty, UNIT_SYURUI_PRINCESS, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 1, SKILL_KEIKAI, SKILL_KIYOME, SKILL_KENJITSU);
+            u.initCommon(ud, UNIT_SYURUI_PRINCESS, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 1, SKILL_KEIKAI, SKILL_KIYOME, SKILL_KENJITSU);
             ud.push(u);
             
             var tempField = this.fieldMap.get(fieldNum);
@@ -863,16 +861,16 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             UnitDefine.recoverMikata(ud);
             
             u = new UnitDefine();
-            u.initCommon(ud, difficulty, UNIT_SYURUI_KNIGHT, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 1, SKILL_HIGHHIT, SKILL_SYONETSU, SKILL_KENJITSU);
+            u.initCommon(ud, UNIT_SYURUI_KNIGHT, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 1, SKILL_HIGHHIT, SKILL_SYONETSU, SKILL_KENJITSU);
             ud.push(u);
             //var tempField = this.fieldMap.get(0);
             //tempField.createEnemy(ud);
             // createEnemyは1フィールドにつき1回しか使えない
             var u2 = new UnitDefine();
-            u2.initTeki(ud, difficulty, UNIT_SYURUI_SWORD, BATTLE_TEKI, BATTLE_DEFENCE, fieldNum, 1, 0, 0, 0, ITEM_TYPE_SWORD, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_NO, 1.2, -1);
+            u2.initTeki(ud, UNIT_SYURUI_SWORD, BATTLE_TEKI, BATTLE_DEFENCE, fieldNum, 1, 0, 0, 0, ITEM_TYPE_SWORD, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_NO, 1.2, -1);
             ud.push(u2);
             var u3 = new UnitDefine();
-            u3.initTeki(ud, difficulty, UNIT_SYURUI_BOW, BATTLE_TEKI, BATTLE_DEFENCE, fieldNum, 1, 0, 0, 0, ITEM_TYPE_BOW, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM + BATTLEAI_SM_NO, 1.4, -1);
+            u3.initTeki(ud, UNIT_SYURUI_BOW, BATTLE_TEKI, BATTLE_DEFENCE, fieldNum, 1, 0, 0, 0, ITEM_TYPE_BOW, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM + BATTLEAI_SM_NO, 1.4, -1);
             ud.push(u3);
             
             var tempItem = new ItemDefine();
@@ -904,13 +902,17 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             return GAMEMODE_BATTLE;
         case EVENTVIEW_EVENTID_STAGE1_YAKUNIN:arguments
             this.endTurn(ud);
-            this.nextEvent.push(EVENTVIEW_EVENTID_STAGE1_MUSCLE);
-        break;
-        case EVENTVIEW_EVENTID_STAGE1_MUSCLE:arguments
+            this.pushNextEvent(EVENTVIEW_EVENTID_JOIN_MUSCLE);
+            break;
+        case EVENTVIEW_EVENTID_JOIN_MUSCLE:arguments
             u = new UnitDefine();
-            u.initCommon(ud, difficulty, UNIT_SYURUI_MUSCLE, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 2, SKILL_YOROI, SKILL_KYOEN, SKILL_KENJITSU);
+            u.initCommon(ud, UNIT_SYURUI_MUSCLE, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 2, SKILL_YOROI, SKILL_KYOEN, SKILL_KENJITSU);
             ud.push(u);
-
+            break;
+        case EVENTVIEW_EVENTID_JOIN_JC:arguments
+            u = new UnitDefine();
+            u.initCommon(ud, UNIT_SYURUI_JC, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 3, SKILL_HIGHAVO, SKILL_KAMAITACHI, SKILL_KENJITSU);
+            ud.push(u);
             break;
     }
     // イベント実行したので、nowEventから消す
@@ -975,10 +977,25 @@ EventView.prototype.setFace = function(faceId) {
             this.py = 0 * 320;
             this.pSyurui = BATTLE_PSYURUI_PC;
             break;
+        case UNIT_SYURUI_JC:arguments
+            this.px = 2 * 256;
+            this.py = 1 * 320;
+            this.pSyurui = BATTLE_PSYURUI_PC;
+            break;
+        case UNIT_SYURUI_OLDMAN:arguments
+            this.px = 1 * 256;
+            this.py = 1 * 320;
+            this.pSyurui = BATTLE_PSYURUI_NPC;
+            break;
         case UNIT_SYURUI_YAKUNIN:arguments
             this.px = 2 * 256;
             this.py = 1 * 320;
             this.pSyurui = BATTLE_PSYURUI_NPC;
+            break;
+        case UNIT_SYURUI_S1BOSS:arguments
+            this.px = 1 * 256;
+            this.py = 0 * 320;
+            this.pSyurui = BATTLE_PSYURUI_BOSS;
             break;
     }
 }
@@ -1214,6 +1231,16 @@ EventView.prototype.pushBook = function(bookId) {
     if (this.haveBook.indexOf(bookId) == -1) {
         CommonView.addMessage("書籍を入手しました!", 120);
         this.haveBook.push(bookId);   
+    }
+    return -1;
+}
+
+// 指定したイベントが未実施の場合のみ追加
+EventView.prototype.pushNextEvent = function(eventId) {
+    if (this.nowEvent.indexOf(eventId) == -1 &&
+       this.nextEvent.indexOf(eventId) == -1 &&
+       this.doneEvent.indexOf(eventId) == -1) {
+        this.nextEvent.push(eventId);
     }
     return -1;
 }
