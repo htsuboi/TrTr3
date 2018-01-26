@@ -176,7 +176,7 @@ FieldDefine.prototype.createEnemy = function(ud) {
             u.initTeki(ud, UNIT_SYURUI_PUNCH, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 2, 0, 0, 0, ITEM_TYPE_PUNCH, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_BACK, 1.5, -1);
             ud.push(u);
             var u2 = new UnitDefine();
-            u2.initTeki(ud, UNIT_SYURUI_PUNCH, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 1, 0, 0, 0, ITEM_TYPE_PUNCH, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_FRONT, 1.5, -1);
+            u2.initTeki(ud, UNIT_SYURUI_PUNCH, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 1, 0, 0, 0, ITEM_TYPE_PUNCH, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_FIRST, 1.5, -1);
             ud.push(u2);
         break;
         case 5:arguments
@@ -184,12 +184,12 @@ FieldDefine.prototype.createEnemy = function(ud) {
             u.initTeki(ud, UNIT_SYURUI_SWORD, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 2, SKILL_HIGHHIT, 0, 0, ITEM_TYPE_SWORD, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_BACK, 1.3, -1);
             ud.push(u);
             var u2 = new UnitDefine();
-            u2.initTeki(ud, UNIT_SYURUI_SPEAR, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 2, 0, 0, 0, ITEM_TYPE_SPEAR, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_FRONT, 1.6, -1);
+            u2.initTeki(ud, UNIT_SYURUI_SPEAR, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 2, 0, 0, 0, ITEM_TYPE_SPEAR, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_FIRST, 1.6, -1);
             ud.push(u2);
         break;
         case 6:arguments
             var u = new UnitDefine();
-            u.initTeki(ud, UNIT_SYURUI_SHIELD, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 2, SKILL_HIGHAVO, 0, 0, ITEM_TYPE_SHIELD, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_FRONT, 1.5, -1);
+            u.initTeki(ud, UNIT_SYURUI_SHIELD, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 2, SKILL_HIGHAVO, 0, 0, ITEM_TYPE_SHIELD, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_FIRST, 1.5, -1);
             ud.push(u);
             var u2 = new UnitDefine();
             u2.initTeki(ud, UNIT_SYURUI_MAGIC, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 3, SKILL_KAMAITACHI, 0, 0, ITEM_TYPE_WIND, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM, 1.2, -1);
@@ -197,12 +197,12 @@ FieldDefine.prototype.createEnemy = function(ud) {
         break;
         case 7:arguments
             var u = new UnitDefine();
-            u.initTeki(ud, UNIT_SYURUI_PUNCH, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 4, SKILL_HIGHAVO, 0, 0, ITEM_TYPE_SHIELD, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MINHP, 1.3, 2.0);
+            u.initTeki(ud, UNIT_SYURUI_PUNCH, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 4, SKILL_HIGHAVO, 0, 0, ITEM_TYPE_PUNCH, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MINHP, 1.3, 2.0);
             ud.push(u);
         break;
         case 8:arguments
             var u = new UnitDefine();
-            u.initTeki(ud, UNIT_SYURUI_MAGIC, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 4, SKILL_KEIKAI, SKILL_HIGHHIT, 0, ITEM_TYPE_EARTH, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_FRONT, 1.2, -1);
+            u.initTeki(ud, UNIT_SYURUI_MAGIC, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 4, SKILL_KEIKAI, SKILL_HIGHHIT, 0, ITEM_TYPE_EARTH, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_FIRST, 1.2, -1);
             ud.push(u);
             var u2 = new UnitDefine();
             u2.initTeki(ud, UNIT_SYURUI_BOW, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 3, 0, 0, 0, ITEM_TYPE_BOW, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM, 1.1, 1.5);
@@ -210,7 +210,7 @@ FieldDefine.prototype.createEnemy = function(ud) {
         break;
         case EVENTVIEW_MAP_STAGE1_BOSS:arguments
             var u = new UnitDefine();
-            u.initTeki(ud, UNIT_SYURUI_S1BOSS, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 5, SKILL_KENJITSU, SKILL_KEIKAI, 0, ITEM_TYPE_SWORD, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_FRONT, 1.1, 0.5);
+            u.initTeki(ud, UNIT_SYURUI_S1BOSS, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 5, SKILL_KENJITSU, SKILL_KEIKAI, 0, ITEM_TYPE_SWORD, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_FIRST, 1.1, 0.5);
             ud.push(u);
             var u2 = new UnitDefine();
             u2.initTeki(ud, UNIT_SYURUI_SPEAR, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 3, 0, 0, 0, ITEM_TYPE_SPEAR, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_BACK, 1.6, -1);

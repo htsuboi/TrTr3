@@ -1519,7 +1519,7 @@ BattleView.prototype.shibouUnit = function(deadU, ud, isDead) {
     if (isDead) {
         if (deadU.side == BATTLE_MIKATA) {
             // TODO:装備解除
-            deadU.field = -1;
+            deadU.field = EVENTVIEW_FIELD_DEAD;
         } else {
             this.winExp += deadU.exp;
             // TODO:winMoney計算
@@ -2150,7 +2150,8 @@ BattleView.prototype.checkTempMikata = function(tempUnit) {
     var ret = -1;
     for (var i = 0; i < this.tempMikata.length; i++) {
         var u = this.tempMikata[i];
-        if (tempUnit.equalUnit(u)) {
+        // equalUnit使用不可
+        if (tempUnit.namae == u.namae) {
             return i;
         }
     }

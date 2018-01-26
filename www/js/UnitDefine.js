@@ -51,6 +51,7 @@ var UnitDefine = function() {
 };
 
 // field, px, pyが等しければtrue 死んだユニットは比較対象から外すつもりだが、一応HP > 0もつける
+// 参戦済みユニット同士でないとfield, px, pyでの比較ができない。
 UnitDefine.prototype.equalUnit = function(u){
     if (u == null) return false;
     if (this.hp > 0 && u.hp > 0 && this.x == u.x && this.y == u.y && this.field == u.field && this.side == u.side) {

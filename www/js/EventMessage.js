@@ -1118,8 +1118,8 @@ EventMessage.getMessage = function(eventNum, message) {
             message.push("一度つけると、魔法の力でしばらく離せず");
             message.push("その間、日常生活の中で否応なく");
             message.push("筋力や集中力が鍛えられるリングを。");
-            message.push("とても希少なうえ、強い精神力が無いと。");
-            message.push("装着中の苦しさに耐えられないらしいが。。)");
+            message.push("とても希少なうえ、強い精神力が無いと");
+            message.push("装着中の苦しさに耐えられないらしいが。)");
             message.push("#" + UNIT_SYURUI_OLDMAN);
             message.push("@" + EVENTVIEW_EVENTFONT_KAIWA);
             message.push("【老人】");
@@ -1702,8 +1702,10 @@ EventMessage.getMessage = function(eventNum, message) {
             message.push("@" + EVENTVIEW_EVENTFONT_KAIWA);
             message.push("【" + UNIT_NAMAE_PRINCESS + "】");
             message.push("「…という話を、父から聞きました。");
-            message.push("私自身、完全に理解できているわけでは");
-            message.push("ないのですが…。」");
+            message.push("私自身、実は" + UNIT_NAMAE_MUSCLE + "さんの気持ちも");
+            message.push("わかるのですが…。");
+            message.push("でも、やはり、それではいけないんです。");
+            message.push("たぶん、きっと。」");
             message.push("#" + UNIT_SYURUI_MUSCLE);
             message.push("@" + EVENTVIEW_EVENTFONT_KAIWA);
             message.push("【" + UNIT_NAMAE_MUSCLE + "】");

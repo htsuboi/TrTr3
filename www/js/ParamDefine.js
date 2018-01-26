@@ -488,6 +488,9 @@ var EVENTVIEW_FIELD_TEKI = 1;
 var EVENTVIEW_FIELD_HIDDEN = 2;
 var EVENTVIEW_FIELD_CHANGING = 3;//敵から味方に変化中
 
+// HP0の死亡ユニットはここに移動(FIELD:-1に移動させると、ターン終了時に即復活してしまう)
+var EVENTVIEW_FIELD_DEAD = -2;
+
 // 以降、重要地点のID
 var EVENTVIEW_MAP_STAGE1_BOSS = 9;
 var EVENTVIEW_MAP_MAX = 100;

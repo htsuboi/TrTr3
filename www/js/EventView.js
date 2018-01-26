@@ -917,7 +917,7 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             break;
         case EVENTVIEW_EVENTID_JOIN_JC:arguments
             u = new UnitDefine();
-            u.initCommon(ud, UNIT_SYURUI_JC, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 3, SKILL_HIGHAVO, SKILL_KAMAITACHI, SKILL_KENJITSU);
+            u.initCommon(ud, UNIT_SYURUI_JC, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 4, SKILL_HIGHAVO, SKILL_KAMAITACHI, SKILL_KENJITSU);
             ud.push(u);
             break;
         case EVENTVIEW_EVENTID_STAGE1_BOSS:arguments
@@ -1210,7 +1210,10 @@ EventView.prototype.decideNextEvent = function(isWin, fieldNum) {
             tempField.fieldState = EVENTVIEW_FIELD_CHANGING;
         }
         // 即イベントに遷移ではないが、イベント発生条件を満たした
-        if (tempField.fieldNum == 2 || tempField.fieldNum == 3 || tempField.fieldNum == 4) {
+        if (tempField.position == 4 || tempField.position == 6) {
+            this.pushNextEvent(EVENTVIEW_EVENTID_FIRST_RING);
+        }
+        if (tempField.position == 7 || tempField.position == 8) {
             this.pushNextEvent(EVENTVIEW_EVENTID_JOIN_JC);
         }
         
@@ -1223,7 +1226,7 @@ EventView.prototype.decideNextEvent = function(isWin, fieldNum) {
             // ここまでは実質オープニングなのでイベント発生は決め打ち
         } else {
             // STAGE1 クリア
-            if (tempField.fieldNum == EVENTVIEW_MAP_STAGE1_BOSS && this.doneEvent.indexOf(EVENTVIEW_EVENTID_STAGE1_BOSS_END) == -1) {
+            if (tempField.position == EVENTVIEW_MAP_STAGE1_BOSS && this.doneEvent.indexOf(EVENTVIEW_EVENTID_STAGE1_BOSS_END) == -1) {
                 return EVENTVIEW_EVENTID_STAGE1_BOSS_END;
             }
         }
@@ -1303,9 +1306,24 @@ EventView.prototype.endTurn = function(ud) {
             u.skillON[j] = false;
         }
         u.handEquip = new Array();//手持ち武器
+        u.eqType = -1;
+        u.eqSyurui = -1;
         var sude = {eqType: ITEM_TYPE_SUDE, eqSyurui: 0};
         // 手持ち武器に「素手」を追加
         u.handEquip.push(sude);
+        if (u.field == -1) {
+            // このターン戦闘していないユニットのみ回復
+            if (u.hp == 0) {
+                u.hp = 1;
+            } else {
+                var RECOVER_RATE = 0.3;
+                u.hp = Math.min(u.mhpObj.now, u.hp + Math.floor(RECOVER_RATE * u.mhpObj.now));
+                u.sp = Math.min(u.msp, u.sp + Math.floor(RECOVER_RATE * u.msp));
+            }
+        } else {
+            u.field = -1;
+        }
+        
     }
     // 「次ターン実施すべきイベント」を、「今回実施すべきイベント」に移動
     Array.prototype.push.apply(this.nowEvent, this.nextEvent);
