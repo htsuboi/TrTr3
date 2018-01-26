@@ -110,13 +110,24 @@ FieldDefine.prototype.init = function(position) {
         case 8:arguments
             this.text = "1-9";
             // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
+            this.ofMap = "abbcahcab";
+            this.dfMap = "dcbbckbcb";
+            this.x = EVENTVIEW_STAGE1_X;
+            this.y = EVENTVIEW_STAGE1_Y - 4 * EVENTVIEW_MAP_INTERVAL;
+            this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.ofY = 311;
+            this.dfY = 221;
+        break;
+        case EVENTVIEW_MAP_STAGE1_BOSS:arguments
+            this.text = "1-10";
+            // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
             this.ofMap = "ahacchbdb";
             this.dfMap = "bchbabaab";
             this.x = EVENTVIEW_STAGE1_X + EVENTVIEW_MAP_INTERVAL;
             this.y = EVENTVIEW_STAGE1_Y - 4 * EVENTVIEW_MAP_INTERVAL;
             this.fieldState = EVENTVIEW_FIELD_TEKI;
-            this.ofY = 311;
-            this.dfY = 221;
+            this.ofY = 211;
+            this.dfY = 121;
             this.isBoss = true;
         break;
         default:arguments
@@ -149,8 +160,64 @@ FieldDefine.prototype.createEnemy = function(ud) {
         break;
         case 2:arguments
             var u = new UnitDefine();
-            u.initTeki(ud, UNIT_SYURUI_SPEAR, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 2, 0, 0, 0, ITEM_TYPE_SPEAR, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MINHP + BATTLEAI_SM_BACK, 1.1, -1);
+            u.initTeki(ud, UNIT_SYURUI_SPEAR, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 2, SKILL_KEIKAI, 0, 0, ITEM_TYPE_SPEAR, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MINHP + BATTLEAI_SM_BACK, 1.1, -1);
             ud.push(u);
+        break;
+        case 3:arguments
+            var u = new UnitDefine();
+            u.initTeki(ud, UNIT_SYURUI_BOW, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 1, 0, 0, 0, ITEM_TYPE_BOW, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM + BATTLEAI_SM_BACK, 1.2, -1);
+            ud.push(u);
+            var u2 = new UnitDefine();
+            u2.initTeki(ud, UNIT_SYURUI_HAMMER, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 2, 0, 0, 0, ITEM_TYPE_HAMMER, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM, 1.1, -1);
+            ud.push(u2);
+        break;
+        case 4:arguments
+            var u = new UnitDefine();
+            u.initTeki(ud, UNIT_SYURUI_PUNCH, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 2, 0, 0, 0, ITEM_TYPE_PUNCH, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_BACK, 1.5, -1);
+            ud.push(u);
+            var u2 = new UnitDefine();
+            u2.initTeki(ud, UNIT_SYURUI_PUNCH, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 1, 0, 0, 0, ITEM_TYPE_PUNCH, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_FRONT, 1.5, -1);
+            ud.push(u2);
+        break;
+        case 5:arguments
+            var u = new UnitDefine();
+            u.initTeki(ud, UNIT_SYURUI_SWORD, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 2, SKILL_HIGHHIT, 0, 0, ITEM_TYPE_SWORD, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_BACK, 1.3, -1);
+            ud.push(u);
+            var u2 = new UnitDefine();
+            u2.initTeki(ud, UNIT_SYURUI_SPEAR, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 2, 0, 0, 0, ITEM_TYPE_SPEAR, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_FRONT, 1.6, -1);
+            ud.push(u2);
+        break;
+        case 6:arguments
+            var u = new UnitDefine();
+            u.initTeki(ud, UNIT_SYURUI_SHIELD, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 2, SKILL_HIGHAVO, 0, 0, ITEM_TYPE_SHIELD, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_FRONT, 1.5, -1);
+            ud.push(u);
+            var u2 = new UnitDefine();
+            u2.initTeki(ud, UNIT_SYURUI_MAGIC, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 3, SKILL_KAMAITACHI, 0, 0, ITEM_TYPE_WIND, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM, 1.2, -1);
+            ud.push(u2);
+        break;
+        case 7:arguments
+            var u = new UnitDefine();
+            u.initTeki(ud, UNIT_SYURUI_PUNCH, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 4, SKILL_HIGHAVO, 0, 0, ITEM_TYPE_SHIELD, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MINHP, 1.3, 2.0);
+            ud.push(u);
+        break;
+        case 8:arguments
+            var u = new UnitDefine();
+            u.initTeki(ud, UNIT_SYURUI_MAGIC, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 4, SKILL_KEIKAI, SKILL_HIGHHIT, 0, ITEM_TYPE_EARTH, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_FRONT, 1.2, -1);
+            ud.push(u);
+            var u2 = new UnitDefine();
+            u2.initTeki(ud, UNIT_SYURUI_BOW, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 3, 0, 0, 0, ITEM_TYPE_BOW, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM, 1.1, 1.5);
+            ud.push(u2);
+        break;
+        case EVENTVIEW_MAP_STAGE1_BOSS:arguments
+            var u = new UnitDefine();
+            u.initTeki(ud, UNIT_SYURUI_S1BOSS, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 5, SKILL_KENJITSU, SKILL_KEIKAI, 0, ITEM_TYPE_SWORD, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_FRONT, 1.1, 0.5);
+            ud.push(u);
+            var u2 = new UnitDefine();
+            u2.initTeki(ud, UNIT_SYURUI_SPEAR, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 3, 0, 0, 0, ITEM_TYPE_SPEAR, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_BACK, 1.6, -1);
+            ud.push(u2);
+            var u3 = new UnitDefine();
+            u3.initTeki(ud, UNIT_SYURUI_BOW, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 4, 0, 0, 0, ITEM_TYPE_BOW, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MINHP, 1.3, -1);
+            ud.push(u3);
         break;
         default:arguments
             // この番号にマップなし

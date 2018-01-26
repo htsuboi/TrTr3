@@ -213,7 +213,7 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
                 }
             }
         }
-    
+
         if (this.cantOpCounter == BATTLE_BATTLEMSG_THIRD) {
             if (!isRunAway && isAttack && this.tempResult.isHit) {
                 if (this.tempTargetUnit != null) {
@@ -487,7 +487,8 @@ BattleView.prototype.paint = function (ud, itemMap) {
         ctxFlip.fillRect(0, 0, totalWidth, totalHeight);
         // ユニット情報表示
         var focusUnit = null;
-        if (this.turn == BATTLEVIEW_TURN_MIKATA || this.turn == BATTLEVIEW_TURN_TEKI) {
+        if (this.turn == BATTLEVIEW_TURN_MIKATA || this.turn == BATTLEVIEW_TURN_TEKI ||
+            this.turn == BATTLEVIEW_TURN_WINBATTLE || this.turn == BATTLEVIEW_TURN_LOSEBATTLE) {
             focusUnit = this.getUnitAtFocus(ud);
         }
         for (var i = 0; i < this.bar.length; i++) {

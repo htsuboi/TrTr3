@@ -128,6 +128,9 @@ EventView.prototype.paint = function(ud, itemMap) {
             var tempField = this.fieldMap.get(i);
             if (tempField != null && tempField.fieldState != EVENTVIEW_FIELD_HIDDEN) {
                 var r = 2;
+                if (tempField.isBoss) {
+                    r = 4;//ボスの拠点は大きくする
+                }
                 var centerX = EVENTVIEW_MAP_X + tempField.x;
                 var centerY = EVENTVIEW_MAP_Y + tempField.y;        
                 ctxFlip.beginPath();
@@ -250,6 +253,9 @@ EventView.prototype.paint = function(ud, itemMap) {
                     var tempField = this.fieldMap.get(i);
                     if (tempField != null && tempField.fieldState != EVENTVIEW_FIELD_HIDDEN) {
                         var r = 4;
+                        if (tempField.isBoss) {
+                            r = 7;//ボスの拠点は大きくする
+                        }
                         var centerX = EVENTVIEW_MAP_X + EVENTVIEW_MAP_EXTEND * tempField.x;
                         var centerY = EVENTVIEW_MAP_Y + EVENTVIEW_MAP_EXTEND * tempField.y;
                         ctxFlip.beginPath();
@@ -914,6 +920,13 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             u.initCommon(ud, UNIT_SYURUI_JC, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 3, SKILL_HIGHAVO, SKILL_KAMAITACHI, SKILL_KENJITSU);
             ud.push(u);
             break;
+        case EVENTVIEW_EVENTID_STAGE1_BOSS:arguments
+            var fieldNum = 9;
+            bv.init(fieldNum, true);
+            
+            var tempField = this.fieldMap.get(fieldNum);
+            tempField.createEnemy(ud);
+            return GAMEMODE_BATTLE;
     }
     // イベント実行したので、nowEventから消す
     var nowEventIndex = this.nowEvent.indexOf(this.eventID);
@@ -1173,12 +1186,16 @@ EventView.prototype.checkFieldEvent = function(fieldNum) {
     switch(fieldNum) {
         case 1:arguments
         return this.trueIfAbsent(EVENTVIEW_EVENTID_STAGE1_KANRIKA);
+        case EVENTVIEW_MAP_STAGE1_BOSS:arguments
+        return this.trueIfAbsent(EVENTVIEW_EVENTID_STAGE1_BOSS);
     }
 }
 
 // イベント未発生ならtrueを返しイベント発生
 EventView.prototype.trueIfAbsent = function(eventNum) {
-    if (this.doneEvent.indexOf(eventNum) != -1) {
+    if (this.nowEvent.indexOf(eventNum) != -1 ||
+        this.nextEvent.indexOf(eventNum) != -1 ||
+        this.doneEvent.indexOf(eventNum) != -1) {
         return false;
     }
     this.init(eventNum);
@@ -1192,12 +1209,23 @@ EventView.prototype.decideNextEvent = function(isWin, fieldNum) {
         if (tempField.fieldState == EVENTVIEW_FIELD_TEKI) {
             tempField.fieldState = EVENTVIEW_FIELD_CHANGING;
         }
+        // 即イベントに遷移ではないが、イベント発生条件を満たした
+        if (tempField.fieldNum == 2 || tempField.fieldNum == 3 || tempField.fieldNum == 4) {
+            this.pushNextEvent(EVENTVIEW_EVENTID_JOIN_JC);
+        }
+        
         if (this.doneEvent.indexOf(EVENTVIEW_EVENTID_OP_WIN) == -1) {
             return EVENTVIEW_EVENTID_OP_WIN;
         } else if (this.doneEvent.indexOf(EVENTVIEW_EVENTID_OP_WIN2) == -1) {
             return EVENTVIEW_EVENTID_OP_WIN2;
         } else if (this.doneEvent.indexOf(EVENTVIEW_EVENTID_STAGE1_YAKUNIN) == -1) {
             return EVENTVIEW_EVENTID_STAGE1_YAKUNIN;
+            // ここまでは実質オープニングなのでイベント発生は決め打ち
+        } else {
+            // STAGE1 クリア
+            if (tempField.fieldNum == EVENTVIEW_MAP_STAGE1_BOSS && this.doneEvent.indexOf(EVENTVIEW_EVENTID_STAGE1_BOSS_END) == -1) {
+                return EVENTVIEW_EVENTID_STAGE1_BOSS_END;
+            }
         }
     } else {
         // 戦闘敗北
