@@ -6,6 +6,7 @@ EventView.prototype.gameStart = function () {
     this.counter = 0;
     this.state = EVENTVIEW_STATE_COMMAND;
     this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
+    this.stage = 0;// 何ステージまでクリアしたか(減少はしない)
     this.tempBuySellType = ITEM_TYPE_SWORD;// 売買時、どの武器を表示するか
     this.tempBuySellSyurui = 0;
     this.tempBuySellNum = -1;
@@ -23,7 +24,7 @@ EventView.prototype.gameStart = function () {
     this.doneEvent = new Array();//実行済みのイベントIDが入る
     this.haveBook = new Array();//所持している本のイベントIDが入る
     this.printMsg = ["", "", "", "", "", "", ""];// 現在イベントビューに出すべき文字列
-    this.money = 400;// 「所持金」データはここに保持
+    this.money = 200;// 「所持金」データはここに保持
     this.turn = 0;// 「ターン」データはここに保持
     this.eventID = -1;// 現在のイベント
     this.px = -1;//イベント用の顔グラの場所(-1は「表示しない」)
@@ -615,6 +616,9 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                         this.tempBuySellNum = -1;
                         this.comState = EVENTVIEW_COMSTATE_SELL_WEAPCHOICE;
                     break;
+                    case EVENTVIEW_COMMANDNUM_CHECK:arguments
+                        this.comState = EVENTVIEW_COMSTATE_UNITCHECK;
+                    break;
                     case EVENTVIEW_COMMANDNUM_WAIT:arguments
                         this.comState = EVENTVIEW_COMSTATE_WAITCHECK;
                     break;
@@ -1181,12 +1185,14 @@ EventView.prototype.cancel = function(mouseX, mouseY, bv, ud, itemMap) {
     return -1;
 }
 
-// イベント発生するならtrue
+// 戦闘勝利時のチェック。イベント発生するならtrue
 EventView.prototype.checkFieldEvent = function(fieldNum) {
     switch(fieldNum) {
         case 1:arguments
         return this.trueIfAbsent(EVENTVIEW_EVENTID_STAGE1_KANRIKA);
         case EVENTVIEW_MAP_STAGE1_BOSS:arguments
+        // stageが0なら1にする
+        this.stage = Math.max(this.stage, 1);
         return this.trueIfAbsent(EVENTVIEW_EVENTID_STAGE1_BOSS);
     }
 }
@@ -1287,6 +1293,30 @@ EventView.prototype.isNearBy = function(x, y) {
         }
     }
     return false;
+}
+
+// 味方マスの数を返す
+EventView.prototype.numOfMikata = function() {
+    var sum = 0;
+    for (var i = 0; i < EVENTVIEW_MAP_MAX; i++) {
+        var tempField = this.fieldMap.get(i);
+        if (tempField != null && tempField.fieldState == EVENTVIEW_FIELD_MIKATA) {
+            sum++;
+        }
+    }
+    return sum;
+}
+
+// 味方マスの数と進行ステージから、戦勝時の取得金額を返す
+EventView.prototype.calcWinMoney = function() {
+    if (ev.doneEvent.indexOf(EVENTVIEW_EVENTID_STAGE1_YAKUNIN) == -1) {
+        // 最序盤は戦闘勝利してもお金をもらえない
+        return 0;
+    }
+    var basicKeisu = 2;
+    var numMikataKeisu = 5 + this.numOfMikata();
+    var stageKeisu = 4 + this.stage;
+    return Math.floor(basicKeisu * numMikataKeisu * stageKeisu);
 }
 
 // ターン終了時

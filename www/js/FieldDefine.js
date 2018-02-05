@@ -4,6 +4,7 @@ var FieldDefine = function() {
     this.ofMap = "";// 攻撃側地形
     this.dfMap = "";// 防御側地形
     this.text = "";//ステージ表示
+    this.stage = 0;//何ステージまで攻略したら出現するか
     this.x = 0;//全体マップでのX座標(Max224)
     this.y = 0//全体マップでのY座標(Max160)
     this.ofY = 0;//攻撃側の初期配置Y座標(3桁の数字で表記 後衛/中衛/前衛の位置)
@@ -129,6 +130,42 @@ FieldDefine.prototype.init = function(position) {
             this.ofY = 211;
             this.dfY = 121;
             this.isBoss = true;
+        break;
+        case 20:arguments
+            this.text = "2-1";
+            // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
+            this.ofMap = "bbeaeebae";
+            this.dfMap = "abacccahb";
+            this.x = EVENTVIEW_STAGE2_X;
+            this.y = EVENTVIEW_STAGE2_Y;
+            this.stage = 1;
+            this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.ofY = 211;
+            this.dfY = 131;
+        break;
+        case 21:arguments
+            this.text = "2-2";
+            // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
+            this.ofMap = "bbeadeiie";
+            this.dfMap = "abcbaaahi";
+            this.x = EVENTVIEW_STAGE2_X + EVENTVIEW_MAP_INTERVAL;
+            this.y = EVENTVIEW_STAGE2_Y;
+            this.stage = 1;
+            this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.ofY = 333;
+            this.dfY = 232;
+        break;
+        case 22:arguments
+            this.text = "2-3";
+            // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
+            this.ofMap = "acbachikh";
+            this.dfMap = "idhbchhbh";
+            this.x = EVENTVIEW_STAGE2_X + EVENTVIEW_MAP_INTERVAL;
+            this.y = EVENTVIEW_STAGE2_Y + EVENTVIEW_MAP_INTERVAL;
+            this.stage = 1;
+            this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.ofY = 121;
+            this.dfY = 122;
         break;
         default:arguments
             // この番号にマップなし

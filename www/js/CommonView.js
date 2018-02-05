@@ -341,3 +341,81 @@ CommonView.addTutorial = function(tutorialID, onlyFirst) {
     CommonView.printedTutorial().push(tutorialID);
     return true;
 }
+
+// BattleView, EventView双方で使用するためここで記述
+CommonView.unitMsg = function (u, ctxFlip, maxCounter, counter, focusUnit, isNoAdjust, isFace) {
+    ctxFlip.fillStyle = getGladColorBlue((maxCounter - counter) / 6);
+    ctxFlip.fillRect(BATTLEVIEW_UNITTXT_X - 1, BATTLEVIEW_UNITTXT_Y - 1, BATTLEVIEW_UNITTXT_W + 3, BATTLEVIEW_UNITTXT_H + 3);
+    ctxFlip.fillStyle = 'rgb(255, 255, 255)';
+    ctxFlip.fillRect(BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y, BATTLEVIEW_UNITTXT_W, BATTLEVIEW_UNITTXT_H);
+    ctxFlip.fillStyle = 'rgb(0, 0, 0)';
+    ctxFlip.font = "11px 'MS Pゴシック'";
+    var battleStatus = u.calcBattleStr();// 装備品込みのステータスと装備名を取得
+    //var focusUnit = this.getUnitAtFocus(ud); 
+    if (isNoAdjust) {
+        // なにも装備しないステータス
+    } else if (focusUnit == null) {
+        // 上記以外でfocusUnit == nullはユニット逃亡中など非常に異例なので、なにも表示しなくていい
+        return;
+    } else if (focusUnit.x == u.x && (this.commandState == BATTLEVIEW_COMSTATE_ACT_WEAPCHOICE || this.commandState == BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE)) {
+        // 武器選択中/ターゲット選択中の手番ユニットのみ、実装備武器でなく「装備予定武器」を装備したステータス表示
+        if (this.tempEqSyurui == -1) {
+            // 表示中の武器タイプで、装備可能なアイテムすべて非所持→現在の装備品のステータスを出す
+        } else {
+            battleStatus = u.calcBattleStr(this.tempEqTypeForEquip, this.tempEqSyurui);
+        }
+    }
+    
+    var yInterval = BATTLEVIEW_UNITTXT_YINTERVAL;//1行の高さ
+    var lineCount = 1;//何行目か
+    ctxFlip.fillText(u.namae, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20);
+    ctxFlip.fillText("Lv" + u.lv, BATTLEVIEW_UNITTXT_X + 75, BATTLEVIEW_UNITTXT_Y + 20);//Lv
+    ctxFlip.fillText(battleStatus.namae, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);//装備品
+    ctxFlip.fillText("　", BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);//ドロップアイテム
+    ctxFlip.fillText("HP:" + u.hp + "/" + u.mhpObj.now, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
+    if (u.side == BATTLE_MIKATA) {
+        ctxFlip.fillText("気力:" + u.sp + "/" + u.msp, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
+    } else {
+        lineCount++;//見た目合わせのためlineCount++だけは必要
+    }
+    ctxFlip.fillText("力　:" + u.strObj.now + "→" + battleStatus.str, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
+    ctxFlip.fillText("魔力:" + u.magObj.now + "→" + battleStatus.mag, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
+    ctxFlip.fillText("守備:" + u.defObj.now + "→" + battleStatus.def, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
+    ctxFlip.fillText("魔防:" + u.mdfObj.now + "→" + battleStatus.mdf, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
+    ctxFlip.fillText("命中:" + u.hitObj.now + "→" + battleStatus.hit, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
+    ctxFlip.fillText("回避:" + u.avoObj.now + "→" + battleStatus.avo, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
+    ctxFlip.fillText("割合攻撃:" + u.rat + "→" + battleStatus.rat, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
+    ctxFlip.fillText("割合軽減:" + u.rdf + "→" + battleStatus.rdf, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
+    if (u.side == BATTLE_MIKATA) {
+        ctxFlip.fillText("耐毒:" + u.regPoison, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
+        ctxFlip.fillText("耐痺:" + u.regStun, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
+    } else {
+        lineCount += 2;
+    }
+    ctxFlip.fillText("移動1:" + u.m1Cost, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval + 7);
+    ctxFlip.fillText("移動2:" + u.m2Cost, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval + 7);
+    ctxFlip.fillText("射程+:" + u.rangeCost, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval + 7);
+    ctxFlip.fillText("再行動:" + u.exAtCost, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval + 7);
+    
+    for (var i = 0; i < 3; i++) {
+        ctxFlip.fillStyle = (u.skillON[i] == true ? 'rgb(255, 0, 0)' : 'rgb(0, 0, 255)');
+        ctxFlip.fillText((u.side == BATTLE_MIKATA ? "消費" + SkillDefine.getSkillCost(u.skills[i]) : ""), BATTLEVIEW_UNITTXT_X + 65, BATTLEVIEW_UNITTXT_Y + 20 + lineCount * yInterval + 15);
+        ctxFlip.fillText(SkillDefine.getSkillName(u.skills[i]), BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval + 15);
+    }
+    ctxFlip.fillStyle = 'rgb(0, 0, 0)';
+    ctxFlip.fillText("Exp:" + u.exp, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 25 + lineCount++ * yInterval + 15);
+    if (u.side == BATTLE_MIKATA && u.lv < MAX_LV) {
+        ctxFlip.fillText("(Next:" + u.calcExp(u.lv + 1) + ")", BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 25 + lineCount++ * yInterval + 15);
+    }
+    if (u.side == BATTLE_MIKATA) {
+        for (var i = ITEM_TYPE_SWORD; i <= ITEM_TYPE_EARTH; i++) {
+            if (u.getItemIndex(i) >= 0) {
+                ctxFlip.fillText(ItemDefine.getItemText(i) + ":" + u.weaps[i], BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 30 + lineCount++ * yInterval + 15);
+            }
+        }
+    }
+    if (isFace) {
+        // ユニット顔グラ表示
+        ctxFlip.drawImage(UnitDefine.getCharaImg(u.pSyurui), u.px, u.py, 256, 320, BATTLEVIEW_UNITPAINT_X, BATTLEVIEW_UNITPAINT_Y, 128, 160);
+    }
+};
