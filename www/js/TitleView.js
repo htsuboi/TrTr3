@@ -297,8 +297,8 @@ TitleView.prototype.clk = function(mouseX, mouseY, ev, ud, itemMap) {
             mouseY <= TITLEVIEW_NEWGAME_Y + TITLEVIEW_NEWGAME_HEIGHT) {
             // ゲーム新規開始
             ev.gameStart();
+            //ev.init(EVENTVIEW_BOOKID_PREVGAME);
             ev.init(EVENTVIEW_EVENTID_OP);
-            //ev.init(EVENTVIEW_EVENTID_STAGE1_BOSS_END);
             ud.length = 0;
             itemMap.clear();
             var tempItem = new ItemDefine();

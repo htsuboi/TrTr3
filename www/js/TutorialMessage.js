@@ -26,6 +26,26 @@ TutorialMessage.getMessage = function(tutorialID, message) {
             message.push(" また、「SKIP」をタッチすると");
             message.push("イベントの終わりまでスキップします。");
             break;
+        case COMMONVIEW_TUTORIALID_COMMAND:arguments
+            CommonView.tutorialPoint({x: -1, y: 40, w: 350, h: 350});
+            CommonView.redPoint({x: EVENTVIEW_COMMAND_X, y: EVENTVIEW_COMMAND_Y, w: EVENTVIEW_COMMAND_W * 8 + EVENTVIEW_COMMAND_DIST * 7, h: EVENTVIEW_COMMAND_H});
+            message.push("【メイン画面】");
+            message.push(" このゲームの基本的な目的は、この画面で");
+            message.push("「進攻」を選択後に敵との戦闘に勝利することで");
+            message.push("ストーリーを先へ進めていくことです。");
+            message.push("「進攻」か「待機」を選択するとターンが進みます。");
+            message.push("(ゲーム序盤以外、ターン終了前に防衛戦を行います。)");
+            message.push("ターン中戦闘しなかった味方のHPと気力は");
+            message.push("一定割合回復します。");
+            message.push("　");
+            message.push("進攻…敵(赤)マスを攻撃します。");
+            message.push("購入/売却…武器やアイテムを購入/売却します。");
+            message.push("確認…味方のステータスを確認します。");
+            message.push("　　また、潜在能力を引き出すリングを装着します。");
+            message.push("待機…このターンは進攻せず終了します。");
+            message.push("セーブ/ロード…データのセーブ/ロードを行います。");
+            message.push("書籍…おもに世相や歴史関係の、雑多な本を読みます。");
+            break;
         case COMMONVIEW_TUTORIALID_MAPCHOICE:arguments
             CommonView.tutorialPoint({x: -1, y: -1, w: -1, h: 330});
             CommonView.redPoint({x: EVENTVIEW_COMMANDTXT_X, y: EVENTVIEW_COMMANDTXT_Y, w: EVENTVIEW_COMMANDTXT_W, h: EVENTVIEW_COMMANDTXT_H + EVENTVIEW_COMMANDINTERVAL});
@@ -44,10 +64,43 @@ TutorialMessage.getMessage = function(tutorialID, message) {
             message.push(" 終わったら、左の");
             message.push("「決定」をタッチしてください。");
             break;
+        case COMMONVIEW_TUTORIALID_UNITCHECK:arguments
+            CommonView.tutorialPoint({x: -1, y: 95, w: -1, h: 350});
+            CommonView.redPoint({x: EVENTVIEW_COMMANDTXT_X, y: EVENTVIEW_COMMANDTXT_Y, w: EVENTVIEW_COMMANDTXT_W, h: EVENTVIEW_COMMANDTXT_H + EVENTVIEW_COMMANDINTERVAL});
+            CommonView.bluePoint({x: EVENTVIEW_UNITINFO_X, y: EVENTVIEW_UNITINFO_Y, w: EVENTVIEW_UNITINFO_W, h: 3 * EVENTVIEW_UNITINFO_INTERVAL});
+            CommonView.purplePoint({x: EVENTVIEW_RINGINFO_X, y: EVENTVIEW_RINGINFO_Y, w: EVENTVIEW_RINGINFO_W, h: 2 * EVENTVIEW_RINGINFO_INTERVAL});
+            message.push("【ユニット確認とリング装着】");
+            message.push(" 左上のユニット一覧からユニット名を");
+            message.push("タッチすると、ステータスが表示されます。");
+            message.push(" ");
+            message.push(" また、右上のリング一覧に");
+            message.push("所持しているリングが表示されます。");
+            message.push("「リングを装着していないユニット」と");
+            message.push("「誰も装着していないリング」を選択後");
+            message.push("左の「決定」をタッチすると");
+            message.push("リングを装着します。");
+            message.push("装着したリングは「マスター必要勝利数」だけ");
+            message.push("戦闘に勝利すると自動で外れます。");
+            message.push("(外れてからも補正は有効です。)");
+            message.push("ユニット毎にリングの相性があります。");
+            message.push("相性がいいリングは補正が大きいですが");
+            message.push("マスターに時間がかかるので注意しましょう。");
+            break;
+        case COMMONVIEW_TUTORIALID_BOOKCHOICE:arguments
+            CommonView.tutorialPoint({x: -1, y: -1, w: -1, h: 180});
+            CommonView.redPoint({x: EVENTVIEW_COMMANDTXT_X, y: EVENTVIEW_COMMANDTXT_Y, w: EVENTVIEW_COMMANDTXT_W, h: EVENTVIEW_COMMANDTXT_H + EVENTVIEW_COMMANDINTERVAL});
+            message.push("【書籍】");
+            message.push(" この世界の歴史や世相について書かれた");
+            message.push("本を読めます。");
+            message.push("(ゲーム攻略には必要ありません。)"); 
+            message.push(" ");
+            message.push(" 読みたい本を選択後に、左の");
+            message.push("「決定」をタッチしてください。");
+            break;
         case COMMONVIEW_TUTORIALID_UNITSELECT:arguments
             CommonView.tutorialPoint({x: BATTLEVIEW_COMMANDTXT_X + BATTLEVIEW_COMMANDTXT_W + 10, y: BATTLEVIEW_COMMANDTXT_Y - 20, w: 295, h: -1});
             CommonView.redPoint({x: BATTLEVIEW_UNITSELECT_X, y: BATTLEVIEW_UNITSELECT_Y, w: 2 * BATTLEVIEW_UNITSELECT_W + BATTLEVIEW_UNITSELECT_WINTERVAL, h: 7 * BATTLEVIEW_UNITSELECT_H + 6 * BATTLEVIEW_UNITSELECT_HINTERVAL});
-            CommonView.bluePoint({x: BATTLEVIEW_COMMANDTXT_X, y: BATTLEVIEW_COMMANDTXT_Y, w: BATTLEVIEW_COMMANDTXT_W, h: BATTLEVIEW_COMMANDTXT_H + BATTLEVIEW_COMMANDINTERVAL});            
+            CommonView.bluePoint({x: BATTLEVIEW_COMMANDTXT_X, y: BATTLEVIEW_DECIDETXT_Y, w: BATTLEVIEW_COMMANDTXT_W, h: BATTLEVIEW_COMMANDTXT_H + BATTLEVIEW_COMMANDINTERVAL});            
             message.push("【ユニット選択】");
             message.push(" 戦闘開始時は、まず参戦ユニットを決めます。");
             message.push("左上のユニット一覧から");
@@ -60,7 +113,7 @@ TutorialMessage.getMessage = function(tutorialID, message) {
         case COMMONVIEW_TUTORIALID_SKILLSELECT:arguments
             CommonView.tutorialPoint({x: BATTLEVIEW_COMMANDTXT_X + BATTLEVIEW_COMMANDTXT_W + 10, y: BATTLEVIEW_COMMANDTXT_Y - 30, w: 295, h: 295});
             CommonView.redPoint({x: BATTLEVIEW_UNITSELECT_X, y: BATTLEVIEW_UNITSELECT_Y, w: 2 * BATTLEVIEW_UNITSELECT_W + BATTLEVIEW_UNITSELECT_WINTERVAL, h: 7 * BATTLEVIEW_UNITSELECT_H + 6 * BATTLEVIEW_UNITSELECT_HINTERVAL});
-            CommonView.bluePoint({x: BATTLEVIEW_COMMANDTXT_X, y: BATTLEVIEW_COMMANDTXT_Y, w: BATTLEVIEW_COMMANDTXT_W, h: BATTLEVIEW_COMMANDTXT_H + BATTLEVIEW_COMMANDINTERVAL});            
+            CommonView.bluePoint({x: BATTLEVIEW_COMMANDTXT_X, y: BATTLEVIEW_DECIDETXT_Y, w: BATTLEVIEW_COMMANDTXT_W, h: BATTLEVIEW_COMMANDTXT_H + BATTLEVIEW_COMMANDINTERVAL});            
             CommonView.purplePoint({x: BATTLEVIEW_UNITTXT_X, y: BATTLEVIEW_UNITTXT_Y + 21 *BATTLEVIEW_UNITTXT_YINTERVAL, w: BATTLEVIEW_UNITTXT_W, h: 3 * BATTLEVIEW_UNITTXT_YINTERVAL});            
             message.push("【スキル選択】");
             message.push(" 各味方ユニットは、戦闘を有利にする");
@@ -99,7 +152,7 @@ TutorialMessage.getMessage = function(tutorialID, message) {
             break;
         case COMMONVIEW_TUTORIALID_BATTLEMOVE:arguments
             CommonView.tutorialPoint({x: BATTLEVIEW_COMMANDTXT_X + BATTLEVIEW_COMMANDTXT_W + 5, y: 40, w: 305, h: 390});
-            CommonView.redPoint({x: BATTLEVIEW_COMMANDTXT_X, y: BATTLEVIEW_COMMANDTXT_Y, w: BATTLEVIEW_COMMANDTXT_W, h: 2 * BATTLEVIEW_COMMANDINTERVAL});
+            CommonView.redPoint({x: BATTLEVIEW_COMMANDTXT_X, y: BATTLEVIEW_DECIDETXT_Y, w: BATTLEVIEW_COMMANDTXT_W, h: 2 * BATTLEVIEW_COMMANDINTERVAL});
             CommonView.bluePoint({x: BATTLEVIEW_UNITTXT_X, y: BATTLEVIEW_UNITTXT_Y + 20 + 15 *BATTLEVIEW_UNITTXT_YINTERVAL, w: BATTLEVIEW_UNITTXT_W, h: 2 * BATTLEVIEW_UNITTXT_YINTERVAL});
             message.push("【移動】");
             message.push(" 上下方向に移動します。");

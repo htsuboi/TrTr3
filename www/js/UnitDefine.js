@@ -27,6 +27,9 @@ var UnitDefine = function() {
     this.aiForAgain = 0;//必要値 + どれだけのSPゲージで再行動するか(負の値は「再行動しない」)
     this.skills = [0, 0, 0];
     this.skillON = [false, false, false];
+    this.goodRing = [];//(味方専用)好相性リング
+    this.badRing = [];//(味方専用)悪相性リング
+    this.recoverRate = EVENTVIEW_RECOVER_RATE;// 待機時回復率
     this.handEquip = new Array();//手持ち武器
     var sude = {eqType: ITEM_TYPE_SUDE, eqSyurui: 0};
     // 手持ち武器に「素手」を追加
@@ -71,6 +74,7 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
     this.skills[2] = skill3;
     this.eqType = -1;
     this.eqSyurui = -1;
+    this.recoverRate = EVENTVIEW_RECOVER_RATE;// 待機時回復率
     this.initNamePaint(unitSyurui);
     this.side = side;
     this.x = 0;
@@ -94,10 +98,10 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.rangeCost = 75;//射程伸ばしコスト
             this.exAtCost = 200;//再行動コスト
             this.exp = 10;//経験値
-            this.mhpObj = {now:72, amari:0, up:48, upup:8 + (difficulty > GAME_DIFFICULTY_NORMAL ? 10 : 0), upupup:11 + (difficulty > GAME_DIFFICULTY_HARD ? 8 : 0)};
-            this.strObj = {now:30, amari:0, up:25, upup:5, upupup:15};
+            this.mhpObj = {now:71, amari:0, up:48, upup:8 + (difficulty > GAME_DIFFICULTY_NORMAL ? 10 : 0), upupup:11 + (difficulty > GAME_DIFFICULTY_HARD ? 8 : 0)};
+            this.strObj = {now:26, amari:0, up:25, upup:5, upupup:15};
             this.magObj = {now:6, amari:0, up:10, upup:6, upupup:9};
-            this.defObj = {now:10, amari:0, up:12, upup:10, upupup:1 + (difficulty > GAME_DIFFICULTY_HARD ? 9 : 0)};
+            this.defObj = {now:7, amari:0, up:12, upup:10, upupup:1 + (difficulty > GAME_DIFFICULTY_HARD ? 9 : 0)};
             this.mdfObj = {now:8, amari:0, up:10, upup:13 + (difficulty > GAME_DIFFICULTY_HARD ? 3 : 0), upupup:7};
             this.hitObj = {now:97 + (difficulty > GAME_DIFFICULTY_NORMAL ? 3 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), amari:0, up:32 + (difficulty > GAME_DIFFICULTY_HARD ? 3 : 0), upup:12 + (difficulty > GAME_DIFFICULTY_NORMAL ? 4 : 0), upupup:19};
             this.avoObj = {now:15, amari:0, up:19, upup:12, upupup:5};
@@ -113,9 +117,9 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.exAtCost = 230;//再行動コスト
             this.exp = 11;//経験値
             this.mhpObj = {now:79, amari:0, up:55, upup:16, upupup:20 + (difficulty > GAME_DIFFICULTY_NORMAL ? 6 : 0)};
-            this.strObj = {now:33, amari:0, up:29, upup:6 + (difficulty > GAME_DIFFICULTY_NORMAL ? 5 : 0), upupup:20 + (difficulty > GAME_DIFFICULTY_HARD ? 6 : 0)};
+            this.strObj = {now:28, amari:0, up:29, upup:6 + (difficulty > GAME_DIFFICULTY_NORMAL ? 5 : 0), upupup:20 + (difficulty > GAME_DIFFICULTY_HARD ? 6 : 0)};
             this.magObj = {now:3, amari:0, up:4, upup:5, upupup:3};
-            this.defObj = {now:13 + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), amari:0, up:18 + (difficulty > GAME_DIFFICULTY_NORMAL ? 7 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), upup:10, upupup:12};
+            this.defObj = {now:10 + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), amari:0, up:18 + (difficulty > GAME_DIFFICULTY_NORMAL ? 7 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), upup:10, upupup:12};
             this.mdfObj = {now:6, amari:0, up:11, upup:13 + (difficulty > GAME_DIFFICULTY_NORMAL ? 3 : 0), upupup:8 + (difficulty > GAME_DIFFICULTY_HARD ? 11 : 0)};
             this.hitObj = {now:87, amari:0, up:24 + (difficulty > GAME_DIFFICULTY_HARD ? 5 : 0), upup:9, upupup:12};
             this.avoObj = {now:13, amari:0, up:15, upup:7, upupup:12 + (difficulty > GAME_DIFFICULTY_HARD ? 10 : 0)};
@@ -131,9 +135,9 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.exAtCost = 210;//再行動コスト
             this.exp = 13;//経験値
             this.mhpObj = {now:74, amari:0, up:50 + (difficulty > GAME_DIFFICULTY_NORMAL ? 7 : 0), upup:11 + (difficulty > GAME_DIFFICULTY_HARD ? 5 : 0), upupup:23};
-            this.strObj = {now:30, amari:0, up:35 + (difficulty > GAME_DIFFICULTY_HARD ? 5 : 0), upup:3 + (difficulty > GAME_DIFFICULTY_NORMAL ? 3 : 0), upupup:13};
+            this.strObj = {now:26, amari:0, up:35 + (difficulty > GAME_DIFFICULTY_HARD ? 5 : 0), upup:3 + (difficulty > GAME_DIFFICULTY_NORMAL ? 3 : 0), upupup:13};
             this.magObj = {now:7, amari:0, up:10, upup:0, upupup:12};
-            this.defObj = {now:13, amari:0, up:18 + (difficulty > GAME_DIFFICULTY_NORMAL ? 7 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), upup:10, upupup:12};
+            this.defObj = {now:10, amari:0, up:18 + (difficulty > GAME_DIFFICULTY_NORMAL ? 7 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), upup:10, upupup:12};
             this.mdfObj = {now:8 + (difficulty > GAME_DIFFICULTY_HARD ? 3 : 0), amari:0, up:13 + (difficulty > GAME_DIFFICULTY_NORMAL ? 5 : 0), upup:13, upupup:7};
             this.hitObj = {now:94, amari:0, up:27, upup:10 + (difficulty > GAME_DIFFICULTY_NORMAL ? 6 : 0), upupup:17 + (difficulty > GAME_DIFFICULTY_HARD ? 5 : 0)};
             this.avoObj = {now:14, amari:0, up:16, upup:8, upupup:2};
@@ -149,9 +153,9 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.exAtCost = 270;//再行動コスト
             this.exp = 11;//経験値
             this.mhpObj = {now:85, amari:0, up:58 + (difficulty > GAME_DIFFICULTY_HARD ? 7 : 0), upup:17, upupup:21 + (difficulty > GAME_DIFFICULTY_NORMAL ? 5 : 0)};
-            this.strObj = {now:36, amari:0, up:32, upup:12 + (difficulty > GAME_DIFFICULTY_NORMAL ? 5 : 0), upupup:23 + (difficulty > GAME_DIFFICULTY_HARD ? 6 : 0)};
+            this.strObj = {now:32, amari:0, up:32, upup:12 + (difficulty > GAME_DIFFICULTY_NORMAL ? 5 : 0), upupup:23 + (difficulty > GAME_DIFFICULTY_HARD ? 6 : 0)};
             this.magObj = {now:0, amari:0, up:10, upup:2, upupup:20};
-            this.defObj = {now:13 + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), amari:0, up:18 + (difficulty > GAME_DIFFICULTY_NORMAL ? 7 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), upup:10, upupup:12};
+            this.defObj = {now:9 + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), amari:0, up:18 + (difficulty > GAME_DIFFICULTY_NORMAL ? 7 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), upup:10, upupup:12};
             this.mdfObj = {now:4, amari:0, up:8, upup:11 + (difficulty > GAME_DIFFICULTY_NORMAL ? 7 : 0), upupup:17};
             this.hitObj = {now:80, amari:0, up:18, upup:10 + (difficulty > GAME_DIFFICULTY_HARD ? 5 : 0), upupup:24};
             this.avoObj = {now:8, amari:0, up:15, upup:7, upupup:12};
@@ -167,9 +171,9 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.exAtCost = 250;//再行動コスト
             this.exp = 14;//経験値
             this.mhpObj = {now:71, amari:0, up:44, upup:7, upupup:12 + (difficulty > GAME_DIFFICULTY_NORMAL ? 12 : 0)};
-            this.strObj = {now:21, amari:0, up:20 + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), upup:8, upupup:10};
+            this.strObj = {now:18, amari:0, up:20 + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), upup:8, upupup:10};
             this.magObj = {now:8, amari:0, up:12, upup:0, upupup:0};
-            this.defObj = {now:10, amari:0, up:12, upup:10, upupup:1 + (difficulty > GAME_DIFFICULTY_HARD ? 9 : 0)};
+            this.defObj = {now:7, amari:0, up:12, upup:10, upupup:1 + (difficulty > GAME_DIFFICULTY_HARD ? 9 : 0)};
             this.mdfObj = {now:14, amari:0, up:14, upup:12, upupup:9};
             this.hitObj = {now:93, amari:0, up:29 + (difficulty > GAME_DIFFICULTY_HARD ? 2 : 0), upup:21, upupup:6 + (difficulty > GAME_DIFFICULTY_HARD ? 10 : 0)};
             this.avoObj = {now:20, amari:0, up:22, upup:14 + (difficulty > GAME_DIFFICULTY_HARD ? 5 : 0), upupup:12 + (difficulty > GAME_DIFFICULTY_NORMAL ? 6 : 0)};
@@ -185,9 +189,9 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.exAtCost = 160;//再行動コスト
             this.exp = 13;//経験値
             this.mhpObj = {now:88 + (difficulty > GAME_DIFFICULTY_HARD ? 6 : 0), amari:0, up:55, upup:24 + (difficulty > GAME_DIFFICULTY_NORMAL ? 12 : 0), upupup:23 + (difficulty > GAME_DIFFICULTY_HARD ? 7 : 0)};
-            this.strObj = {now:39 + (difficulty > GAME_DIFFICULTY_NORMAL ? 2 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 5 : 0), amari:0, up:36  + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), upup:15, upupup:25 + (difficulty > GAME_DIFFICULTY_NORMAL ? 9 : 0)};
+            this.strObj = {now:34 + (difficulty > GAME_DIFFICULTY_NORMAL ? 2 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 5 : 0), amari:0, up:36  + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), upup:15, upupup:25 + (difficulty > GAME_DIFFICULTY_NORMAL ? 9 : 0)};
             this.magObj = {now:10, amari:0, up:0, upup:15, upupup:0};
-            this.defObj = {now:14, amari:0, up:15 + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), upup:15 + (difficulty > GAME_DIFFICULTY_NORMAL ? 8 : 0), upupup:13};
+            this.defObj = {now:10, amari:0, up:15 + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), upup:15 + (difficulty > GAME_DIFFICULTY_NORMAL ? 8 : 0), upupup:13};
             this.mdfObj = {now:12, amari:0, up:10 + (difficulty > GAME_DIFFICULTY_NORMAL ? 5 : 0), upup:19, upupup:15 + (difficulty > GAME_DIFFICULTY_HARD ? 12 : 0)};
             this.hitObj = {now:88, amari:0, up:26 + (difficulty > GAME_DIFFICULTY_NORMAL ? 3 : 0), upup:18, upupup:20};
             this.avoObj = {now:18, amari:0, up:17 + (difficulty > GAME_DIFFICULTY_HARD ? 6 : 0), upup:10, upupup:18 + (difficulty > GAME_DIFFICULTY_NORMAL ? 10 : 0)};
@@ -203,10 +207,10 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.exAtCost = 170;//再行動コスト
             this.exp = 13;//経験値
             this.mhpObj = {now:88 + (difficulty > GAME_DIFFICULTY_HARD ? 6 : 0), amari:0, up:55, upup:24 + (difficulty > GAME_DIFFICULTY_NORMAL ? 12 : 0), upupup:23 + (difficulty > GAME_DIFFICULTY_HARD ? 7 : 0)};
-            this.strObj = {now:37 + (difficulty > GAME_DIFFICULTY_NORMAL ? 2 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 5 : 0), amari:0, up:36  + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), upup:15, upupup:25 + (difficulty > GAME_DIFFICULTY_NORMAL ? 9 : 0)};
+            this.strObj = {now:32 + (difficulty > GAME_DIFFICULTY_NORMAL ? 2 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 5 : 0), amari:0, up:36  + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), upup:15, upupup:25 + (difficulty > GAME_DIFFICULTY_NORMAL ? 9 : 0)};
             this.magObj = {now:10, amari:0, up:0, upup:15, upupup:0};
-            this.defObj = {now:19 + (difficulty > GAME_DIFFICULTY_NORMAL ? 3 : 0), amari:0, up:24 + (difficulty > GAME_DIFFICULTY_HARD ? 7 : 0), upup:17 + (difficulty > GAME_DIFFICULTY_NORMAL ? 8 : 0), upupup:15 + (difficulty > GAME_DIFFICULTY_HARD ? 13 : 0)};
-            this.mdfObj = {now:7, amari:0, up:9, upup:13, upupup:18};
+            this.defObj = {now:15 + (difficulty > GAME_DIFFICULTY_NORMAL ? 3 : 0), amari:0, up:24 + (difficulty > GAME_DIFFICULTY_HARD ? 7 : 0), upup:17 + (difficulty > GAME_DIFFICULTY_NORMAL ? 8 : 0), upupup:15 + (difficulty > GAME_DIFFICULTY_HARD ? 13 : 0)};
+            this.mdfObj = {now:5, amari:0, up:9, upup:13, upupup:18};
             this.hitObj = {now:90, amari:0, up:27 + (difficulty > GAME_DIFFICULTY_NORMAL ? 5 : 0), upup:20 + (difficulty > GAME_DIFFICULTY_EXPERT ? 6 : 0), upupup:28 + (difficulty > GAME_DIFFICULTY_HARD ? 10 : 0)};
             this.avoObj = {now:10, amari:0, up:14, upup:18, upupup:6};
         break;
@@ -222,9 +226,9 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.exp = 13;//経験値
             this.mhpObj = {now:68, amari:0, up:39, upup:10, upupup:16};
             this.strObj = {now:6, amari:0, up:11, upup:4, upupup:8};
-            this.magObj = {now:25 + (difficulty > GAME_DIFFICULTY_NORMAL ? 2 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 3 : 0), amari:0, up:19 + (difficulty > GAME_DIFFICULTY_NORMAL ? 4 : 0), upup:13 + (difficulty > GAME_DIFFICULTY_HARD ? 8 : 0), upupup:11};
-            this.defObj = {now:5, amari:0, up:9, upup:14, upupup:10};
-            this.mdfObj = {now:20 + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), amari:0, up:18, upup:13 + (difficulty > GAME_DIFFICULTY_NORMAL ? 5 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 3 : 0), upupup:8 + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0)};
+            this.magObj = {now:21 + (difficulty > GAME_DIFFICULTY_NORMAL ? 2 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 3 : 0), amari:0, up:19 + (difficulty > GAME_DIFFICULTY_NORMAL ? 4 : 0), upup:13 + (difficulty > GAME_DIFFICULTY_HARD ? 8 : 0), upupup:11};
+            this.defObj = {now:3, amari:0, up:9, upup:14, upupup:10};
+            this.mdfObj = {now:14 + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0), amari:0, up:18, upup:13 + (difficulty > GAME_DIFFICULTY_NORMAL ? 5 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 3 : 0), upupup:8 + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0)};
             this.hitObj = {now:87, amari:0, up:24 + (difficulty > GAME_DIFFICULTY_NORMAL ? 4 : 0), upup:15 + (difficulty > GAME_DIFFICULTY_HARD ? 5 : 0), upupup:8};
             this.avoObj = {now:10, amari:0, up:14, upup:15, upupup:10 + (difficulty > GAME_DIFFICULTY_HARD ? 10 : 0)};
         break;
@@ -347,13 +351,13 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.rangeCost = 40;//射程伸ばしコスト
             this.exAtCost = 120;//再行動コスト
             this.exp = 10;//経験値
-            this.mhpObj = {now:83, amari:0, up:35 + (difficulty > GAME_DIFFICULTY_NORMAL ? 3 : 0), upup:3, upupup:8};
-            this.strObj = {now:24 + (difficulty > GAME_DIFFICULTY_HARD ? 2 : 0), amari:0, up:20, upup:6, upupup:9};
+            this.mhpObj = {now:77, amari:0, up:35 + (difficulty > GAME_DIFFICULTY_NORMAL ? 3 : 0), upup:3, upupup:8};
+            this.strObj = {now:20 + (difficulty > GAME_DIFFICULTY_HARD ? 2 : 0), amari:0, up:20, upup:6, upupup:9};
             this.magObj = {now:10, amari:0, up:10, upup:0, upupup:0};
-            this.defObj = {now:11, amari:0, up:19, upup:10, upupup:0};
-            this.mdfObj = {now:14, amari:0, up:22, upup:4, upupup:10};
-            this.hitObj = {now:82, amari:0, up:23, upup:7, upupup:2};
-            this.avoObj = {now:20, amari:0, up:25 + (difficulty > GAME_DIFFICULTY_HARD ? 5 : 0), upup:15, upupup:20};
+            this.defObj = {now:8, amari:0, up:19, upup:10, upupup:0};
+            this.mdfObj = {now:10, amari:0, up:22, upup:4, upupup:10};
+            this.hitObj = {now:76, amari:0, up:23, upup:7, upupup:2};
+            this.avoObj = {now:15, amari:0, up:25 + (difficulty > GAME_DIFFICULTY_HARD ? 5 : 0), upup:15, upupup:20};
         break;
         
         case UNIT_SYURUI_PRINCESS:arguments
@@ -369,16 +373,21 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.regPoison = 85;
             this.regStun = 30;
             this.mhpObj = {now:79, amari:0, up:43, upup:17, upupup:15};
-            this.strObj = {now:29, amari:0, up:28, upup:15, upupup:9};
-            this.magObj = {now:28, amari:0, up:24, upup:25, upupup:16};
-            this.defObj = {now:14, amari:0, up:22, upup:16, upupup:13};
-            this.mdfObj = {now:21, amari:0, up:18, upup:20, upupup:13};
-            this.hitObj = {now:104, amari:0, up:30, upup:25, upupup:25};
+            this.strObj = {now:25, amari:0, up:28, upup:15, upupup:9};
+            this.magObj = {now:25, amari:0, up:25, upup:25, upupup:16};
+            this.defObj = {now:11, amari:0, up:22, upup:16, upupup:13};
+            this.mdfObj = {now:12, amari:0, up:18, upup:20, upupup:16};
+            this.hitObj = {now:105, amari:0, up:27, upup:25, upupup:25};
             this.avoObj = {now:15, amari:0, up:23, upup:16, upupup:20};
             this.weaps[ITEM_TYPE_SWORD] = 24;
             this.weaps[ITEM_TYPE_SPEAR] = 7;
             this.weaps[ITEM_TYPE_WIND] = 28;
             this.weaps[ITEM_TYPE_WATER] = 34;
+            this.goodRing.push(RING_KIRYOKU);
+            this.goodRing.push(RING_RECOVER);
+            this.goodRing.push(RING_ECO);
+            this.badRing.push(RING_ATTACK);
+            this.badRing.push(RING_JUKUREN);
         break;
         case UNIT_SYURUI_KNIGHT:arguments
             this.msp = 22;
@@ -393,15 +402,19 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.regPoison = 75;
             this.regStun = 25;
             this.mhpObj = {now:84, amari:0, up:49, upup:23, upupup:14};
-            this.strObj = {now:35, amari:0, up:31, upup:20, upupup:12};
+            this.strObj = {now:31, amari:0, up:31, upup:20, upupup:12};
             this.magObj = {now:8, amari:0, up:5, upup:11, upupup:8};
-            this.defObj = {now:20, amari:0, up:29, upup:16, upupup:17};
-            this.mdfObj = {now:18, amari:0, up:18, upup:15, upupup:9};
+            this.defObj = {now:16, amari:0, up:29, upup:16, upupup:17};
+            this.mdfObj = {now:13, amari:0, up:18, upup:15, upupup:9};
             this.hitObj = {now:107, amari:0, up:36, upup:10, upupup:16};
             this.avoObj = {now:11, amari:0, up:19, upup:22, upupup:13};
             this.weaps[ITEM_TYPE_SWORD] = 21;
             this.weaps[ITEM_TYPE_SPEAR] = 30;
             this.weaps[ITEM_TYPE_SHIELD] = 20;
+            this.goodRing.push(RING_KIRYOKU);
+            this.goodRing.push(RING_JUKUREN);
+            this.goodRing.push(RING_DEFENCE);
+            this.badRing.push(RING_ATTACK);
         break;
         case UNIT_SYURUI_MUSCLE:arguments
             this.msp = 23;
@@ -416,15 +429,17 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.regPoison = 65;
             this.regStun = 20;
             this.mhpObj = {now:93, amari:0, up:52, upup:26, upupup:17};
-            this.strObj = {now:40, amari:0, up:36, upup:10, upupup:21};
+            this.strObj = {now:36, amari:0, up:36, upup:10, upupup:21};
             this.magObj = {now:3, amari:0, up:4, upup:0, upupup:5};
-            this.defObj = {now:20, amari:0, up:21, upup:16, upupup:23};
-            this.mdfObj = {now:15, amari:0, up:13, upup:17, upupup:5};
+            this.defObj = {now:15, amari:0, up:21, upup:16, upupup:23};
+            this.mdfObj = {now:10, amari:0, up:13, upup:17, upupup:5};
             this.hitObj = {now:90, amari:0, up:29, upup:10, upupup:14};
             this.avoObj = {now:10, amari:0, up:12, upup:20, upupup:16};
             this.weaps[ITEM_TYPE_SWORD] = 5;
             this.weaps[ITEM_TYPE_HAMMER] = 36;
             this.weaps[ITEM_TYPE_PUNCH] = 17;
+            this.goodRing.push(RING_ECO);
+            this.badRing.push(RING_DEFENCE);
         break;
         case UNIT_SYURUI_TATEO:arguments
             this.msp = 20;
@@ -439,10 +454,10 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.regPoison = 75;
             this.regStun = 40;
             this.mhpObj = {now:96, amari:0, up:41, upup:28, upupup:20};
-            this.strObj = {now:38, amari:0, up:33, upup:11, upupup:15};
+            this.strObj = {now:31, amari:0, up:33, upup:11, upupup:15};
             this.magObj = {now:2, amari:0, up:10, upup:8, upupup:5};
-            this.defObj = {now:30, amari:0, up:31, upup:12, upupup:15};
-            this.mdfObj = {now:13, amari:0, up:18, upup:10, upupup:18};
+            this.defObj = {now:19, amari:0, up:31, upup:12, upupup:15};
+            this.mdfObj = {now:8, amari:0, up:18, upup:10, upupup:18};
             this.hitObj = {now:84, amari:0, up:22, upup:12, upupup:20};
             this.avoObj = {now:6, amari:0, up:10, upup:20, upupup:9};
             this.weaps[ITEM_TYPE_SPEAR] = 10;
@@ -462,14 +477,42 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.regPoison = 65;
             this.regStun = 45;
             this.mhpObj = {now:82, amari:0, up:34, upup:24, upupup:27};
-            this.strObj = {now:35, amari:0, up:31, upup:20, upupup:15};
+            this.strObj = {now:31, amari:0, up:31, upup:20, upupup:15};
             this.magObj = {now:10, amari:0, up:11, upup:0, upupup:4};
-            this.defObj = {now:13, amari:0, up:20, upup:11, upupup:17};
-            this.mdfObj = {now:15, amari:0, up:18, upup:13, upupup:8};
+            this.defObj = {now:10, amari:0, up:20, upup:11, upupup:17};
+            this.mdfObj = {now:9, amari:0, up:18, upup:13, upupup:8};
             this.hitObj = {now:91, amari:0, up:32, upup:9, upupup:15};
             this.avoObj = {now:16, amari:0, up:19, upup:22, upupup:10};
             this.weaps[ITEM_TYPE_SWORD] = 28;
             this.weaps[ITEM_TYPE_PUNCH] = 31;
+            this.goodRing.push(RING_ATTACK);
+            this.badRing.push(RING_RECOVER);
+            this.badRing.push(RING_DEFENCE);
+        break;
+        case UNIT_SYURUI_THIEF:arguments
+            this.msp = 20;
+            this.crt = 5;
+            this.luck = 3;
+            this.rat = 3;//割合ダメージ
+            this.rdf = 5;//割合軽減
+            this.m1Cost = 60;//1移動コスト
+            this.m2Cost = 90;//2移動コスト
+            this.rangeCost = 200;//射程伸ばしコスト
+            this.exAtCost = 130;//再行動コスト
+            this.regPoison = 80;
+            this.regStun = 85;
+            this.mhpObj = {now:73, amari:0, up:30, upup:12, upupup:35};
+            this.strObj = {now:26, amari:0, up:22, upup:19, upupup:10};
+            this.magObj = {now:2, amari:0, up:5, upup:10, upupup:0};
+            this.defObj = {now:8, amari:0, up:16, upup:20, upupup:12};
+            this.mdfObj = {now:11, amari:0, up:22, upup:13, upupup:10};
+            this.hitObj = {now:100, amari:0, up:35, upup:10, upupup:6};
+            this.avoObj = {now:17, amari:0, up:22, upup:9, upupup:25};
+            this.weaps[ITEM_TYPE_KNIFE] = 35;
+            this.weaps[ITEM_TYPE_BOW] = 33;
+            this.goodRing.push(RING_KIRYOKU);
+            this.badRing.push(RING_RECOVER);
+            this.badRing.push(RING_DEFENCE);
         break;
         default:arguments
             printWarn('no UnitName unitType:' + unitType);
@@ -693,11 +736,11 @@ UnitDefine.prototype.initNamePaint = function(unitSyurui) {
             this.px = 1 * 256;
             this.py = 2 * 320;
         break;
-        case UNIT_SYURUI_KAGE:arguments
-            this.namae = UNIT_NAMAE_KAGE; 
+        case UNIT_SYURUI_SWORD:arguments
+            this.namae = UNIT_NAMAE_SWORD; 
             this.pSyurui = BATTLE_PSYURUI_PC;
-            this.px = 2 * 256;
-            this.py = 2 * 320;
+            this.px = 3 * 256;
+            this.py = 0 * 320;
         break;
         default:arguments
             printWarn('no UnitName unitType:' + unitType);  
@@ -932,6 +975,7 @@ UnitDefine.calcBasicDamage = function(attacker, defender, ud, attackerEQType, at
     var isMagic = (eqType == ITEM_TYPE_FIRE || eqType == ITEM_TYPE_WIND || eqType == ITEM_TYPE_WATER || eqType == ITEM_TYPE_EARTH);
     var hitDamage = 0;
     var defence = (isMagic? defenderBattleStatus.mdf : defenderBattleStatus.def)
+    var range = attacker.x + attacker.y + defender.x + defender.y;
     // 味方は気力0なら問答無用で防御0
     if (defender.side == BATTLE_MIKATA && defender.sp == 0) {
         defence = 0;
@@ -947,6 +991,12 @@ UnitDefine.calcBasicDamage = function(attacker, defender, ud, attackerEQType, at
     }
     if (attacker.hasSkill(ud, SKILL_YOROI)) {
         hitDamage += SKILL_YOROI_RATE * attacker.lv;
+    }
+    if (attacker.hasSkill(ud, SKILL_OTOKO) && range <= 1) {
+        hitDamage = Math.floor((1 + SKILL_OTOKO_RATE) * hitDamage);
+    }
+    if (defender.hasSkill(ud, SKILL_OTOKO) && range <= 1) {
+        hitDamage = Math.floor((1 - SKILL_OTOKO_RATE) * hitDamage);
     }
     return Math.floor(Math.max(0, hitDamage));
 }

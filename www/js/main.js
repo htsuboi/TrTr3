@@ -24,7 +24,7 @@ function calcAndPaint() {
                 break;
             case GAMEMODE_BATTLE:arguments
                 bv.calc(ud, itemMap, next, ev);
-                bv.paint(ud, itemMap);
+                bv.paint(ud, itemMap, ev);
                 break;
             case GAMEMODE_EVENT:arguments
                 ev.calc(ud, itemMap);

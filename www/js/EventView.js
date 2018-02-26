@@ -11,6 +11,8 @@ EventView.prototype.gameStart = function () {
     this.tempBuySellSyurui = 0;
     this.tempBuySellNum = -1;
     this.tempProcMap = -1;
+    this.tempUnitIndex = 0;//誰を表示するか
+    this.tempRingIndex = 0;//どのリングを表示するか
     this.tempSaveNum = -1;//何番にセーブするか
     this.tempMapNum = -1;//どのマップにカーソルをあわせるか
     this.tempBookNum = -1;//どの本を読むか
@@ -23,6 +25,7 @@ EventView.prototype.gameStart = function () {
     this.nowEvent = new Array();//現在実行すべきイベントIDが入る(nextEventから移動)
     this.doneEvent = new Array();//実行済みのイベントIDが入る
     this.haveBook = new Array();//所持している本のイベントIDが入る
+    this.haveRing = new Array();//所持しているリングのリングIDが入る
     this.printMsg = ["", "", "", "", "", "", ""];// 現在イベントビューに出すべき文字列
     this.money = 200;// 「所持金」データはここに保持
     this.turn = 0;// 「ターン」データはここに保持
@@ -58,6 +61,8 @@ EventView.prototype.init = function (eventID) {
         this.tempBuySellSyurui = -1;
         this.tempBuySellNum = -1;
         this.tempProcMap = -1;
+        this.tempUnitIndex = 0;//誰を表示するか
+        this.tempRingIndex = 0;//どのリングを表示するか
         this.tempSaveNum = 1;//何番にセーブするか
         this.message = [];
     }
@@ -384,6 +389,64 @@ EventView.prototype.paint = function(ud, itemMap) {
                 }
             }
         }
+        if (this.comState == EVENTVIEW_COMSTATE_UNITCHECK) {
+            var x = EVENTVIEW_UNITINFO_X;
+            var y = EVENTVIEW_UNITINFO_Y;
+            var w = EVENTVIEW_UNITINFO_W;
+            var h = EVENTVIEW_UNITINFO_H;
+            
+            ctxFlip.fillStyle = 'rgb(63, 63, 63)';
+            ctxFlip.fillRect(x - 1, y - 1, w + 2, h + 2);
+            ctxFlip.fillStyle = 'rgb(255, 255, 255)';
+            ctxFlip.fillRect(x, y, w, h);
+            
+            var mikataUd = UnitDefine.getMikataList(ud);
+            for (var i = 0; i < mikataUd.length; i++) {
+                if (i == this.tempUnitIndex) {
+                    ctxFlip.fillStyle = 'rgb(255, 255, 0)';
+                    ctxFlip.fillRect(x, y + EVENTVIEW_UNITINFO_INTERVAL * i, w, EVENTVIEW_UNITINFO_INTERVAL);
+                }
+                var tempU = mikataUd[i];
+                ctxFlip.font = "12px 'MS Pゴシック'";
+                ctxFlip.fillStyle = 'rgb(0, 0, 0)';
+                ctxFlip.fillText(tempU.namae, x, y + EVENTVIEW_UNITINFO_INTERVAL - 2 + EVENTVIEW_UNITINFO_INTERVAL * i);
+            }
+
+            var mikataUd = UnitDefine.getMikataList(ud);
+            var infoUnit = mikataUd[this.tempUnitIndex];
+            CommonView.unitMsg(infoUnit, ctxFlip, this.MAXCOUNTER, this.counter, null, true, false, false, this);
+            
+            var x2 = EVENTVIEW_RINGINFO_X;
+            var y2 = EVENTVIEW_RINGINFO_Y;
+            var w2 = EVENTVIEW_RINGINFO_W;
+            var h2 = EVENTVIEW_RINGINFO_H;
+            
+            ctxFlip.fillStyle = 'rgb(63, 63, 63)';
+            ctxFlip.fillRect(x2 - 1, y2 - 1, w2 + 2, h2 + 2);
+            ctxFlip.fillStyle = 'rgb(255, 255, 255)';
+            ctxFlip.fillRect(x2, y2, w2, h2);
+            
+            for (var i = 0; i < this.haveRing.length; i++) {
+                if (i == this.tempRingIndex) {
+                    ctxFlip.fillStyle = 'rgb(255, 255, 0)';
+                    ctxFlip.fillRect(x2, y2 + EVENTVIEW_RINGINFO_INTERVAL * i, w2, EVENTVIEW_RINGINFO_INTERVAL);
+                }
+                var tempRing = this.haveRing[i];
+                ctxFlip.font = "10px 'MS Pゴシック'";
+                ctxFlip.fillStyle = 'rgb(0, 0, 0)';
+                var isMastered = RingDefine.isRingMaster(infoUnit, tempRing);
+                var ringTxt = RingDefine.getRingName(tempRing.id);
+                if (isMastered) {
+                    ringTxt += "(M)";
+                    ctxFlip.fillStyle = 'rgb(63, 63, 63)';
+                }
+                ctxFlip.fillText(ringTxt, x2, y2 + EVENTVIEW_RINGINFO_INTERVAL - 12 + EVENTVIEW_RINGINFO_INTERVAL * i);
+                ctxFlip.fillText(tempRing.unitNamae, x2 + 30, y2 + EVENTVIEW_RINGINFO_INTERVAL - 1 + EVENTVIEW_RINGINFO_INTERVAL * i);
+                
+                var aptitude = RingDefine.getRingAptitude(infoUnit, tempRing.id);
+                ctxFlip.drawImage(BattleField.getWeaponsImg(), 16 * (1 - aptitude), 304, 16, 16, x2 - 16, y2 + EVENTVIEW_RINGINFO_INTERVAL * i, 16, 16);
+            }
+        }
         if (this.comState == EVENTVIEW_COMSTATE_SAVE_FILECHOICE || this.comState == EVENTVIEW_COMSTATE_LOAD_FILECHOICE) {
             ctxFlip.fillStyle = 'rgb(63, 63, 223)';
             ctxFlip.fillRect(EVENTVIEW_COMMAND_X - 3, EVENTVIEW_BUYSELLCOMMAND_Y - 5, (EVENTVIEW_COMMAND_W + EVENTVIEW_COMMAND_DIST) * 6 + 10, EVENTVIEW_COMMAND_H * 2 + EVENTVIEW_BUYSELLCOMMAND_INTERVAL + 10);
@@ -476,7 +539,7 @@ EventView.prototype.paint = function(ud, itemMap) {
                 var index = 0;
                 ctxFlip.fillText("【" + tempItem.namae + "】", EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15 + interval * index++);
                 ctxFlip.fillText(tempItem.text, EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15 + interval * index++);
-                ctxFlip.fillText("【射程】　　" + tempItem.range, EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15 + interval * index);
+                ctxFlip.fillText("【射程】　　" + (tempItem.range + 1), EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15 + interval * index);
                 ctxFlip.fillText("【装備レベル】" + tempItem.lv, EVENTVIEW_TEXT_X + 130, EVENTVIEW_TEXT_Y + 15 + interval * index++);
                 ctxFlip.fillText("【力】　　　" + tempItem.str, EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15 + interval * index);
                 ctxFlip.fillText("【魔力】　　" + tempItem.mag, EVENTVIEW_TEXT_X + 130, EVENTVIEW_TEXT_Y + 15 + interval * index++);
@@ -504,6 +567,25 @@ EventView.prototype.paint = function(ud, itemMap) {
                 ctxFlip.fillText("ファイルがありません。", EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15);
             }
         }
+        if (this.comState == EVENTVIEW_COMSTATE_UNITCHECK) {
+            if (this.tempUnitIndex >= 0 && this.tempRingIndex >= 0) {
+                var mikataUd = UnitDefine.getMikataList(ud);
+                var tempRing = this.haveRing[this.tempRingIndex];
+                var aptitude = RingDefine.getRingAptitude(infoUnit, tempRing.id);
+                for (var i = 0; i < 3; i++) {
+                    ctxFlip.drawImage(BattleField.getWeaponsImg(), 16 * i, 304, 16, 16, EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 50 * i, 16, 16);
+                    ctxFlip.font = "14px 'MS Pゴシック'";
+                    ctxFlip.fillStyle = 'rgb(0, 0, 0)';
+                    ctxFlip.fillText("マスター必要勝利数:" + RingDefine.getMasterCount(tempRing.id, 1 - i), EVENTVIEW_TEXT_X + 30, EVENTVIEW_TEXT_Y + 50 * i + 15);
+                    var ringMsg = new Array();
+                    RingDefine.getSetsumei(tempRing.id, 1 - i, ringMsg);
+                    for (var j = 0; j < ringMsg.length; j++) {
+                        ctxFlip.fillText(ringMsg[0], EVENTVIEW_TEXT_X + 30, EVENTVIEW_TEXT_Y + 50 * i + 33 + 15 * j);
+                    }
+                }
+            }
+        }
+        
         ctxFlip.font = "14px 'MS Pゴシック'";
         ctxFlip.fillStyle = 'rgb(0, 0, 0)';
         ctxFlip.fillText("所持金　" + this.money + "ウォッツ", EVENTVIEW_TEXT_X + 10, EVENTVIEW_TEXT_Y + EVENTVIEW_TEXT_H - 20);
@@ -617,6 +699,8 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                         this.comState = EVENTVIEW_COMSTATE_SELL_WEAPCHOICE;
                     break;
                     case EVENTVIEW_COMMANDNUM_CHECK:arguments
+                        this.tempUnitIndex = 0;
+                        this.tempRingIndex = (this.haveRing.length > 0 ? 0 : -1);
                         this.comState = EVENTVIEW_COMSTATE_UNITCHECK;
                     break;
                     case EVENTVIEW_COMMANDNUM_WAIT:arguments
@@ -732,6 +816,31 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                 }
             }
         }
+        if (this.comState == EVENTVIEW_COMSTATE_UNITCHECK) {
+            if (mouseX >= EVENTVIEW_UNITINFO_X && mouseX <= EVENTVIEW_UNITINFO_X + EVENTVIEW_UNITINFO_W) {
+                var y = Math.floor((mouseY - EVENTVIEW_UNITINFO_Y) / EVENTVIEW_UNITINFO_INTERVAL);
+                var nowIndex = -1;
+                if (y >= 0 && y < UnitDefine.getMikataList(ud).length) {
+                    nowIndex = y;
+                }
+    
+                if (nowIndex != -1) {    
+                    this.tempUnitIndex = nowIndex;
+                }
+            }
+            if (mouseX >= EVENTVIEW_RINGINFO_X && mouseX <= EVENTVIEW_RINGINFO_X + EVENTVIEW_RINGINFO_W) {
+                var y = Math.floor((mouseY - EVENTVIEW_RINGINFO_Y) / EVENTVIEW_RINGINFO_INTERVAL);
+                var nowIndex = -1;
+                if (y >= 0 && y < this.haveRing.length) {
+                    nowIndex = y;
+                }
+    
+                if (nowIndex != -1) {
+                    this.tempRingIndex = nowIndex;
+                }
+            }
+            return -1;
+        }
         if (this.comState == EVENTVIEW_COMSTATE_SAVE_FILECHOICE || this.comState == EVENTVIEW_COMSTATE_LOAD_FILECHOICE) {
             var x = Math.floor((mouseX - EVENTVIEW_COMMAND_X) / (EVENTVIEW_COMMAND_W + EVENTVIEW_COMMAND_DIST));
             var nowIndex = -1;
@@ -756,13 +865,15 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
             return -1;
         }
         if (this.comState == EVENTVIEW_COMSTATE_BOOKCHOICE) {
-            var y = Math.floor((mouseY - EVENTVIEW_BOOK_Y) / (EVENTVIEW_BOOK_H + EVENTVIEW_BOOK_INTERVAL));
-            var nowIndex = -1;
-            if (y >= 0 && y < this.haveBook.length) {
-                nowIndex = y;
+            if (mouseX >= EVENTVIEW_BOOK_X && mouseX <= EVENTVIEW_BOOK_X + EVENTVIEW_BOOK_W) {
+                var y = Math.floor((mouseY - EVENTVIEW_BOOK_Y) / (EVENTVIEW_BOOK_H + EVENTVIEW_BOOK_INTERVAL));
+                var nowIndex = -1;
+                if (y >= 0 && y < this.haveBook.length) {
+                    nowIndex = y;
+                }
+    
+                this.tempBookNum = nowIndex;
             }
-
-            this.tempBookNum = nowIndex;
             return -1;
         }
     }
@@ -852,7 +963,7 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             var fieldNum = 0;
             bv.init(fieldNum, true);
             u = new UnitDefine();
-            u.initCommon(ud, UNIT_SYURUI_PRINCESS, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 1, SKILL_KEIKAI, SKILL_KIYOME, SKILL_KENJITSU);
+            u.initCommon(ud, UNIT_SYURUI_PRINCESS, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 1, SKILL_KEIKAI, SKILL_KIYOME, SKILL_OTOKO);
             ud.push(u);
             
             var tempField = this.fieldMap.get(fieldNum);
@@ -871,7 +982,7 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             UnitDefine.recoverMikata(ud);
             
             u = new UnitDefine();
-            u.initCommon(ud, UNIT_SYURUI_KNIGHT, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 1, SKILL_HIGHHIT, SKILL_SYONETSU, SKILL_KENJITSU);
+            u.initCommon(ud, UNIT_SYURUI_KNIGHT, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 1, SKILL_HIGHHIT, SKILL_SYONETSU, SKILL_GUARD);
             ud.push(u);
             //var tempField = this.fieldMap.get(0);
             //tempField.createEnemy(ud);
@@ -910,14 +1021,26 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             var tempField = this.fieldMap.get(fieldNum);
             tempField.createEnemy(ud);
             return GAMEMODE_BATTLE;
+        case EVENTVIEW_EVENTID_STAGE1_1STBATTLE:arguments
+            var fieldNum = 3;
+            bv.init(fieldNum, true);
+            
+            var tempField = this.fieldMap.get(fieldNum);
+            tempField.createEnemy(ud);
+            return GAMEMODE_BATTLE;
         case EVENTVIEW_EVENTID_STAGE1_YAKUNIN:arguments
             this.endTurn(ud);
-            this.pushNextEvent(EVENTVIEW_EVENTID_JOIN_MUSCLE);
             break;
         case EVENTVIEW_EVENTID_JOIN_MUSCLE:arguments
             u = new UnitDefine();
-            u.initCommon(ud, UNIT_SYURUI_MUSCLE, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 2, SKILL_YOROI, SKILL_KYOEN, SKILL_KENJITSU);
+            u.initCommon(ud, UNIT_SYURUI_MUSCLE, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 2, SKILL_YOROI, SKILL_KYOEN, SKILL_OTOKO);
             ud.push(u);
+            break;
+        case EVENTVIEW_EVENTID_FIRST_RING:arguments
+            this.pushRing(RING_KIRYOKU);
+            /*this.pushRing(RING_ECO);
+            this.pushRing(RING_TAISEI);
+            this.pushRing(RING_RECOVER);*/
             break;
         case EVENTVIEW_EVENTID_JOIN_JC:arguments
             u = new UnitDefine();
@@ -964,9 +1087,19 @@ EventView.prototype.setFace = function(faceId) {
             this.py = 0 * 320;
             this.pSyurui = BATTLE_PSYURUI_ZAKO;
             break;
+        case UNIT_SYURUI_SPEAR:arguments
+            this.px = 0 * 256;
+            this.py = 1 * 320;
+            this.pSyurui = BATTLE_PSYURUI_ZAKO;
+            break;
         case UNIT_SYURUI_BOW:arguments
             this.px = 2 * 256;
             this.py = 2 * 320;
+            this.pSyurui = BATTLE_PSYURUI_ZAKO;
+            break;
+        case UNIT_SYURUI_HAMMER:arguments
+            this.px = 1 * 256;
+            this.py = 0 * 320;
             this.pSyurui = BATTLE_PSYURUI_ZAKO;
             break;
         case UNIT_SYURUI_SHIELD:arguments
@@ -998,6 +1131,16 @@ EventView.prototype.setFace = function(faceId) {
             this.px = 2 * 256;
             this.py = 1 * 320;
             this.pSyurui = BATTLE_PSYURUI_PC;
+            break;
+        case UNIT_SYURUI_THIEF:arguments
+            this.px = 2 * 256;
+            this.py = 2 * 320;
+            this.pSyurui = BATTLE_PSYURUI_PC;
+            break;
+        case UNIT_SYURUI_YOUNGMAN:arguments
+            this.px = 0 * 256;
+            this.py = 0 * 320;
+            this.pSyurui = BATTLE_PSYURUI_NPC;
             break;
         case UNIT_SYURUI_OLDMAN:arguments
             this.px = 1 * 256;
@@ -1143,6 +1286,31 @@ EventView.prototype.decide = function(mouseX, mouseY, bv, ud, itemMap) {
         }
     }
     
+    if (this.comState == EVENTVIEW_COMSTATE_UNITCHECK) {
+        if (this.tempUnitIndex >= 0 && this.tempRingIndex >= 0) {
+            var mikataUd = UnitDefine.getMikataList(ud);
+            var tempUnit = mikataUd[this.tempUnitIndex];
+            if (RingDefine.getEquipRing(tempUnit, this) != null) {
+                CommonView.addWarn("既にリングを装着中です。");
+                return -1;
+            }
+            var tempRing = this.haveRing[this.tempRingIndex];
+            if (RingDefine.isRingMaster(tempUnit, tempRing)) {
+                CommonView.addWarn("そのリングはマスター済みです。");
+                return -1;
+            }
+            if (tempRing.unitNamae != "") {
+                CommonView.addWarn("そのリングは他ユニットが装着中です。");
+                return -1;
+            }
+            CommonView.addMessage("リングを装着しました。", 120);
+            RingDefine.apply(tempRing.id, tempUnit);
+            tempRing.unitNamae = tempUnit.namae;
+            var aptitude = RingDefine.getRingAptitude(tempUnit, tempRing.id);
+            tempRing.unitRemain = RingDefine.getMasterCount(tempRing.id, aptitude);
+        }
+        return -1;
+    }
     if (this.comState == EVENTVIEW_COMSTATE_WAITCHECK) {
         CommonView.addMessage("1ターン待機しました。", 120);
         this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
@@ -1185,14 +1353,14 @@ EventView.prototype.cancel = function(mouseX, mouseY, bv, ud, itemMap) {
     return -1;
 }
 
-// 戦闘勝利時のチェック。イベント発生するならtrue
+// 戦闘突入時のチェック。イベント発生するならtrue
 EventView.prototype.checkFieldEvent = function(fieldNum) {
     switch(fieldNum) {
         case 1:arguments
         return this.trueIfAbsent(EVENTVIEW_EVENTID_STAGE1_KANRIKA);
+        case 3:arguments
+        return this.trueIfAbsent(EVENTVIEW_EVENTID_STAGE1_1STBATTLE);
         case EVENTVIEW_MAP_STAGE1_BOSS:arguments
-        // stageが0なら1にする
-        this.stage = Math.max(this.stage, 1);
         return this.trueIfAbsent(EVENTVIEW_EVENTID_STAGE1_BOSS);
     }
 }
@@ -1219,6 +1387,9 @@ EventView.prototype.decideNextEvent = function(isWin, fieldNum) {
         if (tempField.position == 4 || tempField.position == 6) {
             this.pushNextEvent(EVENTVIEW_EVENTID_FIRST_RING);
         }
+        if (tempField.position == 3) {
+            this.pushNextEvent(EVENTVIEW_EVENTID_JOIN_MUSCLE);
+        }
         if (tempField.position == 7 || tempField.position == 8) {
             this.pushNextEvent(EVENTVIEW_EVENTID_JOIN_JC);
         }
@@ -1233,6 +1404,8 @@ EventView.prototype.decideNextEvent = function(isWin, fieldNum) {
         } else {
             // STAGE1 クリア
             if (tempField.position == EVENTVIEW_MAP_STAGE1_BOSS && this.doneEvent.indexOf(EVENTVIEW_EVENTID_STAGE1_BOSS_END) == -1) {
+                // stageが0なら1にする
+                this.stage = Math.max(this.stage, 1);
                 return EVENTVIEW_EVENTID_STAGE1_BOSS_END;
             }
         }
@@ -1256,8 +1429,17 @@ EventView.prototype.selectTutorial = function() {
         return COMMONVIEW_TUTORIALID_EVENT;   
     }
     if (this.state == EVENTVIEW_STATE_COMMAND) {
+        if (this.comState == EVENTVIEW_COMSTATE_PRECHOICE) {
+            return COMMONVIEW_TUTORIALID_COMMAND;   
+        }
         if (this.comState == EVENTVIEW_COMSTATE_PROC_MAPCHOICE) {
             return COMMONVIEW_TUTORIALID_MAPCHOICE;   
+        }
+        if (this.comState == EVENTVIEW_COMSTATE_UNITCHECK) {
+            return COMMONVIEW_TUTORIALID_UNITCHECK;   
+        }
+        if (this.comState == EVENTVIEW_COMSTATE_BOOKCHOICE) {
+            return COMMONVIEW_TUTORIALID_BOOKCHOICE;   
         }
     }
     return -1;
@@ -1268,6 +1450,17 @@ EventView.prototype.pushBook = function(bookId) {
     if (this.haveBook.indexOf(bookId) == -1) {
         CommonView.addMessage("書籍を入手しました!", 120);
         this.haveBook.push(bookId);   
+    }
+    return -1;
+}
+
+// 指定したリングを持っていない場合のみ追加
+EventView.prototype.pushRing = function(ringId) {
+    if (this.haveRing.indexOf(ringId) == -1) {
+        var rd = new RingDefine();
+        rd.init(ringId);
+        CommonView.addMessage("リングを入手しました!", 120);
+        this.haveRing.push(rd);   
     }
     return -1;
 }
@@ -1346,9 +1539,9 @@ EventView.prototype.endTurn = function(ud) {
             if (u.hp == 0) {
                 u.hp = 1;
             } else {
-                var RECOVER_RATE = 0.3;
-                u.hp = Math.min(u.mhpObj.now, u.hp + Math.floor(RECOVER_RATE * u.mhpObj.now));
-                u.sp = Math.min(u.msp, u.sp + Math.floor(RECOVER_RATE * u.msp));
+                var recoverRate = u.recoverRate;
+                u.hp = Math.min(u.mhpObj.now, u.hp + Math.floor(recoverRate * u.mhpObj.now));
+                u.sp = Math.min(u.msp, u.sp + Math.floor(recoverRate * u.msp));
             }
         } else {
             u.field = -1;

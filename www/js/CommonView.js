@@ -308,6 +308,7 @@ CommonView.addWarn = function(addWarn) {
         // (2行以上のメッセージ表示時の2行目以降なら、このifはfalse)
         CommonView.warns([]);
     }
+    CommonView.paintCounter(0);
     var warnMessages = CommonView.warns();
     warnMessages.push(addWarn);
     // メッセージが7個以上になったら最も古いものを削除
@@ -324,6 +325,7 @@ CommonView.addTutorial = function(tutorialID, onlyFirst) {
     if (onlyFirst && !CommonView.shouldTutorialFlag()) {
         return false;
     }
+    CommonView.paintCounter(0);
     
     // 既に表示済みの場合、手動でなく「初回自動表示」のチュートリアルは表示しない
     if (onlyFirst && CommonView.printedTutorial().indexOf(tutorialID) != -1) {
@@ -343,11 +345,15 @@ CommonView.addTutorial = function(tutorialID, onlyFirst) {
 }
 
 // BattleView, EventView双方で使用するためここで記述
-CommonView.unitMsg = function (u, ctxFlip, maxCounter, counter, focusUnit, isNoAdjust, isFace) {
+CommonView.unitMsg = function (u, ctxFlip, maxCounter, counter, focusUnit, isNoAdjust, isFace, isBattleView, ev) {
+    var x = (isBattleView ? BATTLEVIEW_UNITTXT_X : EVENTVIEW_UNITTXT_X);
+    var y = (isBattleView ? BATTLEVIEW_UNITTXT_Y : EVENTVIEW_UNITTXT_Y);
+    var w = (isBattleView ? BATTLEVIEW_UNITTXT_W : EVENTVIEW_UNITTXT_W);
+    var h = (isBattleView ? BATTLEVIEW_UNITTXT_H : EVENTVIEW_UNITTXT_H);
     ctxFlip.fillStyle = getGladColorBlue((maxCounter - counter) / 6);
-    ctxFlip.fillRect(BATTLEVIEW_UNITTXT_X - 1, BATTLEVIEW_UNITTXT_Y - 1, BATTLEVIEW_UNITTXT_W + 3, BATTLEVIEW_UNITTXT_H + 3);
+    ctxFlip.fillRect(x - 1, y - 1, w + 3, h + 3);
     ctxFlip.fillStyle = 'rgb(255, 255, 255)';
-    ctxFlip.fillRect(BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y, BATTLEVIEW_UNITTXT_W, BATTLEVIEW_UNITTXT_H);
+    ctxFlip.fillRect(x, y, w, h);
     ctxFlip.fillStyle = 'rgb(0, 0, 0)';
     ctxFlip.font = "11px 'MS Pゴシック'";
     var battleStatus = u.calcBattleStr();// 装備品込みのステータスと装備名を取得
@@ -368,49 +374,58 @@ CommonView.unitMsg = function (u, ctxFlip, maxCounter, counter, focusUnit, isNoA
     
     var yInterval = BATTLEVIEW_UNITTXT_YINTERVAL;//1行の高さ
     var lineCount = 1;//何行目か
-    ctxFlip.fillText(u.namae, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20);
-    ctxFlip.fillText("Lv" + u.lv, BATTLEVIEW_UNITTXT_X + 75, BATTLEVIEW_UNITTXT_Y + 20);//Lv
-    ctxFlip.fillText(battleStatus.namae, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);//装備品
-    ctxFlip.fillText("　", BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);//ドロップアイテム
-    ctxFlip.fillText("HP:" + u.hp + "/" + u.mhpObj.now, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
+    ctxFlip.fillText(u.namae, x, y + 20);
+    ctxFlip.fillText("Lv" + u.lv, x + 75, y + 20);//Lv
+    ctxFlip.fillText(battleStatus.namae, x, y + 20 + lineCount++ * yInterval);//装備品
     if (u.side == BATTLE_MIKATA) {
-        ctxFlip.fillText("気力:" + u.sp + "/" + u.msp, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
+        var equipRing = RingDefine.getEquipRing(u, ev);
+        var ringData = "";
+        if (equipRing != null) {
+            ringData = RingDefine.getRingName(equipRing.id) + "(" + equipRing.unitRemain + ")";
+        }
+        ctxFlip.fillText(ringData, x, y + 20 + lineCount++ * yInterval);//ドロップアイテム
+    } else {
+        ctxFlip.fillText("　", x, y + 20 + lineCount++ * yInterval);//ドロップアイテム
+    }
+    ctxFlip.fillText("HP:" + u.hp + "/" + u.mhpObj.now, x, y + 20 + lineCount++ * yInterval);
+    if (u.side == BATTLE_MIKATA) {
+        ctxFlip.fillText("気力:" + u.sp + "/" + u.msp, x, y + 20 + lineCount++ * yInterval);
     } else {
         lineCount++;//見た目合わせのためlineCount++だけは必要
     }
-    ctxFlip.fillText("力　:" + u.strObj.now + "→" + battleStatus.str, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
-    ctxFlip.fillText("魔力:" + u.magObj.now + "→" + battleStatus.mag, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
-    ctxFlip.fillText("守備:" + u.defObj.now + "→" + battleStatus.def, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
-    ctxFlip.fillText("魔防:" + u.mdfObj.now + "→" + battleStatus.mdf, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
-    ctxFlip.fillText("命中:" + u.hitObj.now + "→" + battleStatus.hit, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
-    ctxFlip.fillText("回避:" + u.avoObj.now + "→" + battleStatus.avo, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
-    ctxFlip.fillText("割合攻撃:" + u.rat + "→" + battleStatus.rat, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
-    ctxFlip.fillText("割合軽減:" + u.rdf + "→" + battleStatus.rdf, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
+    ctxFlip.fillText("力　:" + u.strObj.now + "→" + battleStatus.str, x, y + 20 + lineCount++ * yInterval);
+    ctxFlip.fillText("魔力:" + u.magObj.now + "→" + battleStatus.mag, x, y + 20 + lineCount++ * yInterval);
+    ctxFlip.fillText("守備:" + u.defObj.now + "→" + battleStatus.def, x, y + 20 + lineCount++ * yInterval);
+    ctxFlip.fillText("魔防:" + u.mdfObj.now + "→" + battleStatus.mdf, x, y + 20 + lineCount++ * yInterval);
+    ctxFlip.fillText("命中:" + u.hitObj.now + "→" + battleStatus.hit, x, y + 20 + lineCount++ * yInterval);
+    ctxFlip.fillText("回避:" + u.avoObj.now + "→" + battleStatus.avo, x, y + 20 + lineCount++ * yInterval);
+    ctxFlip.fillText("割合攻撃:" + u.rat + "→" + battleStatus.rat, x, y + 20 + lineCount++ * yInterval);
+    ctxFlip.fillText("割合軽減:" + u.rdf + "→" + battleStatus.rdf, x, y + 20 + lineCount++ * yInterval);
     if (u.side == BATTLE_MIKATA) {
-        ctxFlip.fillText("耐毒:" + u.regPoison, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
-        ctxFlip.fillText("耐痺:" + u.regStun, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval);
+        ctxFlip.fillText("耐毒:" + u.regPoison, x, y + 20 + lineCount++ * yInterval);
+        ctxFlip.fillText("耐痺:" + u.regStun, x, y + 20 + lineCount++ * yInterval);
     } else {
         lineCount += 2;
     }
-    ctxFlip.fillText("移動1:" + u.m1Cost, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval + 7);
-    ctxFlip.fillText("移動2:" + u.m2Cost, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval + 7);
-    ctxFlip.fillText("射程+:" + u.rangeCost, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval + 7);
-    ctxFlip.fillText("再行動:" + u.exAtCost, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval + 7);
+    ctxFlip.fillText("移動1:" + u.m1Cost, x, y + 20 + lineCount++ * yInterval + 7);
+    ctxFlip.fillText("移動2:" + u.m2Cost, x, y + 20 + lineCount++ * yInterval + 7);
+    ctxFlip.fillText("射程+:" + u.rangeCost, x, y + 20 + lineCount++ * yInterval + 7);
+    ctxFlip.fillText("再行動:" + u.exAtCost, x, y + 20 + lineCount++ * yInterval + 7);
     
     for (var i = 0; i < 3; i++) {
         ctxFlip.fillStyle = (u.skillON[i] == true ? 'rgb(255, 0, 0)' : 'rgb(0, 0, 255)');
-        ctxFlip.fillText((u.side == BATTLE_MIKATA ? "消費" + SkillDefine.getSkillCost(u.skills[i]) : ""), BATTLEVIEW_UNITTXT_X + 65, BATTLEVIEW_UNITTXT_Y + 20 + lineCount * yInterval + 15);
-        ctxFlip.fillText(SkillDefine.getSkillName(u.skills[i]), BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 20 + lineCount++ * yInterval + 15);
+        ctxFlip.fillText((u.side == BATTLE_MIKATA ? "消費" + SkillDefine.getSkillCost(u.skills[i]) : ""), x + 65, y + 20 + lineCount * yInterval + 15);
+        ctxFlip.fillText(SkillDefine.getSkillName(u.skills[i]), x, y + 20 + lineCount++ * yInterval + 15);
     }
     ctxFlip.fillStyle = 'rgb(0, 0, 0)';
-    ctxFlip.fillText("Exp:" + u.exp, BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 25 + lineCount++ * yInterval + 15);
+    ctxFlip.fillText("Exp:" + u.exp, x, y + 25 + lineCount++ * yInterval + 15);
     if (u.side == BATTLE_MIKATA && u.lv < MAX_LV) {
-        ctxFlip.fillText("(Next:" + u.calcExp(u.lv + 1) + ")", BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 25 + lineCount++ * yInterval + 15);
+        ctxFlip.fillText("(Next:" + u.calcExp(u.lv + 1) + ")", x, y + 25 + lineCount++ * yInterval + 15);
     }
     if (u.side == BATTLE_MIKATA) {
         for (var i = ITEM_TYPE_SWORD; i <= ITEM_TYPE_EARTH; i++) {
             if (u.getItemIndex(i) >= 0) {
-                ctxFlip.fillText(ItemDefine.getItemText(i) + ":" + u.weaps[i], BATTLEVIEW_UNITTXT_X, BATTLEVIEW_UNITTXT_Y + 30 + lineCount++ * yInterval + 15);
+                ctxFlip.fillText(ItemDefine.getItemText(i) + ":" + u.weaps[i], x, y + 30 + lineCount++ * yInterval + 15);
             }
         }
     }

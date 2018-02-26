@@ -38,6 +38,12 @@ SkillDefine.getSkillName = function(skill) {
         return "ハリネズミ";
     case SKILL_THIEF:arguments
         return "盗む";
+    case SKILL_GAIKA:arguments
+        return "勝利の凱歌";
+    case SKILL_GUARD:arguments
+        return "最後の防御";
+    case SKILL_OTOKO:arguments
+        return "男の闘い";
     default:arguments  
         return "";
     }
@@ -82,15 +88,30 @@ SkillDefine.getMessage = function(skill) {
     /*case SKILL_POISON:arguments
         return "毒の呪い";
     case SKILL_STUN:arguments
-        return "呪縛の闇";
+        return "呪縛の闇";*/
     case SKILL_TAMASHII:arguments
-        return "魂削り";
+        var minusPoint = 2;
+        skillTxt.push("攻撃ヒット時、気力を" + minusPoint + "奪う");
+        break;
     case SKILL_SURI:arguments
-        return "スリ";
-    case SKILL_HEDGEHOG:arguments
+        var minusPoint = 3;
+        skillTxt.push("攻撃ヒット時、所持金をレベル × " + minusPoint + "奪う");
+        break;
+    /*case SKILL_HEDGEHOG:arguments
         return "ハリネズミ";
     case SKILL_THIEF:arguments
         return "盗む";*/
+    case SKILL_GAIKA:arguments
+        skillTxt.push("勝利時、リングのマスター回数が-2");
+        break;
+    case SKILL_GUARD:arguments
+        skillTxt.push("SPゲージが300の場合のみ死亡しない");
+        skillTxt.push("(SPゲージは0になる)");
+        break;
+    case SKILL_OTOKO:arguments
+        skillTxt.push("2射程以内の敵への基本ダメージ＋20%");
+        skillTxt.push("2射程以内の敵からの基本ダメージ-20%");
+        break;
     default:arguments  
         break;
     }
@@ -133,6 +154,12 @@ SkillDefine.getSkillCost = function(skill) {
     case SKILL_HEDGEHOG:arguments
         return 0;
     case SKILL_THIEF:arguments
+        return 2;
+    case SKILL_GAIKA:arguments
+        return 3;
+    case SKILL_GUARD:arguments
+        return 1;
+    case SKILL_OTOKO:arguments
         return 2;
     default:arguments  
         return 0;

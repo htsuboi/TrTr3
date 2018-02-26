@@ -47,6 +47,8 @@ var BattleView = function() {
     this.tempTargetUnit = null;//暫定攻撃ターゲット
     this.tempTargetUnitY = -1;//暫定移動Y座標
     this.originalUnitY = 0;// 移動演出のため使用
+    // y, preMoveSpGaugeは移動キャンセルの戻し用、preActSpGaugeは再行動キャンセルの戻し用
+    this.modoshiData = {y: -1, preMoveSpGauge:-1, preActSpGauge:-1};// コマンドキャンセル時に戻す
     for (var i = 0; i <= 1; i++) {
         this.battleFields[i] = new Array();
         for (var j = 0; j <= 2; j++) {
@@ -85,6 +87,7 @@ BattleView.prototype.init = function(position, isOffence) {
     this.tempTargetUnit = null;//暫定攻撃ターゲット
     this.tempTargetUnitY = -1;//暫定移動Y座標
     this.originalUnitY = 0;// 移動前のY座標
+    this.modoshiData = {y: -1, preMoveSpGauge:-1, preActSpGauge:-1};// コマンドキャンセル時に戻す
     for (var j = 0; j <= 2; j++) {
         for (var k = 0; k <= 2; k ++) {
             if (isOffence) {
@@ -110,6 +113,7 @@ BattleView.prototype.initTurn = function (ud) {
     var unitAtFocus = this.getUnitAtFocus(ud);
     this.infoUnit = unitAtFocus;
     this.originalUnitY = unitAtFocus.y;
+    this.modoshiData = {y: -1, preMoveSpGauge:-1, preActSpGauge:-1};// コマンドキャンセル時に戻す
     this.initAct();
 };
 
@@ -227,6 +231,25 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
                         }
                     }
                     this.tempTargetUnit.hp = Math.max(this.tempTargetUnit.hp - this.tempResult.damage, 0);
+                    if (unitAtFocus.hasSkill(ud, SKILL_TAMASHII)) {
+                        var minusSp = 2;
+                        this.tempTargetUnit.sp = Math.max(this.tempTargetUnit.sp - minusSp, 0);
+                        CommonView.addMessage(SkillDefine.getSkillName(SKILL_TAMASHII) + "発動!", 40);
+                    }
+                    if (unitAtFocus.hasSkill(ud, SKILL_SURI)) {
+                        var minusMoney = unitAtFocus.lv * 3;
+                        ev.money = Math.max(ev.money - minusMoney, 0);
+                        CommonView.addMessage(SkillDefine.getSkillName(SKILL_SURI) + "発動!", 40);
+                    }
+                    if (this.tempTargetUnit.hp == 0) {
+                        if (this.tempTargetUnit.hasSkill(ud, SKILL_GUARD)) {
+                            if (this.spGauge[this.tempTargetUnit.side] == 300) {
+                                this.spGauge[this.tempTargetUnit.side] = 0;
+                                this.tempTargetUnit.hp = 1;
+                                CommonView.addMessage(SkillDefine.getSkillName(SKILL_GUARD) + "発動!", 40);
+                            }
+                        }
+                    }
                     if (this.tempTargetUnit.hp == 0) {
                         this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "は倒れた!";
                     } else {
@@ -301,6 +324,11 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
                     this.moveCheckComState(BATTLEVIEW_STATE_SECONDMOVE, BATTLEVIEW_COMSTATE_PRECHOICE);
                 }
             }
+        } else if (this.turn == BATTLEVIEW_TURN_MIKATA && this.cantOpCounter == 1) {
+            // 味方がアイテム使用/なにもしない場合、下の処理だけは実行する必要がある
+            // (敵ターンでこれを実行すると、敵がなにもせずに手番を終える)
+            this.initAct();
+            this.moveCheckComState(BATTLEVIEW_STATE_SECONDMOVE, BATTLEVIEW_COMSTATE_PRECHOICE);
         }
     }
     
@@ -377,7 +405,7 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
                     this.tempResult.damage += crtDamage;
                 }
                 // かまいたちで確保すべきダメージ
-                var kamaitachiDMG = SKILL_YOROI_RATE * unitAtFocus.lv;
+                var kamaitachiDMG = SKILL_KAMAITACHI_RATE * unitAtFocus.lv;
                 if ((!this.tempResult.isHit || this.tempResult.damage < kamaitachiDMG) && unitAtFocus.hasSkill(ud, SKILL_KAMAITACHI)) {
                     CommonView.addMessage(SkillDefine.getSkillName(SKILL_KAMAITACHI) + "発動!", 40);
                     this.tempResult.isHit = true;
@@ -442,7 +470,7 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
     }
 };
 
-BattleView.prototype.paint = function (ud, itemMap) {
+BattleView.prototype.paint = function (ud, itemMap, ev) {
 
     var totalWidth = $(window).width();
     var totalHeight = $(window).height();
@@ -966,7 +994,7 @@ BattleView.prototype.paint = function (ud, itemMap) {
             // ユニット、スキル選択時…なにも装備しないステータス
             var isNoAdjust = this.turn == BATTLEVIEW_TURN_UNITSELECT || this.turn == BATTLEVIEW_TURN_SKILLSELECT;
             var isFace = this.turn != BATTLEVIEW_TURN_UNITSELECT && this.turn != BATTLEVIEW_TURN_SKILLSELECT;
-            CommonView.unitMsg(this.infoUnit, ctxFlip, this.MAXCOUNTER, this.counter, focusUnit, isNoAdjust, isFace);
+            CommonView.unitMsg(this.infoUnit, ctxFlip, this.MAXCOUNTER, this.counter, focusUnit, isNoAdjust, isFace, true, ev);
         }
     
         if (this.commandState == BATTLEVIEW_COMSTATE_ACT_WEAPCHOICE) {
@@ -1066,28 +1094,34 @@ BattleView.prototype.paint = function (ud, itemMap) {
                 }
             }   
         }
-        if (this.shouldDecideCancel()) {
-            // コマンド表示
-            for (var i = 0; i <= 1; i++) {
+        // コマンド表示
+        for (var i = 0; i <= 1; i++) {
+            var shouldSelect = ((i == 0 && this.shouldDecide()) || (i == 1 && this.shouldCancel()));
+            if (shouldSelect) {
                 ctxFlip.fillStyle = getGladColorRed((this.MAXCOUNTER - this.counter) / 3);
-                var txtX = BATTLEVIEW_COMMANDTXT_X;
-                var txtY = BATTLEVIEW_COMMANDTXT_Y + i * BATTLEVIEW_COMMANDINTERVAL;
-                ctxFlip.fillRect(txtX - 1, txtY - 1, BATTLEVIEW_COMMANDTXT_W + 3, BATTLEVIEW_COMMANDTXT_H + 3);
-                ctxFlip.fillStyle = 'rgb(255, 255, 255)';
-                ctxFlip.fillRect(txtX, txtY, BATTLEVIEW_COMMANDTXT_W, BATTLEVIEW_COMMANDTXT_H);
-                ctxFlip.fillStyle = 'rgb(0, 0, 0)';
-                ctxFlip.font = "16px 'MS Pゴシック'";
-                var commandTxt = "";
-                switch(i) {
-                case 0:arguments
-                    commandTxt = "決定";
-                    break;
-                case 1:arguments
-                    commandTxt = "戻る";
-                    break;
-                }
-                ctxFlip.fillText(commandTxt, txtX, txtY + 20);
+            } else {
+                ctxFlip.fillStyle = 'rgb(31, 31, 31)';
             }
+            var txtX = BATTLEVIEW_COMMANDTXT_X;
+            var txtY = BATTLEVIEW_DECIDETXT_Y + i * BATTLEVIEW_COMMANDINTERVAL;
+            ctxFlip.fillRect(txtX - 1, txtY - 1, BATTLEVIEW_COMMANDTXT_W + 3, BATTLEVIEW_COMMANDTXT_H + 3);
+            ctxFlip.fillStyle = 'rgb(255, 255, 255)';
+            if (!shouldSelect) {
+                ctxFlip.fillStyle = 'rgb(191, 191, 191)';
+            }
+            ctxFlip.fillRect(txtX, txtY, BATTLEVIEW_COMMANDTXT_W, BATTLEVIEW_COMMANDTXT_H);
+            ctxFlip.fillStyle = 'rgb(0, 0, 0)';
+            ctxFlip.font = "16px 'MS Pゴシック'";
+            var commandTxt = "";
+            switch(i) {
+            case 0:arguments
+                commandTxt = "決定";
+                break;
+            case 1:arguments
+                commandTxt = "戻る";
+                break;
+            }
+            ctxFlip.fillText(commandTxt, txtX, txtY + 20);
         }
         if (this.turn == BATTLEVIEW_TURN_MIKATA && this.commandState == BATTLEVIEW_COMSTATE_PRECHOICE) {
             // コマンド表示
@@ -1398,14 +1432,28 @@ BattleView.prototype.endBattleCheck = function(ud, ev) {
             getExp = Math.floor(getExp * EXP_FOR3);
             break;
         }
+        CommonView.addMessage("戦闘に勝利した!", 90);
         for (var i = 0; i < ud.length; i++) {
             var u = ud[i];
             if (u.field == this.field &&  u.side == BATTLE_MIKATA && u.hp > 0) {
-                u.exp += getExp; 
+                u.exp += getExp;
+                var equipRing = RingDefine.getEquipRing(u, ev);
+                if (equipRing != null) {
+                    var reduceCount = 1;
+                    if (u.hasSkill(ud, SKILL_GAIKA)) {
+                        reduceCount = 2;
+                    }
+                    // リング熟練度+
+                    equipRing.unitRemain = Math.max(equipRing.unitRemain - reduceCount, 0);
+                    if (equipRing.unitRemain <= 0) {
+                        equipRing.unitNamae = "";
+                        equipRing.masterUnit.push(u.namae);
+                        CommonView.addMessage(u.namae + "は" + RingDefine.getRingName(equipRing.id) + "をマスター!", 90);
+                    }
+                }
             }
         }
         var getMoney = ev.calcWinMoney();
-        CommonView.addMessage("戦闘に勝利した!", 90);
         CommonView.addMessage("経験値:" + getExp, 90);
         if (getMoney > 0) {
             CommonView.addMessage("お金:" + getMoney, 90);
@@ -1607,20 +1655,23 @@ BattleView.prototype.clk = function(mouseX, mouseY, ev, ud, itemMap) {
         return -1;
     }
     // 決定、戻るボタンを押す
-    if (this.shouldDecideCancel() && mouseX >= BATTLEVIEW_COMMANDTXT_X && mouseX <= BATTLEVIEW_COMMANDTXT_X + BATTLEVIEW_COMMANDTXT_W) {
-        var commandNum = Math.floor((mouseY - BATTLEVIEW_COMMANDTXT_Y) / BATTLEVIEW_COMMANDINTERVAL);
+    if ((this.shouldDecide() || this.shouldCancel()) && mouseX >= BATTLEVIEW_COMMANDTXT_X && mouseX <= BATTLEVIEW_COMMANDTXT_X + BATTLEVIEW_COMMANDTXT_W) {
+        var commandNum = Math.floor((mouseY - BATTLEVIEW_DECIDETXT_Y) / BATTLEVIEW_COMMANDINTERVAL);
         switch(commandNum) {
             case 0:arguments//次へ
-                this.decide(mouseX, mouseY, ud, itemMap, ev);
-                return -1;
+                if (this.shouldDecide()) {
+                    this.decide(mouseX, mouseY, ud, itemMap, ev);
+                    return -1;
+                }
             break;
             case 1:arguments//戻る
-                this.cancel(mouseX, mouseY, ud, itemMap);
-                return -1;
+                if (this.shouldCancel()) {
+                    this.cancel(mouseX, mouseY, ud, itemMap);
+                    return -1;
+                }
             break;
             default:arguments
-                // ボタンのない場所をクリックした場合ここ
-                return -1;
+                // 決定、戻るボタンのない場所をクリックした場合、このブロックの先に進む
             break;
         }
     }
@@ -1820,10 +1871,20 @@ BattleView.prototype.clk = function(mouseX, mouseY, ev, ud, itemMap) {
     return -1;
 };
 
-// 決定、戻るボタンを出すべきか
-BattleView.prototype.shouldDecideCancel = function() {
+// 決定ボタンを出すべきか
+BattleView.prototype.shouldDecide = function() {
     if (this.turn == BATTLEVIEW_TURN_UNITSELECT || this.turn == BATTLEVIEW_TURN_SKILLSELECT ||
         (this.turn == BATTLEVIEW_TURN_MIKATA && this.commandState != BATTLEVIEW_COMSTATE_PRECHOICE)) {
+        return true;
+    }
+    return false;
+}
+
+// 戻るボタンを出すべきか(COMSTATE_PRECHOICEでも移動キャンセルのため出すべき)
+BattleView.prototype.shouldCancel = function() {
+    if (this.turn == BATTLEVIEW_TURN_UNITSELECT || this.turn == BATTLEVIEW_TURN_SKILLSELECT ||
+        (this.turn == BATTLEVIEW_TURN_MIKATA && this.commandState != BATTLEVIEW_COMSTATE_PRECHOICE) ||
+        (this.turn == BATTLEVIEW_TURN_MIKATA && this.commandState == BATTLEVIEW_COMSTATE_PRECHOICE && this.state == BATTLEVIEW_STATE_ACTSTART)) {
         return true;
     }
     return false;
@@ -1895,6 +1956,8 @@ BattleView.prototype.decide = function(mouseX, mouseY, ud, itemMap, ev) {
                 // ターゲット選択を飛ばしていきなり戦闘処理に進む
                 this.cantOpCounter = BATTLE_BATTLEMSG_MAX;
                 this.moveCheckComState(this.state, BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE);
+                // 戻し用にデータ保管(ここより前には以後戻せない)
+                this.setModoshiData(focusUnit.y, -1, this.spGauge[BATTLE_MIKATA]);
             } else {
                 // 選択済みの武器に決定
                 this.tempTargetUnit = null;
@@ -1935,6 +1998,8 @@ BattleView.prototype.decide = function(mouseX, mouseY, ud, itemMap, ev) {
                     // ターゲット選択を飛ばしていきなり戦闘処理に進む
                     this.cantOpCounter = BATTLE_BATTLEMSG_MAX;
                     this.moveCheckComState(this.state, BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE);
+                    // 戻し用にデータ保管(ここより前には以後戻せない)
+                    this.setModoshiData(focusUnit.y, -1, this.spGauge[BATTLE_MIKATA]);
                 } else {
                     // 選択済みの武器に決定
                     this.tempTargetUnit = null;
@@ -2006,16 +2071,20 @@ BattleView.prototype.decide = function(mouseX, mouseY, ud, itemMap, ev) {
                     this.tempResult.damage += crtDamage;
                 }
                 // かまいたちで確保すべきダメージ
-                var kamaitachiDMG = SKILL_YOROI_RATE * focusUnit.lv;
+                var kamaitachiDMG = SKILL_KAMAITACHI_RATE * focusUnit.lv;
                 if ((!this.tempResult.isHit || this.tempResult.damage < kamaitachiDMG) && focusUnit.hasSkill(ud, SKILL_KAMAITACHI)) {
                     CommonView.addMessage(SkillDefine.getSkillName(SKILL_KAMAITACHI) + "発動!", 40);
                     this.tempResult.isHit = true;
                     this.tempResult.isCrt = false;
                     this.tempResult.damage = kamaitachiDMG;
                 }
+                // 戻し用にデータ保管(ここより前には以後戻せない)
+                this.setModoshiData(focusUnit.y, -1, this.spGauge[BATTLE_MIKATA]);
             } else {
                 // アイテム使用時はここで行う処理なし
                 this.cantOpCounter = BATTLE_BATTLEMSG_MAX;
+                // 戻し用にデータ保管(ここより前には以後戻せない)
+                this.setModoshiData(focusUnit.y, -1, this.spGauge[BATTLE_MIKATA]);
             }
             return -1;
         } else {
@@ -2028,8 +2097,10 @@ BattleView.prototype.decide = function(mouseX, mouseY, ud, itemMap, ev) {
             var requireCost = (moveCost == 1 ? focusUnit.m1Cost : focusUnit.m2Cost);
             // 移動(この場合確実に移動できる)
             this.cantOpCounter = 20;
+            // 戻し用にデータ保管
+            this.setModoshiData(focusUnit.y, this.spGauge[BATTLE_MIKATA], -1);
             this.spGauge[BATTLE_MIKATA] -= requireCost;
-            focusUnit.y = this.tempTargetUnitY;//暫定移動Y座標;
+            focusUnit.y = this.tempTargetUnitY;//暫定移動Y座標
             return -1;       
         }                    
     } else if (this.turn == BATTLEVIEW_TURN_MIKATA && this.commandState == BATTLEVIEW_COMSTATE_RUN) {
@@ -2047,10 +2118,23 @@ BattleView.prototype.cancel = function(mouseX, mouseY, ud, itemMap) {
     } else if (this.turn == BATTLEVIEW_TURN_MIKATA && 
         (this.commandState == BATTLEVIEW_COMSTATE_MOVE || this.commandState == BATTLEVIEW_COMSTATE_ACT_WEAPCHOICE
          || this.commandState == BATTLEVIEW_COMSTATE_RUN)) {
+        // 戻しにSPゲージが必要なのは「再行動ゲージ使用後の、行動選択」から「行動選択前」に戻す状況だけのはず
+        // this.modoshiDataには「前回の行動終了時に設定したデータ」が入っているはず
+        if (this.commandState == BATTLEVIEW_COMSTATE_ACT_WEAPCHOICE && this.modoshiData.preActSpGauge > this.spGauge[BATTLE_MIKATA]) {
+            this.spGauge[BATTLE_MIKATA] = this.modoshiData.preActSpGauge;
+        }
         this.moveCheckComState(this.state, BATTLEVIEW_COMSTATE_PRECHOICE);
     } else if (this.turn == BATTLEVIEW_TURN_MIKATA && this.commandState == BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE) {
         this.tempTargetUnit = null;
         this.moveCheckComState(this.state, BATTLEVIEW_COMSTATE_ACT_WEAPCHOICE);
+    } else if (this.turn == BATTLEVIEW_TURN_MIKATA && this.commandState == BATTLEVIEW_COMSTATE_PRECHOICE && this.state == BATTLEVIEW_STATE_ACTSTART) {
+        // 「移動済みだったら」のチェック(不要なはず)
+        if (this.modoshiData.y != -1) {
+            var unitAtFocus = this.getUnitAtFocus(ud);
+            unitAtFocus.y = this.modoshiData.y;
+            this.spGauge[BATTLE_MIKATA] = this.modoshiData.preMoveSpGauge;
+            this.state = BATTLEVIEW_STATE_FIRSTMOVE;
+        }
     }
 }
 
@@ -2114,4 +2198,10 @@ BattleView.prototype.selectTutorial = function() {
         return COMMONVIEW_TUTORIALID_BATTLEMOVE;   
     }
     return -1;
+}
+
+BattleView.prototype.setModoshiData = function(y, preMoveSpGauge, preActSpGauge) {
+    this.modoshiData.y = y;
+    this.modoshiData.preMoveSpGauge = preMoveSpGauge;
+    this.modoshiData.preActSpGauge = preActSpGauge;
 }
