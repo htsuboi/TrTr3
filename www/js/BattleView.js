@@ -344,7 +344,9 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
             } else {
                 // 再行動実行時はここでACTSTARTに遷移させる
                 if (unitAtFocus.decideAgain(ud, this)) {
-                    this.spGauge[BATTLE_TEKI] -= unitAtFocus.exAtCost;
+                    var requireCost = unitAtFocus.exAtCost;
+                    requireCost = UnitDefine.calcAdjustCost(unitAtFocus, ud, requireCost);
+                    this.spGauge[BATTLE_TEKI] -= requireCost;
                     this.moveCheckComState(BATTLEVIEW_STATE_ACTSTART, BATTLEVIEW_COMSTATE_PRECHOICE);
                     return -1;
                 }
@@ -360,12 +362,16 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
                 }
             } else if (moveCheck > 0){
                 this.cantOpCounter = 20;
-                this.spGauge[BATTLE_TEKI] -= (moveCheck == 1 ? unitAtFocus.m1Cost : unitAtFocus.m2Cost);
+                var requireCost = (moveCheck == 1 ? unitAtFocus.m1Cost : unitAtFocus.m2Cost);
+                requireCost = UnitDefine.calcAdjustCost(unitAtFocus, ud, requireCost);
+                this.spGauge[BATTLE_TEKI] -= requireCost;
                 unitAtFocus.y -= 1;
                 this.moveCheckComState(this.state, BATTLEVIEW_COMSTATE_MOVE);
             } else if (moveCheck < 0){
                 this.cantOpCounter = 20;
-                this.spGauge[BATTLE_TEKI] -= (moveCheck == -1 ? unitAtFocus.m1Cost : unitAtFocus.m2Cost);
+                var requireCost = (moveCheck == 1 ? unitAtFocus.m1Cost : unitAtFocus.m2Cost);
+                requireCost = UnitDefine.calcAdjustCost(unitAtFocus, ud, requireCost);
+                this.spGauge[BATTLE_TEKI] -= requireCost;
                 unitAtFocus.y += 1;
                 this.moveCheckComState(this.state, BATTLEVIEW_COMSTATE_MOVE);
             }
@@ -382,8 +388,10 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
                 var range = UnitDefine.calcRange(unitAtFocus, ud, unitAtFocus.eqType, unitAtFocus.eqSyurui);
                 var dist = unitAtFocus.x + unitAtFocus.y + this.tempTargetUnit.x + this.tempTargetUnit.y;
                 if (range < dist) {
+                    var requireCost = unitAtFocus.rangeCost;
+                    requireCost = UnitDefine.calcAdjustCost(unitAtFocus, ud, requireCost);
                     // 射程伸ばし
-                    this.spGauge[BATTLE_TEKI] -= unitAtFocus.rangeCost;
+                    this.spGauge[BATTLE_TEKI] -= requireCost;
                 }
                 var randomForHit = Math.floor(Math.random() * 100);//0～99
                 var hitRate = UnitDefine.calcHit(unitAtFocus, this.tempTargetUnit, ud, unitAtFocus.eqType, unitAtFocus.eqSyurui);
@@ -1327,6 +1335,9 @@ BattleView.prototype.endTurn = function(ud) {
             for (var i = 0; i < 3; i++) {
                 if (nowFocus.skillON[i] == true) {
                     var minusSP = SkillDefine.getSkillCost(nowFocus.skills[i]);
+                    if (nowFocus.hasOppSkill(ud, SKILL_SYOKI)) {
+                        minusSP += 1;
+                    }
                     nowFocus.sp -= minusSP;
                 }
             }
@@ -1690,6 +1701,7 @@ BattleView.prototype.clk = function(mouseX, mouseY, ev, ud, itemMap) {
             var moveCost = this.checkMoveCost(BATTLE_MIKATA, focusUnit.x, focusUnit.y, BATTLE_MIKATA, 2 - searchX, searchY);
             if (moveCost == 1 || moveCost == 2) {
                 var requireCost = (moveCost == 1 ? focusUnit.m1Cost : focusUnit.m2Cost);
+                requireCost = UnitDefine.calcAdjustCost(focusUnit, ud, requireCost);
                 if (this.spGauge[BATTLE_MIKATA] >= requireCost) {
                     this.tempTargetUnitY = searchY;//暫定移動Y座標
                     return -1;
@@ -1807,6 +1819,7 @@ BattleView.prototype.clk = function(mouseX, mouseY, ev, ud, itemMap) {
             switch(commandNum) {
                 case BATTLEVIEW_COMMANDNUM_ACT:arguments//行動
                     var requireCost = (this.state == BATTLEVIEW_STATE_SECONDMOVE ? focusUnit.exAtCost : 0);
+                    requireCost = UnitDefine.calcAdjustCost(focusUnit, ud, requireCost);
                     if (this.spGauge[BATTLE_MIKATA] >= requireCost) {
                         this.spGauge[BATTLE_MIKATA] -= requireCost;
                         // とりあえず手持ち武器を表示
@@ -2024,6 +2037,7 @@ BattleView.prototype.decide = function(mouseX, mouseY, ud, itemMap, ev) {
                 } else if (range == distance - 1) {
                     // 射程伸ばしで届く
                     var rangeCost = focusUnit.rangeCost;
+                    rangeCost = UnitDefine.calcAdjustCost(focusUnit, ud, rangeCost);
                     if(this.spGauge[focusUnit.side] >= rangeCost) {
                         this.spGauge[focusUnit.side] -= rangeCost;
                     } else {
@@ -2095,6 +2109,7 @@ BattleView.prototype.decide = function(mouseX, mouseY, ud, itemMap, ev) {
         var moveCost = this.checkMoveCost(BATTLE_MIKATA, focusUnit.x, focusUnit.y, BATTLE_MIKATA, focusUnit.x, this.tempTargetUnitY);
         if (moveCost == 1 || moveCost == 2) {
             var requireCost = (moveCost == 1 ? focusUnit.m1Cost : focusUnit.m2Cost);
+            requireCost = UnitDefine.calcAdjustCost(focusUnit, ud, requireCost);
             // 移動(この場合確実に移動できる)
             this.cantOpCounter = 20;
             // 戻し用にデータ保管

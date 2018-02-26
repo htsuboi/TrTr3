@@ -963,7 +963,7 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             var fieldNum = 0;
             bv.init(fieldNum, true);
             u = new UnitDefine();
-            u.initCommon(ud, UNIT_SYURUI_PRINCESS, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 1, SKILL_KEIKAI, SKILL_KIYOME, SKILL_OTOKO);
+            u.initCommon(ud, UNIT_SYURUI_PRINCESS, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 1, SKILL_KEIKAI, SKILL_KIYOME, SKILL_GAIKA);
             ud.push(u);
             
             var tempField = this.fieldMap.get(fieldNum);

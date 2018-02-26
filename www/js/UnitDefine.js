@@ -350,8 +350,8 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.m2Cost = 40;//2移動コスト
             this.rangeCost = 40;//射程伸ばしコスト
             this.exAtCost = 120;//再行動コスト
-            this.exp = 10;//経験値
-            this.mhpObj = {now:77, amari:0, up:35 + (difficulty > GAME_DIFFICULTY_NORMAL ? 3 : 0), upup:3, upupup:8};
+            this.exp = 9;//経験値
+            this.mhpObj = {now:73, amari:0, up:30 + (difficulty > GAME_DIFFICULTY_NORMAL ? 3 : 0), upup:3, upupup:8};
             this.strObj = {now:20 + (difficulty > GAME_DIFFICULTY_HARD ? 2 : 0), amari:0, up:20, upup:6, upupup:9};
             this.magObj = {now:10, amari:0, up:10, upup:0, upupup:0};
             this.defObj = {now:8, amari:0, up:19, upup:10, upupup:0};
@@ -1260,6 +1260,21 @@ UnitDefine.prototype.hasSkill = function(ud, skill) {
     return false;
 }
 
+// 敵の誰かがスキルをONにしているか
+UnitDefine.prototype.hasOppSkill = function(ud, skill) {
+    for (var i = 0; i < ud.length; i++) {
+        var u = ud[i];
+        if (u.field == this.field && u.side != this.side && u.hp > 0) {
+            for (var j = 0; j < 3; j++) {
+                if (u.skills[j] == skill && u.skillON[j] == true) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 UnitDefine.getMikataList = function(ud) {
     var mikataUd = new Array();//ユニットデータ格納
     for (var i = 0; i < ud.length; i++) {
@@ -1283,4 +1298,15 @@ UnitDefine.recoverMikata = function(ud) {
         u.eqSyurui = -1;
         u.skillON = [false, false, false];
     }
+}
+
+// SKILL_AKIRA補正後のコスト
+UnitDefine.calcAdjustCost = function(u, ud, orgCost) {
+    var retCost = orgCost;
+    if (u.hasSkill(ud, SKILL_AKIRA)) {
+        var hpRate = 1 - (u.hp / u.mhpObj.now);
+        var adjustRate = SKILL_AKIRA_RATE * hpRate;
+        retCost = Math.ceil((1 - adjustRate) * retCost);
+    }
+    return retCost;
 }

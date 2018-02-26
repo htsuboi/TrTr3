@@ -338,7 +338,7 @@ FieldDefine.prototype.createEnemy = function(ud) {
         break;
         case EVENTVIEW_MAP_STAGE1_BOSS:arguments
             var u = new UnitDefine();
-            u.initTeki(ud, UNIT_SYURUI_S1BOSS, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 5, SKILL_KENJITSU, SKILL_KEIKAI, 0, ITEM_TYPE_SWORD, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_FIRST, 1.1, 0.5);
+            u.initTeki(ud, UNIT_SYURUI_S1BOSS, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 5, 0, 0, 0, ITEM_TYPE_SWORD, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_FIRST, 1.1, 0.5);
             ud.push(u);
             var u2 = new UnitDefine();
             u2.initTeki(ud, UNIT_SYURUI_SPEAR, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 3, 0, 0, 0, ITEM_TYPE_SPEAR, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_BACK, 1.6, -1);

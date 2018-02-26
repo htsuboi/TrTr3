@@ -44,6 +44,10 @@ SkillDefine.getSkillName = function(skill) {
         return "最後の防御";
     case SKILL_OTOKO:arguments
         return "男の闘い";
+    case SKILL_AKIRA:arguments
+        return "諦めないっ";
+    case SKILL_SYOKI:arguments
+        return "瘴気";
     default:arguments  
         return "";
     }
@@ -109,8 +113,15 @@ SkillDefine.getMessage = function(skill) {
         skillTxt.push("(SPゲージは0になる)");
         break;
     case SKILL_OTOKO:arguments
-        skillTxt.push("2射程以内の敵への基本ダメージ＋20%");
-        skillTxt.push("2射程以内の敵からの基本ダメージ-20%");
+        skillTxt.push("2射程以内の敵への基本ダメージ+" + (100 * SKILL_OTOKO_RATE) + "%");
+        skillTxt.push("2射程以内の敵からの基本ダメージ-" + (100 * SKILL_OTOKO_RATE) + "%");
+        break;
+    case SKILL_AKIRA:arguments
+        skillTxt.push("HP減少率に応じて消費SP減少");
+        skillTxt.push("(最大-" + (100 * SKILL_AKIRA_RATE) + "%)");
+        break;
+    case SKILL_SYOKI:arguments
+        skillTxt.push("相手の各スキルの消費気力+1");
         break;
     default:arguments  
         break;
@@ -160,6 +171,8 @@ SkillDefine.getSkillCost = function(skill) {
     case SKILL_GUARD:arguments
         return 1;
     case SKILL_OTOKO:arguments
+        return 2;
+    case SKILL_AKIRA:arguments
         return 2;
     default:arguments  
         return 0;

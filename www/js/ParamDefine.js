@@ -287,6 +287,9 @@ var SKILL_GAIKA = 18;//Done
 var SKILL_GUARD = 19;//Done
 var SKILL_OTOKO = 20;//Done
 var SKILL_OTOKO_RATE = 0.2;
+var SKILL_AKIRA = 21;//Done
+var SKILL_AKIRA_RATE = 0.25;
+var SKILL_SYOKI = 22;//Done
 
 var RING_KIRYOKU = 1;
 var RING_ECO = 2;

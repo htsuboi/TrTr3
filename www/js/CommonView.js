@@ -387,7 +387,11 @@ CommonView.unitMsg = function (u, ctxFlip, maxCounter, counter, focusUnit, isNoA
     } else {
         ctxFlip.fillText("　", x, y + 20 + lineCount++ * yInterval);//ドロップアイテム
     }
+    if (u.hp == 0) {
+        ctxFlip.fillStyle = 'rgb(255, 0, 0)';
+    }
     ctxFlip.fillText("HP:" + u.hp + "/" + u.mhpObj.now, x, y + 20 + lineCount++ * yInterval);
+    ctxFlip.fillStyle = 'rgb(0, 0, 0)';
     if (u.side == BATTLE_MIKATA) {
         ctxFlip.fillText("気力:" + u.sp + "/" + u.msp, x, y + 20 + lineCount++ * yInterval);
     } else {
