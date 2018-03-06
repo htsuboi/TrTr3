@@ -357,7 +357,6 @@ CommonView.unitMsg = function (u, ctxFlip, maxCounter, counter, focusUnit, isNoA
     ctxFlip.fillStyle = 'rgb(0, 0, 0)';
     ctxFlip.font = "11px 'MS Pゴシック'";
     var battleStatus = u.calcBattleStr();// 装備品込みのステータスと装備名を取得
-    //var focusUnit = this.getUnitAtFocus(ud); 
     if (isNoAdjust) {
         // なにも装備しないステータス
     } else if (focusUnit == null) {
@@ -385,7 +384,13 @@ CommonView.unitMsg = function (u, ctxFlip, maxCounter, counter, focusUnit, isNoA
         }
         ctxFlip.fillText(ringData, x, y + 20 + lineCount++ * yInterval);//ドロップアイテム
     } else {
-        ctxFlip.fillText("　", x, y + 20 + lineCount++ * yInterval);//ドロップアイテム
+        var dropItemText = " ";
+        if (u.dropItem != -1) {
+            var tempItem = new ItemDefine();
+            ItemDefine.init(ITEM_TYPE_DOGU, u.dropItem, tempItem);
+            dropItemText = "盗:" + tempItem.namae;
+        }
+        ctxFlip.fillText(dropItemText, x, y + 20 + lineCount++ * yInterval);//ドロップアイテム
     }
     if (u.hp == 0) {
         ctxFlip.fillStyle = 'rgb(255, 0, 0)';

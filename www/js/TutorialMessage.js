@@ -64,6 +64,29 @@ TutorialMessage.getMessage = function(tutorialID, message) {
             message.push(" 終わったら、左の");
             message.push("「決定」をタッチしてください。");
             break;
+        case COMMONVIEW_TUTORIALID_BUY:arguments
+            CommonView.tutorialPoint({x: -1, y: 30, w: -1, h: 410});
+            CommonView.redPoint({x: EVENTVIEW_COMMANDTXT_X, y: EVENTVIEW_COMMANDTXT_Y, w: EVENTVIEW_COMMANDTXT_W, h: EVENTVIEW_COMMANDTXT_H + EVENTVIEW_COMMANDINTERVAL});
+            message.push("【購入】");
+            message.push(" 武器やアイテムを購入します。");
+            message.push("武器は7個まで、アイテムは");
+            message.push("1個のみ購入可能です。");
+            message.push("消費アイテムの価格は");
+            message.push("ターン経過で値上がりしていくので");
+            message.push("注意してください。");
+            message.push("基本的な武器、アイテム以外は");
+            message.push("「進攻」で対応するマスを");
+            message.push("味方マスにしないと購入できません。");
+            message.push("また、対応する味方マスが2個以上あると");
+            message.push((100 * ITEM_ADJUST_RATE) + "%ずつ値引きされます。");
+            message.push("");
+            message.push(" 青枠内から「購入種別」を");
+            message.push("上部枠内から「購入物」を");
+            message.push("緑枠内から「購入数」を");
+            message.push("それぞれ選んでください。");
+            message.push(" 終わったら、左の");
+            message.push("「決定」をタッチしてください。");
+            break;
         case COMMONVIEW_TUTORIALID_UNITCHECK:arguments
             CommonView.tutorialPoint({x: -1, y: 95, w: -1, h: 350});
             CommonView.redPoint({x: EVENTVIEW_COMMANDTXT_X, y: EVENTVIEW_COMMANDTXT_Y, w: EVENTVIEW_COMMANDTXT_W, h: EVENTVIEW_COMMANDTXT_H + EVENTVIEW_COMMANDINTERVAL});

@@ -10,6 +10,7 @@ var UnitDefine = function() {
     this.lv = 1;
     this.side = BATTLE_MIKATA;//BATTLE_MIKATA or BATTLE_TEKI
     this.isBoss = false;
+    this.dropItem = -1;//盗めるアイテム
     this.eqType = -1;
     this.eqSyurui = -1;
     this.crt = 0;
@@ -370,7 +371,7 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.m2Cost = 50;//2移動コスト
             this.rangeCost = 80;//射程伸ばしコスト
             this.exAtCost = 145;//再行動コスト
-            this.regPoison = 85;
+            this.regPoison = 50;
             this.regStun = 30;
             this.mhpObj = {now:79, amari:0, up:43, upup:17, upupup:15};
             this.strObj = {now:25, amari:0, up:28, upup:15, upupup:9};
@@ -394,17 +395,17 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.crt = 6;
             this.luck = 3;
             this.rat = 3;//割合ダメージ
-            this.rdf = 7;//割合軽減
+            this.rdf = 6;//割合軽減
             this.m1Cost = 40;//1移動コスト
             this.m2Cost = 50;//2移動コスト
             this.rangeCost = 70;//射程伸ばしコスト
             this.exAtCost = 160;//再行動コスト
             this.regPoison = 75;
-            this.regStun = 25;
+            this.regStun = 40;
             this.mhpObj = {now:84, amari:0, up:49, upup:23, upupup:14};
             this.strObj = {now:31, amari:0, up:31, upup:20, upupup:12};
             this.magObj = {now:8, amari:0, up:5, upup:11, upupup:8};
-            this.defObj = {now:16, amari:0, up:29, upup:16, upupup:17};
+            this.defObj = {now:14, amari:0, up:29, upup:16, upupup:17};
             this.mdfObj = {now:13, amari:0, up:18, upup:15, upupup:9};
             this.hitObj = {now:107, amari:0, up:36, upup:10, upupup:16};
             this.avoObj = {now:11, amari:0, up:19, upup:22, upupup:13};
@@ -475,7 +476,7 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.rangeCost = 190;//射程伸ばしコスト
             this.exAtCost = 120;//再行動コスト
             this.regPoison = 65;
-            this.regStun = 45;
+            this.regStun = 35;
             this.mhpObj = {now:82, amari:0, up:34, upup:24, upupup:27};
             this.strObj = {now:31, amari:0, up:31, upup:20, upupup:15};
             this.magObj = {now:10, amari:0, up:11, upup:0, upupup:4};
@@ -491,7 +492,7 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
         break;
         case UNIT_SYURUI_THIEF:arguments
             this.msp = 20;
-            this.crt = 5;
+            this.crt = 8;
             this.luck = 3;
             this.rat = 3;//割合ダメージ
             this.rdf = 5;//割合軽減
@@ -511,8 +512,37 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.weaps[ITEM_TYPE_KNIFE] = 35;
             this.weaps[ITEM_TYPE_BOW] = 33;
             this.goodRing.push(RING_KIRYOKU);
+            this.goodRing.push(RING_TAISEI);
             this.badRing.push(RING_RECOVER);
             this.badRing.push(RING_DEFENCE);
+        break;
+        case UNIT_SYURUI_SHIACYAN:arguments
+            this.msp = 25;
+            this.crt = 4;
+            this.luck = 3;
+            this.rat = 7;//割合ダメージ
+            this.rdf = 5;//割合軽減
+            this.m1Cost = 35;//1移動コスト
+            this.m2Cost = 80;//2移動コスト
+            this.rangeCost = 70;//射程伸ばしコスト
+            this.exAtCost = 170;//再行動コスト
+            this.regPoison = 60;
+            this.regStun = 40;
+            this.mhpObj = {now:87, amari:0, up:35, upup:31, upupup:16};
+            this.strObj = {now:32, amari:0, up:32, upup:5, upupup:20};
+            this.magObj = {now:21, amari:0, up:23, upup:18, upupup:18};
+            this.defObj = {now:13, amari:0, up:28, upup:8, upupup:21};
+            this.mdfObj = {now:15, amari:0, up:22, upup:20, upupup:10};
+            this.hitObj = {now:95, amari:0, up:45, upup:10, upupup:17};
+            this.avoObj = {now:15, amari:0, up:12, upup:19, upupup:20};
+            this.weaps[ITEM_TYPE_SWORD] = 14;
+            this.weaps[ITEM_TYPE_SPEAR] = 39;
+            this.weaps[ITEM_TYPE_BOW] = 15;
+            this.weaps[ITEM_TYPE_FIRE] = 9;
+            this.goodRing.push(RING_RECOVER);
+            this.badRing.push(RING_KIRYOKU);
+            this.badRing.push(RING_SP);
+            this.badRing.push(RING_TAISEI);
         break;
         default:arguments
             printWarn('no UnitName unitType:' + unitType);
@@ -533,7 +563,7 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
     }
 }
 
-UnitDefine.prototype.initTeki = function(ud, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3, eqType, eqSyurui, aiType, aiForRange, aiForAgain) {
+UnitDefine.prototype.initTeki = function(ud, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3, eqType, eqSyurui, aiType, aiForRange, aiForAgain, dropItem) {
     this.initCommon(ud, unitSyurui, side, ofOrDf, field, lv, skill1, skill2, skill3, eqType, eqSyurui);
     this.skillON = [true, true, true];
     this.eqType = eqType;
@@ -541,6 +571,7 @@ UnitDefine.prototype.initTeki = function(ud, unitSyurui, side, ofOrDf, field, lv
     this.aiType = aiType;
     this.aiForRange = aiForRange;
     this.aiForAgain = aiForAgain;
+    this.dropItem = dropItem;
 }
 
 // 武器使用時の消費気力(999は使用不可)
@@ -994,6 +1025,9 @@ UnitDefine.calcBasicDamage = function(attacker, defender, ud, attackerEQType, at
     }
     if (attacker.hasSkill(ud, SKILL_OTOKO) && range <= 1) {
         hitDamage = Math.floor((1 + SKILL_OTOKO_RATE) * hitDamage);
+    }
+    if (attacker.hasSkill(ud, SKILL_MANSHIN) && defender.sp == defender.msp) {
+        hitDamage = Math.floor((1 + SKILL_MANSHIN_RATE) * hitDamage);
     }
     if (defender.hasSkill(ud, SKILL_OTOKO) && range <= 1) {
         hitDamage = Math.floor((1 - SKILL_OTOKO_RATE) * hitDamage);

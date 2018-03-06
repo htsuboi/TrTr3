@@ -230,7 +230,34 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
                             }
                         }
                     }
-                    this.tempTargetUnit.hp = Math.max(this.tempTargetUnit.hp - this.tempResult.damage, 0);
+                    var overKillHp = this.tempTargetUnit.hp - this.tempResult.damage;
+                    var willDeath = (overKillHp <= 0);//trueなら救済なしだと死亡する
+                    var isException = false;//trueならスキルにより救済され、HP減少処理とばす
+                    if (willDeath) {
+                        if (this.tempTargetUnit.hasSkill(ud, SKILL_TAIEN)) {
+                            var tempItem = new ItemDefine();
+                            ItemDefine.init(unitAtFocus.eqType, unitAtFocus.eqSyurui, tempItem);
+                            if (tempItem.range >= 3 && this.tempTargetUnit.hp > 1) {
+                                this.tempTargetUnit.hp = 1;
+                                willDeath = false;
+                                isException = true;
+                                CommonView.addMessage(SkillDefine.getSkillName(SKILL_TAIEN) + "発動!", 40);
+                            }
+                        }
+                        // 対遠防御でhp=1に救済されている場合、このチェックはfalse
+                        if (willDeath && this.tempTargetUnit.hasSkill(ud, SKILL_GUARD)) {
+                            if (this.spGauge[this.tempTargetUnit.side] == 300) {
+                                this.spGauge[this.tempTargetUnit.side] = 0;
+                                this.tempTargetUnit.hp = 1;
+                                willDeath = false;
+                                isException = true;
+                                CommonView.addMessage(SkillDefine.getSkillName(SKILL_GUARD) + "発動!", 40);
+                            }
+                        }
+                    }
+                    if (!isException) {
+                        this.tempTargetUnit.hp = Math.max(this.tempTargetUnit.hp - this.tempResult.damage, 0);
+                    }
                     if (unitAtFocus.hasSkill(ud, SKILL_TAMASHII)) {
                         var minusSp = 2;
                         this.tempTargetUnit.sp = Math.max(this.tempTargetUnit.sp - minusSp, 0);
@@ -241,12 +268,24 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
                         ev.money = Math.max(ev.money - minusMoney, 0);
                         CommonView.addMessage(SkillDefine.getSkillName(SKILL_SURI) + "発動!", 40);
                     }
+                    
                     if (this.tempTargetUnit.hp == 0) {
-                        if (this.tempTargetUnit.hasSkill(ud, SKILL_GUARD)) {
-                            if (this.spGauge[this.tempTargetUnit.side] == 300) {
-                                this.spGauge[this.tempTargetUnit.side] = 0;
-                                this.tempTargetUnit.hp = 1;
-                                CommonView.addMessage(SkillDefine.getSkillName(SKILL_GUARD) + "発動!", 40);
+                        if (unitAtFocus.hasSkill(ud, SKILL_THIEF)) {
+                            var overKillRate = -(overKillHp / this.tempTargetUnit.mhpObj.now);
+                            if (overKillRate >= SKILL_THIEF_RATE && this.tempTargetUnit.dropItem != -1) {
+                                CommonView.addMessage(SkillDefine.getSkillName(SKILL_THIEF) + "発動!", 40);
+                                var tempItem = new ItemDefine();
+                                ItemDefine.init(ITEM_TYPE_DOGU, this.tempTargetUnit.dropItem, tempItem);
+                                // 追加保持可能数
+                                var maxNum = ev.maxBuySell(itemMap, ITEM_TYPE_DOGU, this.tempTargetUnit.dropItem, true);
+                                if (maxNum > 0) {
+                                    // 所持数追加
+                                    var tempItemNum = itemMap.get(tempItem.namae);
+                                    itemMap.set(tempItem.namae, tempItemNum + 1);
+                                    CommonView.addMessage("アイテムを盗んだ!", 40);
+                                } else {
+                                    CommonView.addMessage("持ちきれないため捨てました", 40);
+                                }
                             }
                         }
                     }
@@ -1522,6 +1561,7 @@ BattleView.prototype.shibouUnit = function(deadU, ud, isDead) {
     if (isDead) {
         if (deadU.side == BATTLE_MIKATA) {
             // TODO:装備解除
+            deadU.sp = 0;
             deadU.field = EVENTVIEW_FIELD_DEAD;
         } else {
             this.winExp += deadU.exp;

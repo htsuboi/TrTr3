@@ -13,7 +13,7 @@ var ItemDefine = function() {
     this.rdf = 0;//割合軽減
     this.regPoison = 0;//毒耐性
     this.regStun = 0;//麻痺耐性
-    this.range = 2;//射程(2:素手 3:短距離武器 4:中距離武器 5:長距離武器)
+    this.range = 2;//射程(1:素手 2:短距離武器 3:中距離武器 4:長距離武器)
     this.str = 0;
     this.mag = 0;
     this.def = 0;
@@ -576,13 +576,13 @@ ItemDefine.getReverseItemIndex = function(itemMap, eqType, idx) {
 }
 
 // 指定種類の中で、購入可能なi番目の武器はなにか?(スタートは0)
-ItemDefine.getReverseItemIndexForBuy = function(itemMap, eqType, idx) {
+ItemDefine.getReverseItemIndexForBuy = function(itemMap, eqType, idx, ev) {
     var retEqSyurui = -1;
     var tempIndex = -1;
     for (var i = 0; i < ITEM_SYURUI_MAX; i++) {
         var tempItem = new ItemDefine();
         ItemDefine.init(eqType, i, tempItem);
-        var canBuy = tempItem.canBuy();
+        var canBuy = tempItem.canBuy(ev);
                 
         if (tempItem.namae == "テスト武器") {
             // 以降、定義されたアイテムなし
@@ -608,9 +608,12 @@ ItemDefine.hasStun = function(eqType, eqSyurui) {
     return false;
 }
 
-ItemDefine.prototype.canBuy = function() {
+ItemDefine.prototype.canBuy = function(ev) {
     var ret = false;
     if (this.alwaysBuy) {
+        ret = true;
+    }
+    if (ev.buyAbleNum(this.eqType, this.eqSyurui) > 0) {
         ret = true;
     }
     return ret;

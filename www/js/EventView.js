@@ -365,7 +365,7 @@ EventView.prototype.paint = function(ud, itemMap) {
             for (var i = 0; i < ITEM_SYURUI_MAX; i++) {
                 var tempEqSyurui = -1;
                 if (this.comState == EVENTVIEW_COMSTATE_BUY_WEAPCHOICE) {
-                    tempEqSyurui = ItemDefine.getReverseItemIndexForBuy(itemMap, this.tempBuySellType, i);    
+                    tempEqSyurui = ItemDefine.getReverseItemIndexForBuy(itemMap, this.tempBuySellType, i, this);
                 } else {
                     tempEqSyurui = ItemDefine.getReverseItemIndex(itemMap, this.tempBuySellType, i);
                 }
@@ -531,6 +531,21 @@ EventView.prototype.paint = function(ud, itemMap) {
     if (this.state == EVENTVIEW_STATE_COMMAND) {
         ctxFlip.font = "14px 'MS Pゴシック'";
         ctxFlip.fillStyle = 'rgb(0, 0, 0)';
+        if (this.comState == EVENTVIEW_COMSTATE_PROC_MAPCHOICE) {
+            if (this.tempMapNum != -1) {
+                var tempField = this.fieldMap.get(this.tempMapNum);
+                var interval = 20;
+                var index = 0;
+                ctxFlip.fillText("【" + tempField.text + "】", EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15 + interval * index++);
+                if(tempField.itemType != -1) {
+                    var tempItem = new ItemDefine();
+                    ItemDefine.init(tempField.itemType, tempField.itemSyurui, tempItem);
+                    ctxFlip.fillText(tempItem.namae + "購入可", EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15 + interval * index);
+                } else if (tempField.itemSyurui != -1) {
+                    ctxFlip.fillText(RingDefine.getRingName(tempField.itemSyurui) + "入手", EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15 + interval * index);                    
+                }
+            }
+        }
         if (this.comState == EVENTVIEW_COMSTATE_BUY_WEAPCHOICE || this.comState == EVENTVIEW_COMSTATE_SELL_WEAPCHOICE){
             if (this.tempBuySellSyurui != -1) {
                 var tempItem = new ItemDefine();
@@ -549,7 +564,7 @@ EventView.prototype.paint = function(ud, itemMap) {
                 ctxFlip.fillText("【魔防】　　" + tempItem.mdf, EVENTVIEW_TEXT_X + 130, EVENTVIEW_TEXT_Y + 15 + interval * index++);
                 ctxFlip.fillText("【割合攻撃】" + tempItem.rat, EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15 + interval * index);
                 ctxFlip.fillText("【割合軽減】" + tempItem.rdf, EVENTVIEW_TEXT_X + 130, EVENTVIEW_TEXT_Y + 15 + interval * index++);
-                ctxFlip.fillText("【価格】　　" + tempItem.price, EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15 + interval * index);
+                ctxFlip.fillText("【価格】　　" + this.adjustItemPrice(this.tempBuySellType, this.tempBuySellSyurui) + "(定価" + tempItem.price + ")", EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15 + interval * index);
             }
         }
         if (this.comState == EVENTVIEW_COMSTATE_WAITCHECK){
@@ -688,7 +703,7 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                     break;
                     case EVENTVIEW_COMMANDNUM_BUY:arguments
                         this.tempBuySellType = ITEM_TYPE_SWORD;// とりあえず剣を表示
-                        this.tempBuySellSyurui = ItemDefine.getReverseItemIndexForBuy(itemMap, this.tempBuySellType, 0);
+                        this.tempBuySellSyurui = ItemDefine.getReverseItemIndexForBuy(itemMap, this.tempBuySellType, 0, this);
                         this.tempBuySellNum = -1;
                         this.comState = EVENTVIEW_COMSTATE_BUY_WEAPCHOICE;
                     break;
@@ -757,7 +772,7 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
             if (mouseY >= EVENTVIEW_BUYSELLCOMMAND_Y && mouseY <= EVENTVIEW_BUYSELLCOMMAND_Y + EVENTVIEW_COMMAND_H) {
                 if (x >= 0 && x <= 5) {
                     this.tempBuySellType = x + ITEM_TYPE_SWORD;
-                    this.tempBuySellSyurui = (this.comState == EVENTVIEW_COMSTATE_BUY_WEAPCHOICE ? ItemDefine.getReverseItemIndexForBuy(itemMap, this.tempBuySellType, 0) : ItemDefine.getReverseItemIndex(itemMap, this.tempBuySellType, 0));
+                    this.tempBuySellSyurui = (this.comState == EVENTVIEW_COMSTATE_BUY_WEAPCHOICE ? ItemDefine.getReverseItemIndexForBuy(itemMap, this.tempBuySellType, 0, this) : ItemDefine.getReverseItemIndex(itemMap, this.tempBuySellType, 0));
                     this.tempBuySellNum = -1;
                     return -1;
                 }
@@ -769,7 +784,7 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                 var maxX = (this.comState == EVENTVIEW_COMSTATE_BUY_WEAPCHOICE ? 5 : 4);
                 if (x >= 0 && x <= maxX) {
                     this.tempBuySellType = x + ITEM_TYPE_SHIELD;
-                    this.tempBuySellSyurui = (this.comState == EVENTVIEW_COMSTATE_BUY_WEAPCHOICE ? ItemDefine.getReverseItemIndexForBuy(itemMap, this.tempBuySellType, 0) : ItemDefine.getReverseItemIndex(itemMap, this.tempBuySellType, 0));
+                    this.tempBuySellSyurui = (this.comState == EVENTVIEW_COMSTATE_BUY_WEAPCHOICE ? ItemDefine.getReverseItemIndexForBuy(itemMap, this.tempBuySellType, 0, this) : ItemDefine.getReverseItemIndex(itemMap, this.tempBuySellType, 0));
                     this.tempBuySellNum = -1;
                     return -1;
                 }
@@ -780,7 +795,7 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                 var y = Math.floor((mouseY - EVENTVIEW_BUYSELLWIN_Y) / (EVENTVIEW_WEAP_INTERVAL));
                 var newSyurui = -1;
                 if (this.comState == EVENTVIEW_COMSTATE_BUY_WEAPCHOICE) {
-                    newSyurui = ItemDefine.getReverseItemIndexForBuy(itemMap, this.tempBuySellType, y);
+                    newSyurui = ItemDefine.getReverseItemIndexForBuy(itemMap, this.tempBuySellType, y, this);
                 } else {
                     newSyurui = ItemDefine.getReverseItemIndex(itemMap, this.tempBuySellType, y);
                 }
@@ -988,10 +1003,10 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             //tempField.createEnemy(ud);
             // createEnemyは1フィールドにつき1回しか使えない
             var u2 = new UnitDefine();
-            u2.initTeki(ud, UNIT_SYURUI_SWORD, BATTLE_TEKI, BATTLE_DEFENCE, fieldNum, 1, 0, 0, 0, ITEM_TYPE_SWORD, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_NO, 1.2, -1);
+            u2.initTeki(ud, UNIT_SYURUI_SWORD, BATTLE_TEKI, BATTLE_DEFENCE, fieldNum, 1, 0, 0, 0, ITEM_TYPE_SWORD, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_NO, 1.2, -1, -1);
             ud.push(u2);
             var u3 = new UnitDefine();
-            u3.initTeki(ud, UNIT_SYURUI_BOW, BATTLE_TEKI, BATTLE_DEFENCE, fieldNum, 1, 0, 0, 0, ITEM_TYPE_BOW, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM + BATTLEAI_SM_NO, 1.4, -1);
+            u3.initTeki(ud, UNIT_SYURUI_BOW, BATTLE_TEKI, BATTLE_DEFENCE, fieldNum, 1, 0, 0, 0, ITEM_TYPE_BOW, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM + BATTLEAI_SM_NO, 1.4, -1, -1);
             ud.push(u3);
             
             var tempItem = new ItemDefine();
@@ -1044,7 +1059,7 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             break;
         case EVENTVIEW_EVENTID_JOIN_JC:arguments
             u = new UnitDefine();
-            u.initCommon(ud, UNIT_SYURUI_JC, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 4, SKILL_HIGHAVO, SKILL_KAMAITACHI, SKILL_KENJITSU);
+            u.initCommon(ud, UNIT_SYURUI_JC, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 4, SKILL_KEIKAI, SKILL_KENJITSU, SKILL_AKIRA);
             ud.push(u);
             break;
         case EVENTVIEW_EVENTID_STAGE1_BOSS:arguments
@@ -1054,6 +1069,16 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             var tempField = this.fieldMap.get(fieldNum);
             tempField.createEnemy(ud);
             return GAMEMODE_BATTLE;
+        case EVENTVIEW_EVENTID_JOIN_THIEF:arguments
+            u = new UnitDefine();
+            u.initCommon(ud, UNIT_SYURUI_THIEF, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 5, SKILL_HIGHHIT, SKILL_HIGHAVO, SKILL_THIEF);
+            ud.push(u);
+            break;
+        case EVENTVIEW_EVENTID_JOIN_SHIACYAN:arguments
+            u = new UnitDefine();
+            u.initCommon(ud, UNIT_SYURUI_SHIACYAN, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 6, SKILL_KENJITSU, SKILL_KAMAITACHI, SKILL_TAIEN);
+            ud.push(u);
+            break;
     }
     // イベント実行したので、nowEventから消す
     var nowEventIndex = this.nowEvent.indexOf(this.eventID);
@@ -1137,6 +1162,11 @@ EventView.prototype.setFace = function(faceId) {
             this.py = 2 * 320;
             this.pSyurui = BATTLE_PSYURUI_PC;
             break;
+        case UNIT_SYURUI_SHIACYAN:arguments
+            this.px = 3 * 256;
+            this.py = 1 * 320;
+            this.pSyurui = BATTLE_PSYURUI_PC;
+            break;
         case UNIT_SYURUI_YOUNGMAN:arguments
             this.px = 0 * 256;
             this.py = 0 * 320;
@@ -1145,6 +1175,16 @@ EventView.prototype.setFace = function(faceId) {
         case UNIT_SYURUI_OLDMAN:arguments
             this.px = 1 * 256;
             this.py = 1 * 320;
+            this.pSyurui = BATTLE_PSYURUI_NPC;
+            break;
+        case UNIT_SYURUI_LADY:arguments
+            this.px = 0 * 256;
+            this.py = 1 * 320;
+            this.pSyurui = BATTLE_PSYURUI_NPC;
+            break;
+        case UNIT_SYURUI_BOY:arguments
+            this.px = 2 * 256;
+            this.py = 0 * 320;
             this.pSyurui = BATTLE_PSYURUI_NPC;
             break;
         case UNIT_SYURUI_YAKUNIN:arguments
@@ -1251,7 +1291,8 @@ EventView.prototype.decide = function(mouseX, mouseY, bv, ud, itemMap) {
         if (this.tempBuySellSyurui != -1 && this.tempBuySellNum > 0) {
             var tempItem = new ItemDefine();
             ItemDefine.init(this.tempBuySellType, this.tempBuySellSyurui, tempItem);
-            var needPrice = tempItem.price * this.tempBuySellNum;
+            var onePrice = this.adjustItemPrice(this.tempBuySellType, this.tempBuySellSyurui);
+            var needPrice = onePrice * this.tempBuySellNum;
             if (this.money < needPrice) {
                 CommonView.addWarn("所持金が足りません。");
                 return -1;
@@ -1259,7 +1300,7 @@ EventView.prototype.decide = function(mouseX, mouseY, bv, ud, itemMap) {
             // 所持数追加
             var tempItemNum = itemMap.get(tempItem.namae);
             itemMap.set(tempItem.namae, tempItemNum + this.tempBuySellNum);
-            this.tempBuySellSyurui = ItemDefine.getReverseItemIndexForBuy(itemMap, this.tempBuySellType, 0);
+            this.tempBuySellSyurui = ItemDefine.getReverseItemIndexForBuy(itemMap, this.tempBuySellType, 0, this);
             this.money -= needPrice;
             this.tempBuySellNum = -1;
             CommonView.addWarn("購入しました。");
@@ -1435,6 +1476,9 @@ EventView.prototype.selectTutorial = function() {
         if (this.comState == EVENTVIEW_COMSTATE_PROC_MAPCHOICE) {
             return COMMONVIEW_TUTORIALID_MAPCHOICE;   
         }
+        if (this.comState == EVENTVIEW_COMSTATE_BUY_WEAPCHOICE) {
+            return COMMONVIEW_TUTORIALID_BUY;   
+        }
         if (this.comState == EVENTVIEW_COMSTATE_UNITCHECK) {
             return COMMONVIEW_TUTORIALID_UNITCHECK;   
         }
@@ -1500,6 +1544,33 @@ EventView.prototype.numOfMikata = function() {
     return sum;
 }
 
+// 当該アイテムを購入可能な味方マスの数
+EventView.prototype.buyAbleNum = function(itemType, itemSyurui) {
+    var sum = 0;
+    for (var i = 0; i < EVENTVIEW_MAP_MAX; i++) {
+        var tempField = this.fieldMap.get(i);
+        if (tempField != null && tempField.fieldState == EVENTVIEW_FIELD_MIKATA &&
+            tempField.itemType == itemType && tempField.itemSyurui == itemSyurui) {
+            sum++;
+        }
+    }
+    return sum;
+}
+
+// buyAbleNumを意識した価格補正
+EventView.prototype.adjustItemPrice = function(itemType, itemSyurui) {
+    var buyAbleNum = this.buyAbleNum(itemType, itemSyurui);
+    var tempItem = new ItemDefine();
+    ItemDefine.init(itemType, itemSyurui, tempItem);
+    var orgPrice = tempItem.price;
+    var adjustRate = 1.0;
+    if (buyAbleNum > 1) {
+        adjustRate = Math.max(0.55, 1.0 - ITEM_ADJUST_RATE * (buyAbleNum - 1));
+    }
+
+    return Math.floor(adjustRate * orgPrice);
+}
+
 // 味方マスの数と進行ステージから、戦勝時の取得金額を返す
 EventView.prototype.calcWinMoney = function() {
     if (ev.doneEvent.indexOf(EVENTVIEW_EVENTID_STAGE1_YAKUNIN) == -1) {
@@ -1518,6 +1589,9 @@ EventView.prototype.endTurn = function(ud) {
     for (var i = 0; i < EVENTVIEW_MAP_MAX; i++) {
         var tempField = this.fieldMap.get(i);
         if (tempField != null && tempField.fieldState == EVENTVIEW_FIELD_CHANGING) {
+            if (tempField.itemType == -1 && tempField.itemSyurui != -1) {
+                this.pushRing(tempField.itemSyurui);
+            }
             tempField.fieldState = EVENTVIEW_FIELD_MIKATA;
         }
     }

@@ -48,6 +48,8 @@ SkillDefine.getSkillName = function(skill) {
         return "諦めないっ";
     case SKILL_SYOKI:arguments
         return "瘴気";
+    case SKILL_MANSHIN:arguments
+        return "慢心狩り";
     default:arguments  
         return "";
     }
@@ -71,21 +73,26 @@ SkillDefine.getMessage = function(skill) {
     case SKILL_KEIKAI:arguments
         skillTxt.push("敵のクリティカルを防ぐ");
         break;
-    /*case SKILL_KAMAITACHI:arguments
-        //return "かまいたち";
+    case SKILL_KAMAITACHI:arguments
+        skillTxt.push("最低限レベル ×" + SKILL_KAMAITACHI_RATE + "ダメージを与える");
+        skillTxt.push("(回避もされない)");
         break;
     case SKILL_YOROI:arguments
-        return "鎧通し";
+        skillTxt.push("基本ダメージをレベル ×" + SKILL_YOROI_RATE + "追加");
+        break;
     case SKILL_KYOEN:arguments
-        return "狂宴";*/
+        skillTxt.push("クリティカル率" + SKILL_KYOEN_RATE + "倍");
+        break;
     case SKILL_SYONETSU:arguments
         skillTxt.push("ダメージの" + SKILL_SYONETSU_RATE + "%をターゲット以外の");
         skillTxt.push("敵に与える(トドメ不可)");
         break;
     /*case SKILL_AKURO:arguments
-        return "悪路踏破";
+        return "悪路踏破";*/
     case SKILL_TAIEN:arguments
-        return "対遠防御";*/
+        skillTxt.push("HPが2以上あれば");
+        skillTxt.push("射程4以上の攻撃で死なない");
+        break;
     case SKILL_KIYOME:arguments
         skillTxt.push("敵の毒と麻痺を防ぐ");
         break;
@@ -102,9 +109,11 @@ SkillDefine.getMessage = function(skill) {
         skillTxt.push("攻撃ヒット時、所持金をレベル × " + minusPoint + "奪う");
         break;
     /*case SKILL_HEDGEHOG:arguments
-        return "ハリネズミ";
+        return "ハリネズミ";*/
     case SKILL_THIEF:arguments
-        return "盗む";*/
+        skillTxt.push((100 * SKILL_THIEF_RATE) + "%以上のオーバーキル時");
+        skillTxt.push("敵が所持しているアイテムを盗む");
+        break;
     case SKILL_GAIKA:arguments
         skillTxt.push("勝利時、リングのマスター回数が-2");
         break;
@@ -122,6 +131,9 @@ SkillDefine.getMessage = function(skill) {
         break;
     case SKILL_SYOKI:arguments
         skillTxt.push("相手の各スキルの消費気力+1");
+        break;
+    case SKILL_MANSHIN:arguments
+        skillTxt.push("気力が全快の敵に基本ダメージ+" + (100 * SKILL_MANSHIN_RATE) + "%");
         break;
     default:arguments  
         break;
