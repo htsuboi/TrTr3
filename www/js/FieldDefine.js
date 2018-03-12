@@ -13,8 +13,9 @@ var FieldDefine = function() {
     this.fieldState = EVENTVIEW_FIELD_HIDDEN;
     this.isEnemyAppear = false;//敵出現したか(最初の進攻戦用の敵)
     // リング入手可能マップは、itemType = -1, itemSyurui = リングIDとする
-    this.itemType = -1;//ここを保持すると購入可能なアイテム(グループ)
-    this.itemSyurui = -1;//ここを保持すると購入可能なアイテム(固有種類)
+    this.items = {};
+    //this.itemType = -1;//ここを保持すると購入可能なアイテム(グループ)
+    //this.itemSyurui = -1;//ここを保持すると購入可能なアイテム(固有種類)
 };
 
 FieldDefine.prototype.init = function(position) {
@@ -62,6 +63,9 @@ FieldDefine.prototype.init = function(position) {
             this.x = EVENTVIEW_STAGE1_X;
             this.y = EVENTVIEW_STAGE1_Y - 2 * EVENTVIEW_MAP_INTERVAL;
             this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.items[0] = {itemType:ITEM_TYPE_SPEAR, itemSyurui:0};
+            this.items[1] = {itemType:ITEM_TYPE_HAMMER, itemSyurui:0};
+            this.items[2] = {itemType:ITEM_TYPE_DOGU, itemSyurui:ITEM_SYURUI_KOUCHA};
             this.ofY = 112;
             this.dfY = 113;
         break;
@@ -84,10 +88,9 @@ FieldDefine.prototype.init = function(position) {
             this.x = EVENTVIEW_STAGE1_X - EVENTVIEW_MAP_INTERVAL;
             this.y = EVENTVIEW_STAGE1_Y - 3 * EVENTVIEW_MAP_INTERVAL;
             this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.items[0] = {itemType:-1, itemSyurui:RING_JUKUREN};
             this.ofY = 231;
             this.dfY = 312;
-            this.itemType = -1;//ここを保持すると購入可能なアイテム(グループ)
-            this.itemSyurui = RING_JUKUREN;//ここを保持すると購入可能なアイテム(固有種類)
         break;
         case 6:arguments
             this.text = "1-7";
@@ -97,6 +100,9 @@ FieldDefine.prototype.init = function(position) {
             this.x = EVENTVIEW_STAGE1_X;
             this.y = EVENTVIEW_STAGE1_Y - 3 * EVENTVIEW_MAP_INTERVAL;
             this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.items[0] = {itemType:ITEM_TYPE_HAMMER, itemSyurui:0};
+            this.items[1] = {itemType:ITEM_TYPE_KNIFE, itemSyurui:0};
+            this.items[2] = {itemType:ITEM_TYPE_WATER, itemSyurui:0};
             this.ofY = 211;
             this.dfY = 112;
         break;
@@ -119,6 +125,10 @@ FieldDefine.prototype.init = function(position) {
             this.x = EVENTVIEW_STAGE1_X;
             this.y = EVENTVIEW_STAGE1_Y - 4 * EVENTVIEW_MAP_INTERVAL;
             this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.items[0] = {itemType:ITEM_TYPE_SWORD, itemSyurui:0};
+            this.items[1] = {itemType:ITEM_TYPE_PUNCH, itemSyurui:0};
+            this.items[2] = {itemType:ITEM_TYPE_SHIELD, itemSyurui:0};
+            this.items[3] = {itemType:ITEM_TYPE_WIND, itemSyurui:0};
             this.ofY = 311;
             this.dfY = 221;
         break;
@@ -143,6 +153,10 @@ FieldDefine.prototype.init = function(position) {
             this.y = EVENTVIEW_STAGE2_Y;
             this.stage = 1;
             this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.items[0] = {itemType:ITEM_TYPE_SWORD, itemSyurui:1};
+            this.items[1] = {itemType:ITEM_TYPE_BOW, itemSyurui:1};
+            this.items[2] = {itemType:ITEM_TYPE_HAMMER, itemSyurui:1};
+            this.items[3] = {itemType:ITEM_TYPE_FIRE, itemSyurui:1};
             this.ofY = 211;
             this.dfY = 131;
         break;
@@ -167,6 +181,10 @@ FieldDefine.prototype.init = function(position) {
             this.y = EVENTVIEW_STAGE2_Y + EVENTVIEW_MAP_INTERVAL;
             this.stage = 1;
             this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.items[0] = {itemType:ITEM_TYPE_PUNCH, itemSyurui:0};
+            this.items[1] = {itemType:ITEM_TYPE_SHIELD, itemSyurui:0};
+            this.items[2] = {itemType:ITEM_TYPE_EARTH, itemSyurui:0};
+            this.items[3] = {itemType:ITEM_TYPE_DOGU, itemSyurui:ITEM_SYURUI_KOUCHA};
             this.ofY = 121;
             this.dfY = 122;
         break;
@@ -203,6 +221,10 @@ FieldDefine.prototype.init = function(position) {
             this.y = EVENTVIEW_STAGE2_Y - EVENTVIEW_MAP_INTERVAL;
             this.stage = 1;
             this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.items[0] = {itemType:ITEM_TYPE_SPEAR, itemSyurui:1};
+            this.items[1] = {itemType:ITEM_TYPE_WATER, itemSyurui:1};
+            this.items[2] = {itemType:ITEM_TYPE_WIND, itemSyurui:1};
+            this.items[3] = {itemType:ITEM_TYPE_DOGU, itemSyurui:ITEM_SYURUI_KOUSUI};
             this.ofY = 121;
             this.dfY = 232;
         break;
@@ -239,6 +261,7 @@ FieldDefine.prototype.init = function(position) {
             this.y = EVENTVIEW_STAGE2_Y - EVENTVIEW_MAP_INTERVAL;
             this.stage = 1;
             this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.items[0] = {itemType:-1, itemSyurui:RING_ATTACK};
             this.ofY = 333;
             this.dfY = 213;
         break;

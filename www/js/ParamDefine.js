@@ -254,7 +254,7 @@ var ITEM_TYPE_NOTHING = 100;
 
 var ITEM_EQMAX = 5;//1キャラが装備可能な武器属性最大値(手持ち、アイテム含む)
 var ITEM_TEMOCHIMAX = 4;//1キャラが装備可能な手持ち最大値(素手含む)
-
+var ITEM_MAP_MAX = 4;//1マップで購入可能なアイテム最大種類
 // 表示などの都合上、1属性の武器、アイテムの種類はこの数字まで
 var ITEM_SYURUI_MAX = 8;
 
@@ -302,7 +302,7 @@ var RING_ECO = 2;
 var RING_TAISEI = 3;//2章イベント入手
 var RING_RECOVER = 4;
 var RING_JUKUREN = 5;//1章フィールド入手
-var RING_ATTACK = 6;
+var RING_ATTACK = 6;//2章フィールド入手
 var RING_DEFENCE = 7;
 
 // 雑魚

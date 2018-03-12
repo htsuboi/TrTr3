@@ -537,12 +537,19 @@ EventView.prototype.paint = function(ud, itemMap) {
                 var interval = 20;
                 var index = 0;
                 ctxFlip.fillText("【" + tempField.text + "】", EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15 + interval * index++);
-                if(tempField.itemType != -1) {
-                    var tempItem = new ItemDefine();
-                    ItemDefine.init(tempField.itemType, tempField.itemSyurui, tempItem);
-                    ctxFlip.fillText(tempItem.namae + "購入可", EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15 + interval * index);
-                } else if (tempField.itemSyurui != -1) {
-                    ctxFlip.fillText(RingDefine.getRingName(tempField.itemSyurui) + "入手", EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15 + interval * index);                    
+                if (tempField.items[0] != null) {
+                    if(tempField.items[0].itemType != -1) {
+                        for (var i = 0; i < ITEM_MAP_MAX; i++) {
+                            if (tempField.items[i] != null) {
+                                var tempItem = new ItemDefine();
+                                ItemDefine.init(tempField.items[i].itemType, tempField.items[i].itemSyurui, tempItem);
+                                ctxFlip.fillText(tempItem.namae + "購入可", EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15 + interval * index);
+                                index++;
+                            }
+                        }
+                    } else if (tempField.items[0].itemSyurui != -1) {
+                        ctxFlip.fillText(RingDefine.getRingName(tempField.items[0].itemSyurui) + "入手", EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15 + interval * index);                    
+                    }
                 }
             }
         }
@@ -748,20 +755,8 @@ EventView.prototype.clk = function(mouseX, mouseY, bv, ud, itemMap) {
                     var centerX = EVENTVIEW_MAP_X + EVENTVIEW_MAP_EXTEND * tempField.x;
                     var centerY = EVENTVIEW_MAP_Y + EVENTVIEW_MAP_EXTEND * tempField.y;
                     if (Math.abs(mouseX - centerX) < 5 && Math.abs(mouseY - centerY) < 5){                    
-                        if (tempField.fieldState == EVENTVIEW_FIELD_TEKI) {
-                            if (this.isNearBy(tempField.x, tempField.y)) {
-                                this.tempMapNum = i;
-                                return -1;
-                            } else {
-                                CommonView.addWarn("味方(青)マスに隣接した");
-                                CommonView.addWarn("敵(赤)マスしか進攻できません。");
-                                return -1;
-                            }
-                        } else if (tempField.fieldState == EVENTVIEW_FIELD_MIKATA) {
-                            CommonView.addWarn("味方(青)マスに隣接した");
-                            CommonView.addWarn("敵(赤)マスしか進攻できません。");
-                            return -1;
-                        }
+                        this.tempMapNum = i;
+                        return -1;
                     }
                 }
             }
@@ -1270,13 +1265,24 @@ EventView.prototype.decide = function(mouseX, mouseY, bv, ud, itemMap) {
             CommonView.addWarn("進攻マスを選んでください。");
             return -1;
         } else {
+            var tempField = this.fieldMap.get(this.tempMapNum);
+            if (tempField.fieldState == EVENTVIEW_FIELD_TEKI) {
+                if (!this.isNearBy(tempField.x, tempField.y)) {
+                    CommonView.addWarn("味方(青)マスに隣接した");
+                    CommonView.addWarn("敵(赤)マスしか進攻できません。");
+                    return -1;
+                }
+            } else if (tempField.fieldState == EVENTVIEW_FIELD_MIKATA) {
+                CommonView.addWarn("味方(青)マスに隣接した");
+                CommonView.addWarn("敵(赤)マスしか進攻できません。");
+                return -1;
+            }
             if (this.checkFieldEvent(this.tempMapNum)) {
                 // イベント後に戦闘。処理はendEvent側に記述
                 this.tempMapNum = -1;
                 this.comState = EVENTVIEW_COMSTATE_PRECHOICE;
                 return -1;
             } else {
-                var tempField = this.fieldMap.get(this.tempMapNum);
                 tempField.createEnemy(ud);// 最初の進攻時はこれで敵が作られる。取り返すときは、もともと攻めてきた敵を倒す
                 bv.init(this.tempMapNum, true);
                 this.tempMapNum = -1;
@@ -1549,9 +1555,13 @@ EventView.prototype.buyAbleNum = function(itemType, itemSyurui) {
     var sum = 0;
     for (var i = 0; i < EVENTVIEW_MAP_MAX; i++) {
         var tempField = this.fieldMap.get(i);
-        if (tempField != null && tempField.fieldState == EVENTVIEW_FIELD_MIKATA &&
-            tempField.itemType == itemType && tempField.itemSyurui == itemSyurui) {
-            sum++;
+        if (tempField != null && tempField.fieldState == EVENTVIEW_FIELD_MIKATA) {
+            for (var j = 0; j < ITEM_MAP_MAX; j++) {
+                if (tempField.items[j] != null && tempField.items[j].itemType == itemType && tempField.items[j].itemSyurui == itemSyurui) {
+                    sum++;
+                }
+                
+            }
         }
     }
     return sum;
@@ -1589,8 +1599,8 @@ EventView.prototype.endTurn = function(ud) {
     for (var i = 0; i < EVENTVIEW_MAP_MAX; i++) {
         var tempField = this.fieldMap.get(i);
         if (tempField != null && tempField.fieldState == EVENTVIEW_FIELD_CHANGING) {
-            if (tempField.itemType == -1 && tempField.itemSyurui != -1) {
-                this.pushRing(tempField.itemSyurui);
+            if (tempField.items[0] != null && tempField.items[0].itemType == -1 && tempField.items[0].itemSyurui != -1) {
+                this.pushRing(tempField.items[0].itemSyurui);
             }
             tempField.fieldState = EVENTVIEW_FIELD_MIKATA;
         }

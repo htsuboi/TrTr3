@@ -106,7 +106,7 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
         switch(eqSyurui) {
             case 0:arguments
                 idef.namae = "大量生産の槌";
-                idef.price = 90;
+                idef.price = 150;
                 idef.lv = 1;
                 idef.alwaysBuy = true;
             break;
