@@ -920,7 +920,7 @@ EventView.prototype.maxBuySell = function(itemMap, eqType, eqSyurui, isBuy) {
 EventView.getMapImg = function() {
     if (typeof arguments.callee.mapImg == 'undefined') {
         arguments.callee.mapImg = new Image();
-        arguments.callee.mapImg.src = "img/map.png";
+        arguments.callee.mapImg.src = "../www/img/map.png";
     }
     return arguments.callee.mapImg;
 };

@@ -390,7 +390,7 @@ FieldDefine.prototype.paintMe = function(ctxFlip, x, y) {
 FieldDefine.getFieldImg = function() {
     if (typeof arguments.callee.fieldImg == 'undefined') {
         arguments.callee.fieldImg = new Image();
-        arguments.callee.fieldImg.src = "img/fields.jpg";
+        arguments.callee.fieldImg.src = "../www/img/fields.jpg";
     }
     return arguments.callee.fieldImg;
 };
@@ -398,7 +398,7 @@ FieldDefine.getFieldImg = function() {
 FieldDefine.getWeaponsImg = function() {
     if (typeof arguments.callee.weaponsImg == 'undefined') {
         arguments.callee.weaponsImg = new Image();
-        arguments.callee.weaponsImg.src = "img/weapons.png";
+        arguments.callee.weaponsImg.src = "../www/img/weapons.png";
     }
     return arguments.callee.weaponsImg;
 };

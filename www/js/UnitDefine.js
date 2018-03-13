@@ -914,25 +914,25 @@ UnitDefine.getCharaImg = function(pSyurui) {
     case BATTLE_PSYURUI_ZAKO:arguments
         if (typeof arguments.callee.zakoImg == 'undefined') {
             arguments.callee.zakoImg = new Image();
-            arguments.callee.zakoImg.src = "img/Zako.png";
+            arguments.callee.zakoImg.src = "../www/img/Zako.png";
         }
         return arguments.callee.zakoImg;
     case BATTLE_PSYURUI_PC:arguments
         if (typeof arguments.callee.pcImg == 'undefined') {
             arguments.callee.pcImg = new Image();
-            arguments.callee.pcImg.src = "img/PC.png";
+            arguments.callee.pcImg.src = "../www/img/PC.png";
         }
         return arguments.callee.pcImg;
     case BATTLE_PSYURUI_NPC:arguments
         if (typeof arguments.callee.npcImg == 'undefined') {
             arguments.callee.npcImg = new Image();
-            arguments.callee.npcImg.src = "img/NPC.png";
+            arguments.callee.npcImg.src = "../www/img/NPC.png";
         }
         return arguments.callee.npcImg;
     case BATTLE_PSYURUI_BOSS:arguments
         if (typeof arguments.callee.bossImg == 'undefined') {
             arguments.callee.bossImg = new Image();
-            arguments.callee.bossImg.src = "img/BOSS.png";
+            arguments.callee.bossImg.src = "../www/img/BOSS.png";
         }
         return arguments.callee.bossImg;
     default:arguments

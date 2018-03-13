@@ -86,7 +86,8 @@ function clickPage(e) {
         }
     }
     catch (e) {
-        CommonView.addWarn(e);
+        //alert(e);
+        //CommonView.addWarn(e);
     }
     if (nextGameMode >= 0) {
         gameMode = nextGameMode;
