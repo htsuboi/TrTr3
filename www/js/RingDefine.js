@@ -51,22 +51,22 @@ RingDefine.apply = function(ringId, u) {
     case RING_ECO:arguments
         switch(aptitude) {
             case 1:arguments//好相性
-                u.m1Cost -= 20;
-                u.m2Cost -= 20;
-                u.rangeCost -= 20;
-                u.exAtCost -= 20;
+                u.m1Cost -= 15;
+                u.m2Cost -= 15;
+                u.rangeCost -= 15;
+                u.exAtCost -= 15;
                 break;
             case 0:arguments//普通
-                u.m1Cost -= 10;
-                u.m2Cost -= 10;
-                u.rangeCost -= 10;
-                u.exAtCost -= 10;
+                u.m1Cost -= 7;
+                u.m2Cost -= 7;
+                u.rangeCost -= 7;
+                u.exAtCost -= 7;
                 break;
             case -1:arguments//相性悪
-                u.m1Cost -= 5;
-                u.m2Cost -= 5;
-                u.rangeCost -= 5;
-                u.exAtCost -= 5;
+                u.m1Cost -= 3;
+                u.m2Cost -= 3;
+                u.rangeCost -= 3;
+                u.exAtCost -= 3;
                 break;
         }
         break;
@@ -168,13 +168,13 @@ RingDefine.getSetsumei = function(ringId, aptitude, message) {
     case RING_ECO:arguments
         switch(aptitude) {
             case 1:arguments//好相性
-                message.push("各コスト-20");
+                message.push("各コスト-15");
                 break;
             case 0:arguments//普通
-                message.push("各コスト-10");
+                message.push("各コスト-7");
                 break;
             case -1:arguments//相性悪
-                message.push("各コスト-5");
+                message.push("各コスト-3");
                 break;
         }
         break;

@@ -1074,6 +1074,12 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             u.initCommon(ud, UNIT_SYURUI_SHIACYAN, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 6, SKILL_KENJITSU, SKILL_KAMAITACHI, SKILL_TAIEN);
             ud.push(u);
             break;
+        case EVENTVIEW_EVENTID_JOIN_YOUHEI:arguments
+            u = new UnitDefine();
+            u.initCommon(ud, UNIT_SYURUI_KENSHI, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 7, SKILL_KEIKAI, SKILL_AKURO, 0);
+            ud.push(u);
+            break;
+        
     }
     // イベント実行したので、nowEventから消す
     var nowEventIndex = this.nowEvent.indexOf(this.eventID);
@@ -1160,6 +1166,11 @@ EventView.prototype.setFace = function(faceId) {
         case UNIT_SYURUI_SHIACYAN:arguments
             this.px = 3 * 256;
             this.py = 1 * 320;
+            this.pSyurui = BATTLE_PSYURUI_PC;
+            break;
+        case UNIT_SYURUI_KENSHI:arguments
+            this.px = 3 * 256;
+            this.py = 0 * 320;
             this.pSyurui = BATTLE_PSYURUI_PC;
             break;
         case UNIT_SYURUI_YOUNGMAN:arguments

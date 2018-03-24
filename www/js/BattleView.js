@@ -28,7 +28,7 @@ var BattleView = function() {
     this.spGauge = [0, 0];// 味方、敵のspゲージ
     this.spGaugePaint = [0, 0];// 味方、敵のspゲージ(表示用　実際のゲージはspGauge)
     this.field = 0;//どのフィールドか
-    this.isOffence = false;
+    this.isOffence = false;// trueだと武器コストが増加
     this.infoUnit = null;// どのユニットの情報を表示するか
     this.focus = 0;//手番ユニット(0～5)
     this.turn = BATTLEVIEW_TURN_INITIAL;
@@ -1102,7 +1102,7 @@ BattleView.prototype.paint = function (ud, itemMap, ev) {
                         ctxFlip.fillStyle = 'rgb(0, 0, 0)';
                     }
                     ctxFlip.fillText(tempItem.namae, BATTLEVIEW_WEAP_X, textY);
-                    var itemCost = focusUnit.calcKiryoku(tempItem);
+                    var itemCost = focusUnit.calcKiryoku(tempItem, UnitDefine.calcWeapCost(focusUnit, this.battleFields, this.isOffence));
                     if (itemCost == 999) {
                         ctxFlip.fillText("×", BATTLEVIEW_WEAP_X + 90, textY);
                     } else {
@@ -1129,7 +1129,7 @@ BattleView.prototype.paint = function (ud, itemMap, ev) {
                         }
                         ctxFlip.fillText(tempItem.namae, BATTLEVIEW_WEAP_X, textY);
                         var tempEquipNum = this.calcEquipNum(ud, tempItem.eqType, tempItem.eqSyurui);
-                        var itemCost = focusUnit.calcKiryoku(tempItem);
+                        var itemCost = focusUnit.calcKiryoku(tempItem, UnitDefine.calcWeapCost(focusUnit, this.battleFields, this.isOffence));
                         if (itemCost == 999) {
                             ctxFlip.fillText("×", BATTLEVIEW_WEAP_X + 90, textY);
                         } else {
@@ -1996,7 +1996,7 @@ BattleView.prototype.decide = function(mouseX, mouseY, ud, itemMap, ev) {
             
             var tempItem = new ItemDefine();
             ItemDefine.init(this.tempEqTypeForEquip, this.tempEqSyurui, tempItem);
-            var itemCost = focusUnit.calcKiryoku(tempItem);
+            var itemCost = focusUnit.calcKiryoku(tempItem, UnitDefine.calcWeapCost(focusUnit, this.battleFields, this.isOffence));
             if (focusUnit.sp < itemCost) {
                 if (itemCost == 999) {
                     CommonView.addWarn("使用可能レベルに達していません。");
@@ -2038,7 +2038,7 @@ BattleView.prototype.decide = function(mouseX, mouseY, ud, itemMap, ev) {
                         return -1;
                     }
                 }
-                var itemCost = focusUnit.calcKiryoku(tempItem);
+                var itemCost = focusUnit.calcKiryoku(tempItem, UnitDefine.calcWeapCost(focusUnit, this.battleFields, this.isOffence));
                 if (focusUnit.sp < itemCost) {
                     if (itemCost == 999) {
                         CommonView.addWarn("使用可能レベルに達していません。");
@@ -2102,7 +2102,7 @@ BattleView.prototype.decide = function(mouseX, mouseY, ud, itemMap, ev) {
                 // 武器の消費気力分気力を減らす(ここに入ったら確実に減らせる)
                 var tempItem = new ItemDefine();
                 ItemDefine.init(focusUnit.eqType, focusUnit.eqSyurui, tempItem);
-                var itemCost = focusUnit.calcKiryoku(tempItem);
+                var itemCost = focusUnit.calcKiryoku(tempItem, UnitDefine.calcWeapCost(focusUnit, this.battleFields, this.isOffence));
                 focusUnit.sp -= itemCost;
                     
                 this.cantOpCounter = BATTLE_BATTLEMSG_MAX;

@@ -517,15 +517,15 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.badRing.push(RING_DEFENCE);
         break;
         case UNIT_SYURUI_SHIACYAN:arguments
-            this.msp = 25;
-            this.crt = 4;
+            this.msp = 24;
+            this.crt = 5;
             this.luck = 3;
             this.rat = 7;//割合ダメージ
             this.rdf = 5;//割合軽減
-            this.m1Cost = 35;//1移動コスト
+            this.m1Cost = 40;//1移動コスト
             this.m2Cost = 80;//2移動コスト
             this.rangeCost = 70;//射程伸ばしコスト
-            this.exAtCost = 170;//再行動コスト
+            this.exAtCost = 175;//再行動コスト
             this.regPoison = 60;
             this.regStun = 40;
             this.mhpObj = {now:87, amari:0, up:35, upup:31, upupup:16};
@@ -539,13 +539,39 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.weaps[ITEM_TYPE_SPEAR] = 39;
             this.weaps[ITEM_TYPE_BOW] = 15;
             this.weaps[ITEM_TYPE_FIRE] = 9;
+            this.goodRing.push(RING_ECO);
             this.goodRing.push(RING_RECOVER);
             this.badRing.push(RING_KIRYOKU);
-            this.badRing.push(RING_SP);
             this.badRing.push(RING_TAISEI);
         break;
+        case UNIT_SYURUI_KENSHI:arguments
+            this.msp = 25;
+            this.crt = 18;
+            this.luck = 3;
+            this.rat = 5;//割合ダメージ
+            this.rdf = 6;//割合軽減
+            this.m1Cost = 30;//1移動コスト
+            this.m2Cost = 65;//2移動コスト
+            this.rangeCost = 25;//射程伸ばしコスト
+            this.exAtCost = 130;//再行動コスト
+            this.regPoison = 40;
+            this.regStun = 20;
+            this.mhpObj = {now:93, amari:0, up:30, upup:40, upupup:10};
+            this.strObj = {now:36, amari:0, up:38, upup:10, upupup:4};
+            this.magObj = {now:6, amari:0, up:3, upup:7, upupup:9};
+            this.defObj = {now:16, amari:0, up:20, upup:15, upupup:19};
+            this.mdfObj = {now:8, amari:0, up:11, upup:14, upupup:20};
+            this.hitObj = {now:117, amari:0, up:50, upup:20, upupup:8};
+            this.avoObj = {now:20, amari:0, up:21, upup:13, upupup:21};
+            this.weaps[ITEM_TYPE_SWORD] = 35;
+            this.weaps[ITEM_TYPE_KNIFE] = 28;
+            this.weaps[ITEM_TYPE_SHIELD] = 34;
+            this.goodRing.push(RING_JUKUREN);
+            this.goodRing.push(RING_ATTACK);
+            this.badRing.push(RING_DEFENCE);
+        break;
         default:arguments
-            printWarn('no UnitName unitType:' + unitType);
+            printWarn('no UnitName unitSyurui:' + unitSyurui);
         break;
     }
     // 指定Lvまでレベルアップ
@@ -575,8 +601,8 @@ UnitDefine.prototype.initTeki = function(ud, unitSyurui, side, ofOrDf, field, lv
 }
 
 // 武器使用時の消費気力(999は使用不可)
-UnitDefine.prototype.calcKiryoku = function(idef) {
-    var itemCost = idef.lv;
+UnitDefine.prototype.calcKiryoku = function(idef, weapCost) {
+    var itemCost = idef.lv + weapCost;
     var myLevel = this.lv;
     // アイテム・素手・なにもしないなら消費気力0
     if (idef.eqType == ITEM_TYPE_DOGU || idef.eqType == ITEM_TYPE_SUDE || idef.eqType == ITEM_TYPE_NOTHING) {
@@ -767,14 +793,14 @@ UnitDefine.prototype.initNamePaint = function(unitSyurui) {
             this.px = 1 * 256;
             this.py = 2 * 320;
         break;
-        case UNIT_SYURUI_SWORD:arguments
-            this.namae = UNIT_NAMAE_SWORD; 
+        case UNIT_SYURUI_KENSHI:arguments
+            this.namae = UNIT_NAMAE_KENSHI; 
             this.pSyurui = BATTLE_PSYURUI_PC;
             this.px = 3 * 256;
             this.py = 0 * 320;
         break;
         default:arguments
-            printWarn('no UnitName unitType:' + unitType);  
+            printWarn('no UnitName unitSyurui:' + unitSyurui);  
         break;
     }
     return;
@@ -1045,6 +1071,15 @@ UnitDefine.calcCrtDamage = function(attacker, defender, ud, attackerEQType, atta
 UnitDefine.calcChikei = function(attacker, defender, ud, battleFields, attackerEQType, attackerEQSyurui) {
     var chikeiRate = battleFields[defender.side][defender.x][defender.y].def;
     return chikeiRate;
+}
+
+// 地形の武器コスト
+UnitDefine.calcWeapCost = function(unit, battleFields, isOffence) {
+    var weapCost = 0;//防衛時は地形武器コストは0
+    if (isOffence) {
+        weapCost = battleFields[unit.side][unit.x][unit.y].weap;
+    }
+    return weapCost;
 }
 
 // 割合ダメージ計算　基本的に装備武器は「装備中のもの」を想定するが、攻撃予想時のみ「予想に使用する武器」である
