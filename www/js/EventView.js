@@ -414,7 +414,7 @@ EventView.prototype.paint = function(ud, itemMap) {
 
             var mikataUd = UnitDefine.getMikataList(ud);
             var infoUnit = mikataUd[this.tempUnitIndex];
-            CommonView.unitMsg(infoUnit, ctxFlip, this.MAXCOUNTER, this.counter, null, true, false, false, this);
+            CommonView.unitMsg(infoUnit, ctxFlip, this.MAXCOUNTER, this.counter, null, true, false, false, this, null);
             
             var x2 = EVENTVIEW_RINGINFO_X;
             var y2 = EVENTVIEW_RINGINFO_Y;

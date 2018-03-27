@@ -23,6 +23,7 @@ var BattleView = function() {
     this.bar = [0, 0, 0, 0, 0, 0, 0];// 演出用の棒の長さ
     this.fieldDefine = new FieldDefine();
     this.fieldMsg = "";
+    this.fieldMsg2 = "";
     this.battleMsg = ["", "", "", ""];
     this.tempMikata = null;// 最初の参戦ユニット決定時にのみ使用
     this.spGauge = [0, 0];// 味方、敵のspゲージ
@@ -64,6 +65,7 @@ BattleView.prototype.init = function(position, isOffence) {
     this.counter = 0;
     this.fieldDefine.init(position);
     this.fieldMsg = "";
+    this.fieldMsg2 = "";
     this.battleMsg = ["", "", "", ""];
     this.tempMikata = null;// 最初の参戦ユニット決定時にのみ使用
     this.spGauge = [0, 0];// 味方、敵のspゲージ
@@ -357,7 +359,7 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
                 // 決着がついていない
                 if (isRunAway) {
                     // 逃亡後は次のユニットに手番が移る
-                    this.endTurn(ud);
+                    this.endTurn(ud, ev);
                 } else {
                     this.initAct();
                     this.moveCheckComState(BATTLEVIEW_STATE_SECONDMOVE, BATTLEVIEW_COMSTATE_PRECHOICE);
@@ -397,7 +399,7 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
                     this.cantOpCounter = 20;
                     this.state = BATTLEVIEW_STATE_ACTSTART;
                 } else {
-                    this.endTurn(ud);
+                    this.endTurn(ud, ev);
                 }
             } else if (moveCheck > 0){
                 this.cantOpCounter = 20;
@@ -478,7 +480,7 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
                 this.moveCheckComState(BATTLEVIEW_STATE_ACTSTART, BATTLEVIEW_COMSTATE_PRECHOICE);
             }
             if (this.state == BATTLEVIEW_STATE_SECONDMOVE) {
-                this.endTurn(ud);
+                this.endTurn(ud, ev);
             }
         }
     }
@@ -695,6 +697,7 @@ BattleView.prototype.paint = function (ud, itemMap, ev) {
         ctxFlip.fillStyle = 'rgb(0, 0, 0)';
         ctxFlip.font = "11px 'MS Pゴシック'";
         ctxFlip.fillText(this.fieldMsg, BATTLEVIEW_FIELDTXT_X, BATTLEVIEW_FIELDTXT_Y + 20);
+        ctxFlip.fillText(this.fieldMsg2, BATTLEVIEW_FIELDTXT_X, BATTLEVIEW_FIELDTXT_Y + 32);
         
         // 戦闘メッセージ表示
         ctxFlip.fillStyle = getGladColor((this.MAXCOUNTER - this.counter) / 6);
@@ -1041,7 +1044,7 @@ BattleView.prototype.paint = function (ud, itemMap, ev) {
             // ユニット、スキル選択時…なにも装備しないステータス
             var isNoAdjust = this.turn == BATTLEVIEW_TURN_UNITSELECT || this.turn == BATTLEVIEW_TURN_SKILLSELECT;
             var isFace = this.turn != BATTLEVIEW_TURN_UNITSELECT && this.turn != BATTLEVIEW_TURN_SKILLSELECT;
-            CommonView.unitMsg(this.infoUnit, ctxFlip, this.MAXCOUNTER, this.counter, focusUnit, isNoAdjust, isFace, true, ev);
+            CommonView.unitMsg(this.infoUnit, ctxFlip, this.MAXCOUNTER, this.counter, focusUnit, isNoAdjust, isFace, true, ev, this);
         }
     
         if (this.commandState == BATTLEVIEW_COMSTATE_ACT_WEAPCHOICE) {
@@ -1362,7 +1365,7 @@ BattleView.prototype.getUnitAtFocus = function(ud) {
 };
 
 // ターン終了処理 & 次の手番のユニットに回す
-BattleView.prototype.endTurn = function(ud) {
+BattleView.prototype.endTurn = function(ud, ev) {
     var nowFocus = this.getUnitAtFocus(ud);
     if (nowFocus != null) {
         if (nowFocus.isPoison) {
@@ -1387,6 +1390,30 @@ BattleView.prototype.endTurn = function(ud) {
                 }
                 nowFocus.sp = 0;
             }
+        }
+        if (!nowFocus.hasSkill(ud, SKILL_AKURO)) {
+            // 以降、止まったマスによるデメリット発生
+            var chikeiType = this.battleFields[nowFocus.side][nowFocus.x][nowFocus.y].type;
+            switch(chikeiType) {
+                case BATTLE_FIELD_FARM:arguments
+                if (nowFocus.side == BATTLE_MIKATA) {
+                    var penalty = nowFocus.lv * BATTLE_FIELD_FARM_RATE;                    
+                    ev.money = Math.max(ev.money - penalty, 0);
+                    CommonView.addMessage("「こらー、畑を荒らすなー」", 90);
+                    CommonView.addMessage("罰金" + penalty + "ウォッツを支払った", 90);
+                }
+                break;
+                case BATTLE_FIELD_SNOW:arguments
+                if (nowFocus.side == BATTLE_MIKATA) {
+                    nowFocus.sp = Math.max(nowFocus.sp - BATTLE_FIELD_SNOW_RATE, 0);
+                    CommonView.addMessage(nowFocus.namae + "は気力を奪われた", 90);
+                }
+                break;
+            }
+        }
+        if (nowFocus.hasSkill(ud, SKILL_JIDOU)) {
+            var recoverHP = Math.floor(nowFocus.mhpObj.now * SKILL_JIDOU_RATE);
+            nowFocus.hp = Math.min(nowFocus.hp + recoverHP, nowFocus.mhpObj.now);
         }
     }
     
@@ -1736,6 +1763,7 @@ BattleView.prototype.clk = function(mouseX, mouseY, ev, ud, itemMap) {
         var searchX = Math.floor((mouseX - BATTLEVIEW_MIKATA_X) / BATTLEVIEW_SIZE);
         var searchY = Math.floor((mouseY - BATTLEVIEW_MIKATA_Y) / BATTLEVIEW_SIZE);
         this.fieldMsg = this.battleFields[BATTLE_MIKATA][2 - searchX][searchY].explainMsg();
+        this.fieldMsg2 = this.battleFields[BATTLE_MIKATA][2 - searchX][searchY].text;
         // ユニット移動もここで行う
         if (this.turn == BATTLEVIEW_TURN_MIKATA && this.commandState == BATTLEVIEW_COMSTATE_MOVE) {
             var moveCost = this.checkMoveCost(BATTLE_MIKATA, focusUnit.x, focusUnit.y, BATTLE_MIKATA, 2 - searchX, searchY);
@@ -1759,6 +1787,7 @@ BattleView.prototype.clk = function(mouseX, mouseY, ev, ud, itemMap) {
         var searchX = Math.floor((mouseX - BATTLEVIEW_TEKI_X) / BATTLEVIEW_SIZE);
         var searchY = Math.floor((mouseY - BATTLEVIEW_TEKI_Y) / BATTLEVIEW_SIZE);
         this.fieldMsg = this.battleFields[BATTLE_TEKI][searchX][2 - searchY].explainMsg();
+        this.fieldMsg2 = this.battleFields[BATTLE_TEKI][searchX][2 - searchY].text;
     }
     
     if (this.turn == BATTLEVIEW_TURN_MIKATA && this.commandState == BATTLEVIEW_COMSTATE_ACT_WEAPCHOICE) {
@@ -1895,7 +1924,7 @@ BattleView.prototype.clk = function(mouseX, mouseY, ev, ud, itemMap) {
                     }
                 break;
                 case BATTLEVIEW_COMMANDNUM_WAIT:arguments//待機
-                    this.endTurn(ud);
+                    this.endTurn(ud, ev);
                     return -1;
                 break;
                 case BATTLEVIEW_COMMANDNUM_CHANGE:arguments//交代

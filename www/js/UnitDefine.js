@@ -918,16 +918,18 @@ UnitDefine.prototype.calcBattleStr = function(eqType, eqSyurui) {
     }
     var equip = new ItemDefine();
     ItemDefine.init(eqType, eqSyurui, equip);
-    // orgValue:ゲームで使用する値
-    // amari:orgValueの小数点1桁(ゲーム内非表示、戦闘では使用しない)
-    // up1, up2, up3は÷10した値が実際の成長率で、orgValueとamariに加算される
+    
+    var jukurenAdj = 1;
+    if (this.hasSkill(ud, SKILL_JUKUREN)) {
+        jukurenAdj += SKILL_JUKUREN_RATE;
+    }
     return {namae: equip.namae,
            crt: this.crt + equip.crt,
-           str: this.strObj.now + equip.str,
-           mag: this.magObj.now + equip.mag,
+           str: this.strObj.now + Math.floor(equip.str * jukurenAdj),
+           mag: this.magObj.now + Math.floor(equip.mag * jukurenAdj),
            def: this.defObj.now + equip.def,
            mdf: this.mdfObj.now + equip.mdf,
-           hit: this.hitObj.now + equip.hit,
+           hit: this.hitObj.now + Math.floor(equip.hit * jukurenAdj),
            avo: this.avoObj.now + equip.avo,
            rat: this.rat + equip.rat,
            rdf: this.rdf + equip.rdf,
@@ -979,6 +981,10 @@ UnitDefine.calcRange = function(attacker, ud, attackerEQType, attackerEQSyurui) 
 UnitDefine.calcHit = function(attacker, defender, ud, attackerEQType, attackerEQSyurui) {
     // 味方は気力0なら問答無用で敵の攻撃全命中
     if (defender.side == BATTLE_MIKATA && defender.sp == 0) {
+        return 100;
+    }
+    // 避けえぬ死
+    if (attacker.hasSkill(ud, SKILL_DEATH) && defender.hp < SKILL_DEATH_RATE * defender.mhpObj.now) {
         return 100;
     }
     var attackerBattleStatus = attacker.calcBattleStr(attackerEQType, attackerEQSyurui);// 装備品込みのステータスを取得
@@ -1057,6 +1063,9 @@ UnitDefine.calcBasicDamage = function(attacker, defender, ud, attackerEQType, at
     }
     if (defender.hasSkill(ud, SKILL_OTOKO) && range <= 1) {
         hitDamage = Math.floor((1 - SKILL_OTOKO_RATE) * hitDamage);
+    }
+    if (defender.hasSkill(ud, SKILL_SYOMEN) && attacker.x != defender.x) {
+        hitDamage = Math.floor((1 - SKILL_SYOMEN_RATE) * hitDamage);
     }
     return Math.floor(Math.max(0, hitDamage));
 }

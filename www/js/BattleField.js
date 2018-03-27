@@ -3,7 +3,9 @@ var BattleField = function() {
     this.x = 0;// field.jpg上でのX位置
     this.y = 0;// field.jpg上でのY位置
     this.side = 0;
+    this.type = "";
     this.namae = ""//名前
+    this.text = ""//悪影響
     this.def = 0;//防御効果
     this.weap = 0;//武器レベル
     this.move = 0;//移動コスト
@@ -51,6 +53,7 @@ BattleField.prototype.init = function(type) {
         break;
         case BATTLE_FIELD_SNOW:arguments
             this.namae = "雪原";
+            this.text = "ターン終了時気力-" + BATTLE_FIELD_SNOW_RATE;
             this.x = 64;
             this.y = 64;
             this.def = 20;
@@ -80,6 +83,7 @@ BattleField.prototype.init = function(type) {
         break;
         case BATTLE_FIELD_FARM:arguments
             this.namae = "畑　";
+            this.text = "ターン終了時レベル×" + BATTLE_FIELD_FARM_RATE + "の罰金";
             this.x = 64;
             this.y = 2 * 64;
             this.def = 20;

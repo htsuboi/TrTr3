@@ -50,6 +50,14 @@ SkillDefine.getSkillName = function(skill) {
         return "瘴気";
     case SKILL_MANSHIN:arguments
         return "慢心狩り";
+    case SKILL_SYOMEN:arguments
+        return "正面対決";
+    case SKILL_JUKUREN:arguments
+        return "武器熟練";
+    case SKILL_DEATH:arguments
+        return "避けえぬ死";
+    case SKILL_JIDOU:arguments
+        return "自動回復";
     default:arguments  
         return "";
     }
@@ -87,8 +95,9 @@ SkillDefine.getMessage = function(skill) {
         skillTxt.push("ダメージの" + SKILL_SYONETSU_RATE + "%をターゲット以外の");
         skillTxt.push("敵に与える(トドメ不可)");
         break;
-    /*case SKILL_AKURO:arguments
-        return "悪路踏破";*/
+    case SKILL_AKURO:arguments
+        skillTxt.push("止まった地形の悪影響を受けない");
+        break;
     case SKILL_TAIEN:arguments
         skillTxt.push("HPが2以上あれば");
         skillTxt.push("射程4以上の攻撃で死なない");
@@ -134,6 +143,18 @@ SkillDefine.getMessage = function(skill) {
         break;
     case SKILL_MANSHIN:arguments
         skillTxt.push("気力が全快の敵に基本ダメージ+" + (100 * SKILL_MANSHIN_RATE) + "%");
+        break;
+    case SKILL_SYOMEN:arguments
+        skillTxt.push("正面以外の敵からの基本ダメージを" + (100 * SKILL_SYOMEN_RATE) + "%減");
+        break;
+    case SKILL_JUKUREN:arguments
+        skillTxt.push("武器の命中と威力+" + (100 * SKILL_JUKUREN_RATE) + "%");
+        break;
+    case SKILL_DEATH:arguments
+        skillTxt.push("HP" + (100 * SKILL_DEATH_RATE) + "%未満の敵に攻撃必中");
+        break;
+    case SKILL_JIDOU:arguments
+        skillTxt.push("ターン終了時HPが" + (100 * SKILL_JIDOU_RATE) + "%回復");
         break;
     default:arguments  
         break;
@@ -186,6 +207,12 @@ SkillDefine.getSkillCost = function(skill) {
         return 2;
     case SKILL_AKIRA:arguments
         return 2;
+    case SKILL_SYOMEN:arguments
+        return 1;
+    case SKILL_JUKUREN:arguments
+        return 2;
+    case SKILL_DEATH:arguments
+        return 1;
     default:arguments  
         return 0;
     }

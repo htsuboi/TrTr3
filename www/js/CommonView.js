@@ -345,7 +345,7 @@ CommonView.addTutorial = function(tutorialID, onlyFirst) {
 }
 
 // BattleView, EventView双方で使用するためここで記述
-CommonView.unitMsg = function (u, ctxFlip, maxCounter, counter, focusUnit, isNoAdjust, isFace, isBattleView, ev) {
+CommonView.unitMsg = function (u, ctxFlip, maxCounter, counter, focusUnit, isNoAdjust, isFace, isBattleView, ev, bv) {
     var x = (isBattleView ? BATTLEVIEW_UNITTXT_X : EVENTVIEW_UNITTXT_X);
     var y = (isBattleView ? BATTLEVIEW_UNITTXT_Y : EVENTVIEW_UNITTXT_Y);
     var w = (isBattleView ? BATTLEVIEW_UNITTXT_W : EVENTVIEW_UNITTXT_W);
@@ -358,16 +358,16 @@ CommonView.unitMsg = function (u, ctxFlip, maxCounter, counter, focusUnit, isNoA
     ctxFlip.font = "11px 'MS Pゴシック'";
     var battleStatus = u.calcBattleStr();// 装備品込みのステータスと装備名を取得
     if (isNoAdjust) {
-        // なにも装備しないステータス
+        // なにも装備しないステータス(EventViewからコールされた場合こちら)
     } else if (focusUnit == null) {
         // 上記以外でfocusUnit == nullはユニット逃亡中など非常に異例なので、なにも表示しなくていい
         return;
-    } else if (focusUnit.x == u.x && (this.commandState == BATTLEVIEW_COMSTATE_ACT_WEAPCHOICE || this.commandState == BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE)) {
+    } else if (focusUnit.equalUnit(u) && (bv.commandState == BATTLEVIEW_COMSTATE_ACT_WEAPCHOICE || bv.commandState == BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE)) {
         // 武器選択中/ターゲット選択中の手番ユニットのみ、実装備武器でなく「装備予定武器」を装備したステータス表示
-        if (this.tempEqSyurui == -1) {
+        if (bv.tempEqSyurui == -1) {
             // 表示中の武器タイプで、装備可能なアイテムすべて非所持→現在の装備品のステータスを出す
         } else {
-            battleStatus = u.calcBattleStr(this.tempEqTypeForEquip, this.tempEqSyurui);
+            battleStatus = u.calcBattleStr(bv.tempEqTypeForEquip, bv.tempEqSyurui);
         }
     }
     
