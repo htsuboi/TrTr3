@@ -276,13 +276,13 @@ CommonView.paintMessage = function(ctxFlip) {
     }
     ctxFlip.fillText(txt, ALLVIEW_TUTORIALFLAG_X, ALLVIEW_TUTORIALFLAG_Y + 10);
 
-    ctxFlip.fillStyle = 'rgb(127, 127, 127)';
+    /*ctxFlip.fillStyle = 'rgb(127, 127, 127)';
     ctxFlip.fillRect(ALLVIEW_TUTORIALFLAG_X - 1, ALLVIEW_TUTORIALFLAG_Y_PRINT - 1, ALLVIEW_TUTORIALFLAG_W + 2, ALLVIEW_TUTORIALFLAG_H + 2);
     ctxFlip.fillStyle = 'rgb(255, 255, 255)';
     ctxFlip.fillRect(ALLVIEW_TUTORIALFLAG_X, ALLVIEW_TUTORIALFLAG_Y_PRINT, ALLVIEW_TUTORIALFLAG_W, ALLVIEW_TUTORIALFLAG_H);
     ctxFlip.font = "11px 'MS Pゴシック'";
     ctxFlip.fillStyle = 'rgb(0, 0, 0)';
-    ctxFlip.fillText("説明表示", ALLVIEW_TUTORIALFLAG_X, ALLVIEW_TUTORIALFLAG_Y_PRINT + 10);
+    ctxFlip.fillText("説明表示", ALLVIEW_TUTORIALFLAG_X, ALLVIEW_TUTORIALFLAG_Y_PRINT + 10);*/
 }
 
 // 一定時間で消える情報連絡

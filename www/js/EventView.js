@@ -1173,6 +1173,16 @@ EventView.prototype.setFace = function(faceId) {
             this.py = 0 * 320;
             this.pSyurui = BATTLE_PSYURUI_PC;
             break;
+        case UNIT_SYURUI_TATEO:arguments
+            this.px = 0 * 256;
+            this.py = 1 * 320;
+            this.pSyurui = BATTLE_PSYURUI_PC;
+            break;
+        case UNIT_SYURUI_FIGHTER:arguments
+            this.px = 2 * 256;
+            this.py = 0 * 320;
+            this.pSyurui = BATTLE_PSYURUI_PC;
+            break;
         case UNIT_SYURUI_YOUNGMAN:arguments
             this.px = 0 * 256;
             this.py = 0 * 320;
@@ -1198,8 +1208,18 @@ EventView.prototype.setFace = function(faceId) {
             this.py = 1 * 320;
             this.pSyurui = BATTLE_PSYURUI_NPC;
             break;
+        case UNIT_SYURUI_IINA:arguments
+            this.px = 0 * 256;
+            this.py = 2 * 320;
+            this.pSyurui = BATTLE_PSYURUI_NPC;
+            break;
         case UNIT_SYURUI_S1BOSS:arguments
             this.px = 1 * 256;
+            this.py = 0 * 320;
+            this.pSyurui = BATTLE_PSYURUI_BOSS;
+            break;
+        case UNIT_SYURUI_S2BOSS:arguments
+            this.px = 0 * 256;
             this.py = 0 * 320;
             this.pSyurui = BATTLE_PSYURUI_BOSS;
             break;

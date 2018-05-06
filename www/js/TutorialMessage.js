@@ -5,7 +5,7 @@ TutorialMessage.getMessage = function(tutorialID, message) {
     switch(tutorialID) {
         case COMMONVIEW_TUTORIALID_GSTART:arguments
             CommonView.redPoint({x: ALLVIEW_TUTORIALFLAG_X, y: ALLVIEW_TUTORIALFLAG_Y, w: ALLVIEW_TUTORIALFLAG_W, h: ALLVIEW_TUTORIALFLAG_H});
-            CommonView.bluePoint({x: ALLVIEW_TUTORIALFLAG_X, y: ALLVIEW_TUTORIALFLAG_Y_PRINT, w: ALLVIEW_TUTORIALFLAG_W, h: ALLVIEW_TUTORIALFLAG_H});
+            //CommonView.bluePoint({x: ALLVIEW_TUTORIALFLAG_X, y: ALLVIEW_TUTORIALFLAG_Y_PRINT, w: ALLVIEW_TUTORIALFLAG_W, h: ALLVIEW_TUTORIALFLAG_H});
             message.push("【はじめに】");
             message.push(" Tri Trust3をプレイしていただき");
             message.push("ありがとうございます。");
@@ -14,8 +14,8 @@ TutorialMessage.getMessage = function(tutorialID, message) {
             message.push("このようなチュートリアルが表示されます。");
             message.push("(右上の「初回は説明」をタッチすると");
             message.push("この機能のON/OFFが切り替わります。)");
-            message.push(" また、右上の「説明表示」をタッチしても");
-            message.push("同様のチュートリアルを確認できます。");
+            //message.push(" また、右上の「説明表示」をタッチしても");
+            //message.push("同様のチュートリアルを確認できます。");
             break;
         case COMMONVIEW_TUTORIALID_EVENT:arguments
             CommonView.tutorialPoint({x: -1, y: -1, w: -1, h: 150});

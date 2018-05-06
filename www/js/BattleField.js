@@ -86,8 +86,8 @@ BattleField.prototype.init = function(type) {
             this.text = "ターン終了時レベル×" + BATTLE_FIELD_FARM_RATE + "の罰金";
             this.x = 64;
             this.y = 2 * 64;
-            this.def = 20;
-            this.weap = 9;
+            this.def = 25;
+            this.weap = 3;
         break;
         case BATTLE_FIELD_LAKE:arguments
             this.namae = "湖　";

@@ -277,7 +277,7 @@ FieldDefine.prototype.init = function(position) {
             this.ofY = 121;
             this.dfY = 332;
         break;
-        case EVENTVIEW_MAP_STAGE2_BOSS:arguments
+        case 30:arguments
             this.text = "2-11";
             // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
             this.ofMap = "bheheeaee";
@@ -288,6 +288,151 @@ FieldDefine.prototype.init = function(position) {
             this.fieldState = EVENTVIEW_FIELD_TEKI;
             this.ofY = 123;
             this.dfY = 211;
+        break;
+        case 31:arguments
+            this.text = "2-12";
+            // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
+            this.ofMap = "abjjicbac";
+            this.dfMap = "ccdjahbaa";
+            this.x = EVENTVIEW_STAGE2_X + 6 * EVENTVIEW_MAP_INTERVAL;
+            this.y = EVENTVIEW_STAGE2_Y;
+            this.stage = 1;
+            this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.ofY = 312;
+            this.dfY = 212;
+        break;
+        case EVENTVIEW_MAP_STAGE2_BOSS:arguments
+            this.text = "2-13";
+            // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
+            this.ofMap = "abhajcjab";
+            this.dfMap = "habajhhih";
+            this.x = EVENTVIEW_STAGE2_X + 7 * EVENTVIEW_MAP_INTERVAL;
+            this.y = EVENTVIEW_STAGE2_Y;
+            this.stage = 1;
+            this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.ofY = 321;
+            this.dfY = 231;
+            this.isBoss = true;
+        break;
+        case 35:arguments
+            this.text = "3-1";
+            // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
+            this.ofMap = "ahihjiabi";
+            this.dfMap = "iajdicbbh";
+            this.x = EVENTVIEW_STAGE3_X;
+            this.y = EVENTVIEW_STAGE3_Y;
+            this.stage = 2;
+            this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.ofY = 122;
+            this.dfY = 222;
+        break;
+        case 36:arguments
+            this.text = "3-2";
+            // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
+            this.ofMap = "jabcccbij";
+            this.dfMap = "aacbbcjij";
+            this.x = EVENTVIEW_STAGE3_X;
+            this.y = EVENTVIEW_STAGE3_Y + 1 * EVENTVIEW_MAP_INTERVAL;
+            this.stage = 2;
+            this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.ofY = 312;
+            this.dfY = 131;
+        break;
+        case 37:arguments
+            this.text = "3-3";
+            // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
+            this.ofMap = "acbbhbjji";
+            this.dfMap = "bahhbchcc";
+            this.x = EVENTVIEW_STAGE3_X;
+            this.y = EVENTVIEW_STAGE3_Y + 2 * EVENTVIEW_MAP_INTERVAL;
+            this.stage = 2;
+            this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.ofY = 111;
+            this.dfY = 333;
+        break;
+        case 38:arguments
+            this.text = "3-4";
+            // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
+            this.ofMap = "iibiaaicc";
+            this.dfMap = "idaabjbaa";
+            this.x = EVENTVIEW_STAGE3_X - 1 * EVENTVIEW_MAP_INTERVAL;
+            this.y = EVENTVIEW_STAGE3_Y + 2 * EVENTVIEW_MAP_INTERVAL;
+            this.stage = 2;
+            this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.ofY = 311;
+            this.dfY = 223;
+        break;
+        case 39:arguments
+            this.text = "3-5";
+            // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
+            this.ofMap = "gijbigjgb";
+            this.dfMap = "jigacajcj";
+            this.x = EVENTVIEW_STAGE3_X - 1 * EVENTVIEW_MAP_INTERVAL;
+            this.y = EVENTVIEW_STAGE3_Y + 3 * EVENTVIEW_MAP_INTERVAL;
+            this.stage = 2;
+            this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.ofY = 212;
+            this.dfY = 121;
+        break;
+        case 40:arguments
+            this.text = "3-6";
+            // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
+            this.ofMap = "gabgagacg";
+            this.dfMap = "ajgggabcg";
+            this.x = EVENTVIEW_STAGE3_X;
+            this.y = EVENTVIEW_STAGE3_Y + 3 * EVENTVIEW_MAP_INTERVAL;
+            this.stage = 2;
+            this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.ofY = 332;
+            this.dfY = 123;
+        break;
+        case 41:arguments
+            this.text = "3-7";
+            // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
+            this.ofMap = "ajaagbbja";
+            this.dfMap = "cbbcjbcaj";
+            this.x = EVENTVIEW_STAGE3_X + 1 * EVENTVIEW_MAP_INTERVAL;
+            this.y = EVENTVIEW_STAGE3_Y + 2 * EVENTVIEW_MAP_INTERVAL;
+            this.stage = 2;
+            this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.ofY = 221;
+            this.dfY = 122;
+        break;
+        case 42:arguments
+            this.text = "3-8";
+            // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
+            this.ofMap = "cchcihjbh";
+            this.dfMap = "haaahbijh";
+            this.x = EVENTVIEW_STAGE3_X + 2 * EVENTVIEW_MAP_INTERVAL;
+            this.y = EVENTVIEW_STAGE3_Y + 2 * EVENTVIEW_MAP_INTERVAL;
+            this.stage = 2;
+            this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.ofY = 222;
+            this.dfY = 322;
+        break;
+        case 43:arguments
+            this.text = "3-9";
+            // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
+            this.ofMap = "bghjhbbhg";
+            this.dfMap = "gbhcghhgh";
+            this.x = EVENTVIEW_STAGE3_X + 2 * EVENTVIEW_MAP_INTERVAL;
+            this.y = EVENTVIEW_STAGE3_Y + 1 * EVENTVIEW_MAP_INTERVAL;
+            this.stage = 2;
+            this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.ofY = 112;
+            this.dfY = 133;
+        break;
+        case EVENTVIEW_MAP_STAGE3_BOSS:arguments
+            this.text = "3-10";
+            // a草 b森 c道 d町 e海 f雪 g砂 h山 i川 j畑 k湖
+            this.ofMap = "cjgcjagbd";
+            this.dfMap = "aagcgbbbg";
+            this.x = EVENTVIEW_STAGE3_X + 3 * EVENTVIEW_MAP_INTERVAL;
+            this.y = EVENTVIEW_STAGE3_Y + 1 * EVENTVIEW_MAP_INTERVAL;
+            this.stage = 2;
+            this.fieldState = EVENTVIEW_FIELD_TEKI;
+            this.ofY = 112;
+            this.dfY = 133;
             this.isBoss = true;
         break;
         default:arguments
@@ -367,11 +512,48 @@ FieldDefine.prototype.createEnemy = function(ud) {
             u.initTeki(ud, UNIT_SYURUI_S1BOSS, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 5, 0, 0, 0, ITEM_TYPE_SWORD, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_FIRST, 1.1, 0.5, -1);
             ud.push(u);
             var u2 = new UnitDefine();
-            u2.initTeki(ud, UNIT_SYURUI_SPEAR, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 3, 0, 0, 0, ITEM_TYPE_SPEAR, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_BACK, 1.6, -1, -1);
+            u2.initTeki(ud, UNIT_SYURUI_SPEAR, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 4, 0, 0, 0, ITEM_TYPE_SPEAR, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_BACK, 1.6, -1, -1);
             ud.push(u2);
             var u3 = new UnitDefine();
             u3.initTeki(ud, UNIT_SYURUI_BOW, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 4, 0, 0, 0, ITEM_TYPE_BOW, 0, BATTLEAI_FM_FRONT + BATTLEAI_AT_MINHP, 1.3, -1, -1);
             ud.push(u3);
+        break;
+        case 20:arguments
+            var u = new UnitDefine();
+            u.initTeki(ud, UNIT_SYURUI_POISON, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 5, SKILL_KEIKAI, 0, 0, ITEM_TYPE_KNIFE, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM + BATTLEAI_SM_BACK, 1.1, 0.2, -1);
+            ud.push(u);
+        break;
+        case 21:arguments
+            var u = new UnitDefine();
+            u.initTeki(ud, UNIT_SYURUI_STUN, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 6, SKILL_HIGHHIT, 0, 0, ITEM_TYPE_SWORD, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM, 1.5, 0.1, -1);
+            ud.push(u);
+        break;
+        case 22:arguments
+            var u = new UnitDefine();
+            u.initTeki(ud, UNIT_SYURUI_SHIELD, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 6, 0, 0, 0, ITEM_TYPE_SHIELD, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM, 1.1, -1, -1);
+            ud.push(u);
+            var u2 = new UnitDefine();
+            u2.initTeki(ud, UNIT_SYURUI_PUNCH, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 5, SKILL_HIGHHIT, SKILL_HIGHAVO, SKILL_YOROI, ITEM_TYPE_PUNCH, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK + BATTLEAI_SM_BACK, 1.2, 0.5, -1);
+            ud.push(u2);
+        break;
+        case 23:arguments
+            var u = new UnitDefine();
+            u.initTeki(ud, UNIT_SYURUI_BOW, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 6, SKILL_SURI, 0, 0, ITEM_TYPE_BOW, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_FRONT, 1.1, -1, -1);
+            ud.push(u);
+            var u2 = new UnitDefine();
+            u2.initTeki(ud, UNIT_SYURUI_POISON, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 5, SKILL_KAMAITACHI, 0, 0, ITEM_TYPE_SWORD, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_MINHP + BATTLEAI_SM_BACK, 1.2, 0.2, -1);
+            ud.push(u2);
+            var u3 = new UnitDefine();
+            u3.initTeki(ud, UNIT_SYURUI_MAGIC, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 6, SKILL_KENJITSU, SKILL_TAMASHII, 0, ITEM_TYPE_WATER, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_BACK, 1.1, 0.8, -1);
+            ud.push(u3);
+        break;
+        case 24:arguments
+            var u = new UnitDefine();
+            u.initTeki(ud, UNIT_SYURUI_SWORD, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 6, SKILL_KEIKAI, SKILL_KYOEN, 0, ITEM_TYPE_BOW, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM, 1.1, 0.1, ITEM_SYURUI_KOUSUI);
+            ud.push(u);
+            var u2 = new UnitDefine();
+            u2.initTeki(ud, UNIT_SYURUI_SPEAR, BATTLE_TEKI, BATTLE_DEFENCE, this.position, 7, SKILL_YOROI, 0, 0, ITEM_TYPE_SPEAR, 1, BATTLEAI_FM_FRONT + BATTLEAI_AT_MAXDM + BATTLEAI_SM_BACK, 1.2, 0.8, -1);
+            ud.push(u2);
         break;
         default:arguments
             // この番号にマップなし

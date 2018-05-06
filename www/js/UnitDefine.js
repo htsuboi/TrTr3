@@ -732,6 +732,12 @@ UnitDefine.prototype.initNamePaint = function(unitSyurui) {
             this.px = 1 * 256;
             this.py = 0 * 320;
         break;
+        case UNIT_SYURUI_S2BOSS:arguments
+            this.namae = UNIT_NAMAE_S2BOSS;
+            this.pSyurui = BATTLE_PSYURUI_BOSS;
+            this.px = 0 * 256;
+            this.py = 0 * 320;
+        break;
         // PC
         case UNIT_SYURUI_PRINCESS:arguments
             this.namae = UNIT_NAMAE_PRINCESS; 
