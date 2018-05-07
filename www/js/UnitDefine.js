@@ -1316,6 +1316,9 @@ UnitDefine.prototype.hasPoison = function(ud) {
     if (ItemDefine.hasPoison(this.eqType, this.eqSyurui)) {
         return true;
     }
+    if (this.hasSkill(ud, SKILL_POISON)) {
+        return true;
+    }
     return false;
 }
 
@@ -1324,6 +1327,9 @@ UnitDefine.prototype.hasStun = function(ud) {
         return true;
     }
     if (ItemDefine.hasStun(this.eqType, this.eqSyurui)) {
+        return true;
+    }
+    if (this.hasSkill(ud, SKILL_STUN)) {
         return true;
     }
     return false;

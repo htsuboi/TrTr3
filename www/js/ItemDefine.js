@@ -421,26 +421,50 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
             case ITEM_SYURUI_KOUCHA:arguments
                 idef.namae = "体力の紅茶";
                 idef.text = "1人のHPを全回復する";
-                idef.price = 180;
+                idef.price = 25;
                 idef.alwaysBuy = true;
             break;
             case ITEM_SYURUI_KOUSUI:arguments
                 idef.namae = "気力の香水";
                 idef.text = "1人の気力を全回復する";
-                idef.price = 180;
+                idef.price = 40;
                 idef.alwaysBuy = true;
             break;
             case ITEM_SYURUI_JIAI:arguments
                 idef.namae = "新薬「慈愛」";
                 idef.text = "全員のHPを全回復する";
-                idef.price = 180;
+                idef.price = 80;
                 idef.alwaysBuy = true;
             break;
             case ITEM_SYURUI_MUJIN:arguments
                 idef.namae = "劇薬「無尽活力」";
                 idef.text = "全員の気力を全回復する";
-                idef.price = 180;
+                idef.price = 110;
                 idef.alwaysBuy = true;
+            break;
+            case ITEM_SYURUI_INOCHI:arguments
+                idef.namae = "命のダイヤ";
+                idef.text = "最大HP + 7";
+            break;
+            case ITEM_SYURUI_CHIKARA:arguments
+                idef.namae = "力のルビー";
+                idef.text = "力、魔力 + 5";
+            break;
+            case ITEM_SYURUI_MAMORI:arguments
+                idef.namae = "守りのサファイア";
+                idef.text = "守備、魔防 + 3";
+            break;
+            case ITEM_SYURUI_SHUCHU:arguments
+                idef.namae = "集中のエメラルド";
+                idef.text = "命中、回避 + 4";
+            break;
+            case ITEM_SYURUI_SEIKON:arguments
+                idef.namae = "精根のアメシスト";
+                idef.text = "最大気力 + 2";
+            break;
+            case ITEM_SYURUI_KOUUN:arguments
+                idef.namae = "幸運の原石";
+                idef.text = "幸運、クリティカル率少し上昇";
             break;
         }
         break;

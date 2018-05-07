@@ -105,10 +105,12 @@ SkillDefine.getMessage = function(skill) {
     case SKILL_KIYOME:arguments
         skillTxt.push("敵の毒と麻痺を防ぐ");
         break;
-    /*case SKILL_POISON:arguments
-        return "毒の呪い";
+    case SKILL_POISON:arguments
+        skillTxt.push("攻撃に毒を付加");
+        break;
     case SKILL_STUN:arguments
-        return "呪縛の闇";*/
+        skillTxt.push("攻撃に麻痺を付加");
+        break;
     case SKILL_TAMASHII:arguments
         var minusPoint = 2;
         skillTxt.push("攻撃ヒット時、気力を" + minusPoint + "奪う");

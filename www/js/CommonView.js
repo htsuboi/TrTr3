@@ -198,8 +198,8 @@ CommonView.paintMessage = function(ctxFlip) {
     if (CommonView.printWarnFlag() == true) {// 警告メッセージを表示すべき
         var MESSAGE_X = 20;
         var MESSAGE_Y = 100;
-        var MESSAGE_W = 310;
-        var MESSAGE_H = 150;
+        var MESSAGE_W = 320;
+        var MESSAGE_H = Math.max(150, 20 * (warnMessages.length + 1) + 5);
         ctxFlip.fillStyle = 'rgb(239, 0, 0)';
         ctxFlip.fillRect(MESSAGE_X - 1, MESSAGE_Y - 1, MESSAGE_W + 3, MESSAGE_H + 3);
         ctxFlip.fillStyle = 'rgb(255, 255, 255)';
@@ -311,8 +311,8 @@ CommonView.addWarn = function(addWarn) {
     CommonView.paintCounter(0);
     var warnMessages = CommonView.warns();
     warnMessages.push(addWarn);
-    // メッセージが7個以上になったら最も古いものを削除
-    if (warnMessages.length > 6) {
+    // メッセージが11個以上になったら最も古いものを削除
+    if (warnMessages.length > 10) {
         warnMessages.shift();
     }
     CommonView.printWarnFlag(true);

@@ -331,6 +331,34 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
                         this.battleMsg[tempIndex++] = "全員の気力が全快した。";
                         UnitDefine.allTargetSyori(ud, ITEM_SYURUI_MUJIN, this);
                         break;
+                    case ITEM_SYURUI_INOCHI:arguments
+                        this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "の最大HPが上昇。";
+                        this.tempTargetUnit.mhpObj.now += 7;
+                        break;
+                    case ITEM_SYURUI_CHIKARA:arguments
+                        this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "の力、魔力が上昇。";
+                        this.tempTargetUnit.strObj.now += 5;
+                        this.tempTargetUnit.magObj.now += 5;
+                        break;
+                    case ITEM_SYURUI_MAMORI:arguments
+                        this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "の守備、魔防が上昇。";
+                        this.tempTargetUnit.defObj.now += 3;
+                        this.tempTargetUnit.mdfObj.now += 3;
+                        break;
+                    case ITEM_SYURUI_SHUCHU:arguments
+                        this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "の命中、回避が上昇。";
+                        this.tempTargetUnit.hitObj.now += 4;
+                        this.tempTargetUnit.avoObj.now += 4;
+                        break;
+                    case ITEM_SYURUI_SEIKON:arguments
+                        this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "の最大気力が上昇。";
+                        this.tempTargetUnit.msp += 2;
+                        break;
+                    case ITEM_SYURUI_KOUUN:arguments
+                        this.battleMsg[tempIndex++] = this.tempTargetUnit.namae + "の運が上昇。";
+                        this.tempTargetUnit.luck += 1;
+                        this.tempTargetUnit.crt += 2;
+                        break;
                     }
                 }
                 if (this.tempEqTypeForEquip == ITEM_TYPE_NOTHING) {
@@ -717,6 +745,16 @@ BattleView.prototype.paint = function (ud, itemMap, ev) {
             var i = 0;
             ctxFlip.fillText("戦闘から逃げます。", BATTLEVIEW_BATTLETXT_X, BATTLEVIEW_BATTLETXT_Y + 20 + 12 * i++);
             ctxFlip.fillText("よろしければ「決定」をタッチしてください。", BATTLEVIEW_BATTLETXT_X, BATTLEVIEW_BATTLETXT_Y + 20 + 12 * i++);
+        }
+        if (this.turn == BATTLEVIEW_TURN_MIKATA && (this.commandState == BATTLEVIEW_COMSTATE_ACT_WEAPCHOICE ||
+            this.commandState == BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE) && this.cantOpCounter == 0) {
+            // アイテム文を戦闘メッセージウィンドウに表示
+            var tempItem = new ItemDefine();
+            ItemDefine.init(this.tempEqTypeForEquip, this.tempEqSyurui, tempItem);
+            
+            ctxFlip.fillStyle = 'rgb(0, 0, 0)';
+            ctxFlip.font = "11px 'MS Pゴシック'";
+            ctxFlip.fillText(tempItem.text, BATTLEVIEW_BATTLETXT_X, BATTLEVIEW_BATTLETXT_Y + 20);
         }
         
         
@@ -1136,9 +1174,9 @@ BattleView.prototype.paint = function (ud, itemMap, ev) {
                         if (itemCost == 999) {
                             ctxFlip.fillText("×", BATTLEVIEW_WEAP_X + 90, textY);
                         } else {
-                            ctxFlip.fillText("気力"  + itemCost, BATTLEVIEW_WEAP_X + 90, textY);
+                            ctxFlip.fillText("気力"  + itemCost, BATTLEVIEW_WEAP_X + 130, textY);
                         }
-                        ctxFlip.fillText(tempItemNum + "(空き"  + (tempItemNum - tempEquipNum) + ")", BATTLEVIEW_WEAP_X + 80, textY + 14);
+                        ctxFlip.fillText(tempItemNum + "(空き"  + (tempItemNum - tempEquipNum) + ")", BATTLEVIEW_WEAP_X + 85, textY);
                         textY += BATTLEVIEW_WEAP_INTERVAL;
                     }
                 }

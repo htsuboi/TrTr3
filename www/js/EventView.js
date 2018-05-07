@@ -1049,7 +1049,6 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
         case EVENTVIEW_EVENTID_FIRST_RING:arguments
             this.pushRing(RING_KIRYOKU);
             /*this.pushRing(RING_ECO);
-            this.pushRing(RING_TAISEI);
             this.pushRing(RING_RECOVER);*/
             break;
         case EVENTVIEW_EVENTID_JOIN_JC:arguments
@@ -1064,6 +1063,19 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             var tempField = this.fieldMap.get(fieldNum);
             tempField.createEnemy(ud);
             return GAMEMODE_BATTLE;
+        case EVENTVIEW_EVENTID_STAGE2_YAKUNIN:arguments
+            this.pushRing(RING_TAISEI);
+            CommonView.addWarn("【ステータス異常について】");
+            CommonView.addWarn("　一部の兵種やスキル保持の敵は");
+            CommonView.addWarn("攻撃に毒および麻痺の効果があります。");
+            CommonView.addWarn("・毒→自ターン終了時、HPが1になる");
+            CommonView.addWarn("・麻痺→行動時「なにもしない」しか選べない");
+            CommonView.addWarn("どちらも行動時「なにもしない」選択で治ります。");
+            CommonView.addWarn("　そのような敵のHPが、最大HPと比較して");
+            CommonView.addWarn("・毒→「毒耐性」%より多い");
+            CommonView.addWarn("・麻痺→「100-麻痺耐性」%未満");
+            CommonView.addWarn("場合、ステータス異常を受けます。");
+            break;
         case EVENTVIEW_EVENTID_JOIN_THIEF:arguments
             u = new UnitDefine();
             u.initCommon(ud, UNIT_SYURUI_THIEF, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 5, SKILL_HIGHHIT, SKILL_HIGHAVO, SKILL_THIEF);
