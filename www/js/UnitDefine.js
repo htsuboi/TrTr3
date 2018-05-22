@@ -484,8 +484,8 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.mdfObj = {now:9, amari:0, up:18, upup:13, upupup:8};
             this.hitObj = {now:91, amari:0, up:32, upup:9, upupup:15};
             this.avoObj = {now:16, amari:0, up:19, upup:22, upupup:10};
-            this.weaps[ITEM_TYPE_SWORD] = 28;
-            this.weaps[ITEM_TYPE_PUNCH] = 31;
+            this.weaps[ITEM_TYPE_SWORD] = 33;
+            this.weaps[ITEM_TYPE_PUNCH] = 22;
             this.goodRing.push(RING_ATTACK);
             this.badRing.push(RING_RECOVER);
             this.badRing.push(RING_DEFENCE);
@@ -569,6 +569,33 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.goodRing.push(RING_JUKUREN);
             this.goodRing.push(RING_ATTACK);
             this.badRing.push(RING_DEFENCE);
+        break;
+        case UNIT_SYURUI_GAKUSYA:arguments
+            this.msp = 17;
+            this.crt = 6;
+            this.luck = 3;
+            this.rat = 10;//割合ダメージ
+            this.rdf = 1;//割合軽減
+            this.m1Cost = 20;//1移動コスト
+            this.m2Cost = 50;//2移動コスト
+            this.rangeCost = 220;//射程伸ばしコスト
+            this.exAtCost = 185;//再行動コスト
+            this.regPoison = 30;
+            this.regStun = 75;
+            this.mhpObj = {now:85, amari:0, up:39, upup:22, upupup:20};
+            this.strObj = {now:4, amari:0, up:5, upup:0, upupup:11};
+            this.magObj = {now:28, amari:0, up:27, upup:22, upupup:16};
+            this.defObj = {now:15, amari:0, up:20, upup:18, upupup:14};
+            this.mdfObj = {now:18, amari:0, up:23, upup:15, upupup:15};
+            this.hitObj = {now:106, amari:0, up:36, upup:24, upupup:6};
+            this.avoObj = {now:13, amari:0, up:13, upup:21, upupup:26};
+            this.weaps[ITEM_TYPE_FIRE] = 26;
+            this.weaps[ITEM_TYPE_EARTH] = 34;
+            this.weaps[ITEM_TYPE_WIND] = 4;
+            this.goodRing.push(RING_KIRYOKU);
+            this.goodRing.push(RING_DEFENCE);
+            this.goodRing.push(RING_RECOVER);
+            this.badRing.push(RING_JUKUREN);
         break;
         default:arguments
             printWarn('no UnitName unitSyurui:' + unitSyurui);
@@ -923,7 +950,7 @@ UnitDefine.prototype.calcBattleStr = function(eqType, eqSyurui) {
         printWarn('no calcBattleStr eqType:' + eqType + ' eqSyurui:' + eqSyurui);  
     }
     var equip = new ItemDefine();
-    ItemDefine.init(eqType, eqSyurui, equip);
+    ItemDefine.init(eqType, eqSyurui, -1, equip);
     
     var jukurenAdj = 1;
     if (this.hasSkill(ud, SKILL_JUKUREN)) {
@@ -948,25 +975,25 @@ UnitDefine.getCharaImg = function(pSyurui) {
     case BATTLE_PSYURUI_ZAKO:arguments
         if (typeof arguments.callee.zakoImg == 'undefined') {
             arguments.callee.zakoImg = new Image();
-            arguments.callee.zakoImg.src = "../www/img/Zako.png";
+            arguments.callee.zakoImg.src = "img/Zako.png";
         }
         return arguments.callee.zakoImg;
     case BATTLE_PSYURUI_PC:arguments
         if (typeof arguments.callee.pcImg == 'undefined') {
             arguments.callee.pcImg = new Image();
-            arguments.callee.pcImg.src = "../www/img/PC.png";
+            arguments.callee.pcImg.src = "img/PC.png";
         }
         return arguments.callee.pcImg;
     case BATTLE_PSYURUI_NPC:arguments
         if (typeof arguments.callee.npcImg == 'undefined') {
             arguments.callee.npcImg = new Image();
-            arguments.callee.npcImg.src = "../www/img/NPC.png";
+            arguments.callee.npcImg.src = "img/NPC.png";
         }
         return arguments.callee.npcImg;
     case BATTLE_PSYURUI_BOSS:arguments
         if (typeof arguments.callee.bossImg == 'undefined') {
             arguments.callee.bossImg = new Image();
-            arguments.callee.bossImg.src = "../www/img/BOSS.png";
+            arguments.callee.bossImg.src = "img/BOSS.png";
         }
         return arguments.callee.bossImg;
     default:arguments

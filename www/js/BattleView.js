@@ -180,7 +180,7 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
                        (this.turn == BATTLEVIEW_TURN_MIKATA && this.tempEqTypeForEquip != ITEM_TYPE_DOGU && this.tempEqTypeForEquip != ITEM_TYPE_NOTHING)) ?//味方の攻撃中
                        true :false);
         var tempItem = new ItemDefine();
-        ItemDefine.init(this.tempEqTypeForEquip, this.tempEqSyurui, tempItem);
+        ItemDefine.init(this.tempEqTypeForEquip, this.tempEqSyurui, -1, tempItem);
         if (this.cantOpCounter > BATTLE_BATTLEMSG_SECOND + 5) {
             this.battleMsg = ["", "", "", ""];
         }
@@ -238,7 +238,7 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
                     if (willDeath) {
                         if (this.tempTargetUnit.hasSkill(ud, SKILL_TAIEN)) {
                             var tempItem = new ItemDefine();
-                            ItemDefine.init(unitAtFocus.eqType, unitAtFocus.eqSyurui, tempItem);
+                            ItemDefine.init(unitAtFocus.eqType, unitAtFocus.eqSyurui, -1, tempItem);
                             if (tempItem.range >= 3 && this.tempTargetUnit.hp > 1) {
                                 this.tempTargetUnit.hp = 1;
                                 willDeath = false;
@@ -277,7 +277,7 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
                             if (overKillRate >= SKILL_THIEF_RATE && this.tempTargetUnit.dropItem != -1) {
                                 CommonView.addMessage(SkillDefine.getSkillName(SKILL_THIEF) + "発動!", 40);
                                 var tempItem = new ItemDefine();
-                                ItemDefine.init(ITEM_TYPE_DOGU, this.tempTargetUnit.dropItem, tempItem);
+                                ItemDefine.init(ITEM_TYPE_DOGU, this.tempTargetUnit.dropItem, -1, tempItem);
                                 // 追加保持可能数
                                 var maxNum = ev.maxBuySell(itemMap, ITEM_TYPE_DOGU, this.tempTargetUnit.dropItem, true);
                                 if (maxNum > 0) {
@@ -750,7 +750,7 @@ BattleView.prototype.paint = function (ud, itemMap, ev) {
             this.commandState == BATTLEVIEW_COMSTATE_ACT_TARGETCHOICE) && this.cantOpCounter == 0) {
             // アイテム文を戦闘メッセージウィンドウに表示
             var tempItem = new ItemDefine();
-            ItemDefine.init(this.tempEqTypeForEquip, this.tempEqSyurui, tempItem);
+            ItemDefine.init(this.tempEqTypeForEquip, this.tempEqSyurui, -1, tempItem);
             
             ctxFlip.fillStyle = 'rgb(0, 0, 0)';
             ctxFlip.font = "11px 'MS Pゴシック'";
@@ -1135,7 +1135,7 @@ BattleView.prototype.paint = function (ud, itemMap, ev) {
                         // 「なにもしない」を末尾に表示
                         tempHandEquip = {eqType:ITEM_TYPE_NOTHING, eqSyurui: 0};
                     }
-                    ItemDefine.init(tempHandEquip.eqType, tempHandEquip.eqSyurui, tempItem);
+                    ItemDefine.init(tempHandEquip.eqType, tempHandEquip.eqSyurui, -1, tempItem);
                     if (tempHandEquip.eqType == this.tempEqTypeForEquip && tempHandEquip.eqSyurui == this.tempEqSyurui) {
                         // 選択中の武器を強調
                         ctxFlip.fillStyle = 'rgb(255, 255, 0)';
@@ -1160,7 +1160,7 @@ BattleView.prototype.paint = function (ud, itemMap, ev) {
                         break;
                     } else {
                         var tempItem = new ItemDefine();
-                        ItemDefine.init(this.tempEqTypeForEquip, tempEqSyurui, tempItem);
+                        ItemDefine.init(this.tempEqTypeForEquip, tempEqSyurui, -1, tempItem);
                         var tempItemNum = itemMap.get(tempItem.namae);
                         if (tempEqSyurui == this.tempEqSyurui) {
                             // 選択中の武器を強調
@@ -2062,7 +2062,7 @@ BattleView.prototype.decide = function(mouseX, mouseY, ud, itemMap, ev) {
             }
             
             var tempItem = new ItemDefine();
-            ItemDefine.init(this.tempEqTypeForEquip, this.tempEqSyurui, tempItem);
+            ItemDefine.init(this.tempEqTypeForEquip, this.tempEqSyurui, -1, tempItem);
             var itemCost = focusUnit.calcKiryoku(tempItem, UnitDefine.calcWeapCost(focusUnit, this.battleFields, this.isOffence));
             if (focusUnit.sp < itemCost) {
                 if (itemCost == 999) {
@@ -2089,7 +2089,7 @@ BattleView.prototype.decide = function(mouseX, mouseY, ud, itemMap, ev) {
                 var equipCheck = focusUnit.isHandEquip(this.tempEqTypeForPaint, this.tempEqSyurui);
                 var handEquipSize = focusUnit.handEquip.length;
                 var tempItem = new ItemDefine();
-                ItemDefine.init(this.tempEqTypeForPaint, this.tempEqSyurui, tempItem);
+                ItemDefine.init(this.tempEqTypeForPaint, this.tempEqSyurui, -1, tempItem);
                 var allNum = itemMap.get(tempItem.namae);
                 var tempEquipNum = this.calcEquipNum(ud, this.tempEqTypeForPaint, this.tempEqSyurui);
                 if (equipCheck >= 0) {
@@ -2168,7 +2168,7 @@ BattleView.prototype.decide = function(mouseX, mouseY, ud, itemMap, ev) {
                 focusUnit.eqSyurui = this.tempEqSyurui;
                 // 武器の消費気力分気力を減らす(ここに入ったら確実に減らせる)
                 var tempItem = new ItemDefine();
-                ItemDefine.init(focusUnit.eqType, focusUnit.eqSyurui, tempItem);
+                ItemDefine.init(focusUnit.eqType, focusUnit.eqSyurui, -1, tempItem);
                 var itemCost = focusUnit.calcKiryoku(tempItem, UnitDefine.calcWeapCost(focusUnit, this.battleFields, this.isOffence));
                 focusUnit.sp -= itemCost;
                     

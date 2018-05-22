@@ -580,7 +580,7 @@ FieldDefine.getFieldImg = function() {
 FieldDefine.getWeaponsImg = function() {
     if (typeof arguments.callee.weaponsImg == 'undefined') {
         arguments.callee.weaponsImg = new Image();
-        arguments.callee.weaponsImg.src = "../www/img/weapons.png";
+        arguments.callee.weaponsImg.src = "img/weapons.png";
     }
     return arguments.callee.weaponsImg;
 };

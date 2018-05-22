@@ -297,14 +297,14 @@ TitleView.prototype.clk = function(mouseX, mouseY, ev, ud, itemMap) {
             mouseY <= TITLEVIEW_NEWGAME_Y + TITLEVIEW_NEWGAME_HEIGHT) {
             // ゲーム新規開始
             ev.gameStart();
-            //ev.init(EVENTVIEW_EVENTID_STAGE2_YAKUNIN);
+            //ev.init(EVENTVIEW_EVENTID_FIGHTER1);
             ev.init(EVENTVIEW_EVENTID_OP);
             ud.length = 0;
             itemMap.clear();
             var tempItem = new ItemDefine();
             for (var i = ITEM_TYPE_SWORD; i <= ITEM_TYPE_DOGU; i++) {
                 for (var j = 0; j < ITEM_SYURUI_MAX; j++) {
-                    ItemDefine.init(i, j, tempItem);
+                    ItemDefine.init(i, j, -1, tempItem);
                     itemMap.set(tempItem.namae, 0);
                 }
             }

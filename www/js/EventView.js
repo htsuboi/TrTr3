@@ -375,7 +375,7 @@ EventView.prototype.paint = function(ud, itemMap) {
                     break;
                 } else {
                     var tempItem = new ItemDefine();
-                    ItemDefine.init(this.tempBuySellType, tempEqSyurui, tempItem);
+                    ItemDefine.init(this.tempBuySellType, tempEqSyurui, this.turn, tempItem);
                     var tempItemNum = itemMap.get(tempItem.namae);
                     if (tempEqSyurui == this.tempBuySellSyurui) {
                         // 選択中の武器を強調
@@ -542,7 +542,7 @@ EventView.prototype.paint = function(ud, itemMap) {
                         for (var i = 0; i < ITEM_MAP_MAX; i++) {
                             if (tempField.items[i] != null) {
                                 var tempItem = new ItemDefine();
-                                ItemDefine.init(tempField.items[i].itemType, tempField.items[i].itemSyurui, tempItem);
+                                ItemDefine.init(tempField.items[i].itemType, tempField.items[i].itemSyurui, this.turn, tempItem);
                                 ctxFlip.fillText(tempItem.namae + "購入可", EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15 + interval * index);
                                 index++;
                             }
@@ -556,7 +556,7 @@ EventView.prototype.paint = function(ud, itemMap) {
         if (this.comState == EVENTVIEW_COMSTATE_BUY_WEAPCHOICE || this.comState == EVENTVIEW_COMSTATE_SELL_WEAPCHOICE){
             if (this.tempBuySellSyurui != -1) {
                 var tempItem = new ItemDefine();
-                ItemDefine.init(this.tempBuySellType, this.tempBuySellSyurui, tempItem);
+                ItemDefine.init(this.tempBuySellType, this.tempBuySellSyurui, this.turn, tempItem);
                 var interval = 20;
                 var index = 0;
                 ctxFlip.fillText("【" + tempItem.namae + "】", EVENTVIEW_TEXT_X, EVENTVIEW_TEXT_Y + 15 + interval * index++);
@@ -905,7 +905,7 @@ EventView.prototype.isSelected = function(ud, i) {
 // 最大何個まで買える/売れるか
 EventView.prototype.maxBuySell = function(itemMap, eqType, eqSyurui, isBuy) {
     var tempItem = new ItemDefine();
-    ItemDefine.init(eqType, eqSyurui, tempItem);
+    ItemDefine.init(eqType, eqSyurui, this.turn, tempItem);
     // 現在の所持数
     var tempItemNum = itemMap.get(tempItem.namae);
     // 消費アイテムは1個のみ、武器は7個まで保持可能
@@ -920,7 +920,7 @@ EventView.prototype.maxBuySell = function(itemMap, eqType, eqSyurui, isBuy) {
 EventView.getMapImg = function() {
     if (typeof arguments.callee.mapImg == 'undefined') {
         arguments.callee.mapImg = new Image();
-        arguments.callee.mapImg.src = "../www/img/map.png";
+        arguments.callee.mapImg.src = "img/map.png";
     }
     return arguments.callee.mapImg;
 };
@@ -980,9 +980,9 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             tempField.createEnemy(ud);
             
             var tempItem = new ItemDefine();
-            ItemDefine.init(ITEM_TYPE_SWORD, 0, tempItem);
+            ItemDefine.init(ITEM_TYPE_SWORD, 0, this.turn, tempItem);
             itemMap.set(tempItem.namae, 1);
-            ItemDefine.init(ITEM_TYPE_WATER, 0, tempItem);
+            ItemDefine.init(ITEM_TYPE_WATER, 0, this.turn, tempItem);
             itemMap.set(tempItem.namae, 1);
             return GAMEMODE_BATTLE;
         case EVENTVIEW_EVENTID_OP_WIN:arguments
@@ -1005,11 +1005,11 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             ud.push(u3);
             
             var tempItem = new ItemDefine();
-            ItemDefine.init(ITEM_TYPE_SWORD, 0, tempItem);
+            ItemDefine.init(ITEM_TYPE_SWORD, 0, this.turn, tempItem);
             var tempItemNum = itemMap.get(tempItem.namae);
             itemMap.set(tempItem.namae, tempItemNum + 1);
             
-            ItemDefine.init(ITEM_TYPE_SPEAR, 0, tempItem);
+            ItemDefine.init(ITEM_TYPE_SPEAR, 0, this.turn, tempItem);
             itemMap.set(tempItem.namae, 1);
             return GAMEMODE_BATTLE;
         case EVENTVIEW_EVENTID_OP_WIN2:arguments
@@ -1195,6 +1195,11 @@ EventView.prototype.setFace = function(faceId) {
             this.py = 0 * 320;
             this.pSyurui = BATTLE_PSYURUI_PC;
             break;
+        case UNIT_SYURUI_GAKUSYA:arguments
+            this.px = 0 * 256;
+            this.py = 2 * 320;
+            this.pSyurui = BATTLE_PSYURUI_PC;
+            break;
         case UNIT_SYURUI_YOUNGMAN:arguments
             this.px = 0 * 256;
             this.py = 0 * 320;
@@ -1212,6 +1217,11 @@ EventView.prototype.setFace = function(faceId) {
             break;
         case UNIT_SYURUI_BOY:arguments
             this.px = 2 * 256;
+            this.py = 0 * 320;
+            this.pSyurui = BATTLE_PSYURUI_NPC;
+            break;
+        case UNIT_SYURUI_GIRL:arguments
+            this.px = 1 * 256;
             this.py = 0 * 320;
             this.pSyurui = BATTLE_PSYURUI_NPC;
             break;
@@ -1339,7 +1349,7 @@ EventView.prototype.decide = function(mouseX, mouseY, bv, ud, itemMap) {
     if (this.comState == EVENTVIEW_COMSTATE_BUY_WEAPCHOICE) {
         if (this.tempBuySellSyurui != -1 && this.tempBuySellNum > 0) {
             var tempItem = new ItemDefine();
-            ItemDefine.init(this.tempBuySellType, this.tempBuySellSyurui, tempItem);
+            ItemDefine.init(this.tempBuySellType, this.tempBuySellSyurui, this.turn, tempItem);
             var onePrice = this.adjustItemPrice(this.tempBuySellType, this.tempBuySellSyurui);
             var needPrice = onePrice * this.tempBuySellNum;
             if (this.money < needPrice) {
@@ -1361,7 +1371,7 @@ EventView.prototype.decide = function(mouseX, mouseY, bv, ud, itemMap) {
     if (this.comState == EVENTVIEW_COMSTATE_SELL_WEAPCHOICE) {
         if (this.tempBuySellSyurui != -1 && this.tempBuySellNum > 0) {
             var tempItem = new ItemDefine();
-            ItemDefine.init(this.tempBuySellType, this.tempBuySellSyurui, tempItem);
+            ItemDefine.init(this.tempBuySellType, this.tempBuySellSyurui, this.turn, tempItem);
             // 所持数削減
             var tempItemNum = itemMap.get(tempItem.namae);
             itemMap.set(tempItem.namae, tempItemNum - this.tempBuySellNum);
@@ -1614,7 +1624,7 @@ EventView.prototype.buyAbleNum = function(itemType, itemSyurui) {
 EventView.prototype.adjustItemPrice = function(itemType, itemSyurui) {
     var buyAbleNum = this.buyAbleNum(itemType, itemSyurui);
     var tempItem = new ItemDefine();
-    ItemDefine.init(itemType, itemSyurui, tempItem);
+    ItemDefine.init(itemType, itemSyurui, this.turn, tempItem);
     var orgPrice = tempItem.price;
     var adjustRate = 1.0;
     if (buyAbleNum > 1) {

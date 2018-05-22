@@ -22,7 +22,8 @@ var ItemDefine = function() {
     this.avo = 0;
 };
 
-ItemDefine.init = function(eqType, eqSyurui, idef) {
+// turn→時間経過で値上がりするアイテムの価格計算用(価格が必要なければ-1を入れればいい)
+ItemDefine.init = function(eqType, eqSyurui, turn, idef) {
     if (eqSyurui >= ITEM_SYURUI_MAX) {
         printWarn('exceed ItemMax eqType;' + eqType + ' eqSyurui:' + eqSyurui);
     }
@@ -421,25 +422,25 @@ ItemDefine.init = function(eqType, eqSyurui, idef) {
             case ITEM_SYURUI_KOUCHA:arguments
                 idef.namae = "体力の紅茶";
                 idef.text = "1人のHPを全回復する";
-                idef.price = 25;
+                idef.price = 25 + 7 * turn;
                 idef.alwaysBuy = true;
             break;
             case ITEM_SYURUI_KOUSUI:arguments
                 idef.namae = "気力の香水";
                 idef.text = "1人の気力を全回復する";
-                idef.price = 40;
+                idef.price = 40 + 9 * turn;
                 idef.alwaysBuy = true;
             break;
             case ITEM_SYURUI_JIAI:arguments
                 idef.namae = "新薬「慈愛」";
                 idef.text = "全員のHPを全回復する";
-                idef.price = 80;
+                idef.price = 80 + 15 * turn;
                 idef.alwaysBuy = true;
             break;
             case ITEM_SYURUI_MUJIN:arguments
                 idef.namae = "劇薬「無尽活力」";
                 idef.text = "全員の気力を全回復する";
-                idef.price = 110;
+                idef.price = 110 + 30 * turn;
                 idef.alwaysBuy = true;
             break;
             case ITEM_SYURUI_INOCHI:arguments
@@ -580,7 +581,7 @@ ItemDefine.getReverseItemIndex = function(itemMap, eqType, idx) {
     var tempIndex = -1;
     for (var i = 0; i < ITEM_SYURUI_MAX; i++) {
         var tempItem = new ItemDefine();
-        ItemDefine.init(eqType, i, tempItem);
+        ItemDefine.init(eqType, i, -1, tempItem);
         var tempItemNum = itemMap.get(tempItem.namae);
                 
         if (tempItemNum == null) {
@@ -605,7 +606,7 @@ ItemDefine.getReverseItemIndexForBuy = function(itemMap, eqType, idx, ev) {
     var tempIndex = -1;
     for (var i = 0; i < ITEM_SYURUI_MAX; i++) {
         var tempItem = new ItemDefine();
-        ItemDefine.init(eqType, i, tempItem);
+        ItemDefine.init(eqType, i, -1, tempItem);
         var canBuy = tempItem.canBuy(ev);
                 
         if (tempItem.namae == "テスト武器") {

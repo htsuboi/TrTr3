@@ -37,7 +37,7 @@ function calcAndPaint() {
         }
     }
     catch (e) {
-        //alert(e);
+    //    alert(e);
     //    CommonView.addWarn(e);
     }
     if (next.nextGameMode >= 0) {
