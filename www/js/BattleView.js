@@ -463,7 +463,7 @@ BattleView.prototype.calc = function(ud, itemMap, next, ev) {
                     this.spGauge[BATTLE_TEKI] -= requireCost;
                 }
                 var randomForHit = Math.floor(Math.random() * 100);//0～99
-                var hitRate = UnitDefine.calcHit(unitAtFocus, this.tempTargetUnit, ud, unitAtFocus.eqType, unitAtFocus.eqSyurui);
+                var hitRate = UnitDefine.calcHit(unitAtFocus, this.tempTargetUnit, ud, unitAtFocus.eqType, unitAtFocus.eqSyurui, this);
                 this.tempResult.isHit = hitRate > randomForHit;
                 var randomForCrt = Math.floor(Math.random() * 100);//0～99
                 var crtRate = UnitDefine.calcCrt(unitAtFocus, this.tempTargetUnit, ud, unitAtFocus.eqType, unitAtFocus.eqSyurui);
@@ -1899,7 +1899,7 @@ BattleView.prototype.clk = function(mouseX, mouseY, ev, ud, itemMap) {
         // 該当する側のユニットをクリックしていたらターゲットに設定
         if (tempUnit != null && tempUnit.side == targetSide) {
             this.tempTargetUnit = tempUnit;
-            var hitRate = UnitDefine.calcHit(unitAtFocus, this.tempTargetUnit, ud, this.tempEqTypeForEquip, this.tempEqSyurui);
+            var hitRate = UnitDefine.calcHit(unitAtFocus, this.tempTargetUnit, ud, this.tempEqTypeForEquip, this.tempEqSyurui, this);
             var basicDamage = UnitDefine.calcBasicDamage(unitAtFocus, this.tempTargetUnit, ud, this.tempEqTypeForEquip, this.tempEqSyurui);
             var chikeiRate = UnitDefine.calcChikei(unitAtFocus, this.tempTargetUnit, ud, this.battleFields, this.tempEqTypeForEquip, this.tempEqSyurui);
             var rateDamage = UnitDefine.calcRateDamage(unitAtFocus, this.tempTargetUnit, ud, this.tempEqTypeForEquip, this.tempEqSyurui);
@@ -2174,7 +2174,7 @@ BattleView.prototype.decide = function(mouseX, mouseY, ud, itemMap, ev) {
                     
                 this.cantOpCounter = BATTLE_BATTLEMSG_MAX;
                 var randomForHit = Math.floor(Math.random() * 100);//0～99
-                var hitRate = UnitDefine.calcHit(focusUnit, this.tempTargetUnit, ud, this.tempEqTypeForEquip, this.tempEqSyurui);
+                var hitRate = UnitDefine.calcHit(focusUnit, this.tempTargetUnit, ud, this.tempEqTypeForEquip, this.tempEqSyurui, this);
                 this.tempResult.isHit = hitRate > randomForHit;
                 var randomForCrt = Math.floor(Math.random() * 100);//0～99
                 var crtRate = UnitDefine.calcCrt(focusUnit, this.tempTargetUnit, ud, this.tempEqTypeForEquip, this.tempEqSyurui);

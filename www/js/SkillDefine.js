@@ -58,6 +58,8 @@ SkillDefine.getSkillName = function(skill) {
         return "避けえぬ死";
     case SKILL_JIDOU:arguments
         return "自動回復";
+    case SKILL_KOGUN:arguments
+        return "孤軍奮闘";
     default:arguments  
         return "";
     }
@@ -158,6 +160,10 @@ SkillDefine.getMessage = function(skill) {
     case SKILL_JIDOU:arguments
         skillTxt.push("ターン終了時HPが" + (100 * SKILL_JIDOU_RATE) + "%回復");
         break;
+    case SKILL_KOGUN:arguments
+        skillTxt.push("敵より人数が少ないとき");
+        skillTxt.push("回避ステータスを" + (100 * SKILL_KOGUN_RATE) + "%増");
+        break;
     default:arguments  
         break;
     }
@@ -215,6 +221,8 @@ SkillDefine.getSkillCost = function(skill) {
         return 2;
     case SKILL_DEATH:arguments
         return 1;
+    case SKILL_KOGUN:arguments
+        return 3;
     default:arguments  
         return 0;
     }

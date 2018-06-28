@@ -326,8 +326,8 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
         case UNIT_SYURUI_SHIKI:arguments
             this.crt = 10 + (difficulty > GAME_DIFFICULTY_HARD ? 3 : 0);
             this.luck = 3;
-            this.rat = 10;//割合ダメージ
-            this.rdf = 6;//割合軽減
+            this.rat = 8;//割合ダメージ
+            this.rdf = 4;//割合軽減
             this.m1Cost = 50;//1移動コスト
             this.m2Cost = 60;//2移動コスト
             this.rangeCost = 60;//射程伸ばしコスト
@@ -359,6 +359,42 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.mdfObj = {now:10, amari:0, up:22, upup:4, upupup:10};
             this.hitObj = {now:76, amari:0, up:23, upup:7, upupup:2};
             this.avoObj = {now:15, amari:0, up:25 + (difficulty > GAME_DIFFICULTY_HARD ? 5 : 0), upup:15, upupup:20};
+        break;
+        case UNIT_SYURUI_S2BOSS:arguments
+            this.crt = 10;
+            this.luck = 3;
+            this.rat = 3 + (difficulty > GAME_DIFFICULTY_HARD ? 2 : 0);//割合ダメージ
+            this.rdf = 8 + (difficulty > GAME_DIFFICULTY_NORMAL ? 3 : 0);//割合軽減
+            this.m1Cost = 20;//1移動コスト
+            this.m2Cost = 40;//2移動コスト
+            this.rangeCost = 200;//射程伸ばしコスト
+            this.exAtCost = 115;//再行動コスト
+            this.exp = 30;//経験値
+            this.mhpObj = {now:118 + (difficulty > GAME_DIFFICULTY_NORMAL ? 8 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 10 : 0), amari:0, up:72, upup:11, upupup:10};
+            this.strObj = {now:48 + (difficulty > GAME_DIFFICULTY_NORMAL ? 3 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 5 : 0), amari:0, up:35, upup:20, upupup:14};
+            this.magObj = {now:3, amari:0, up:15, upup:10, upupup:7};
+            this.defObj = {now:16, amari:0, up:23, upup:21, upupup:17 + (difficulty > GAME_DIFFICULTY_NORMAL ? 9 : 0)};
+            this.mdfObj = {now:12, amari:0, up:20, upup:15, upupup:23};
+            this.hitObj = {now:110 + (difficulty > GAME_DIFFICULTY_NORMAL ? 5 : 0), amari:0, up:40 + (difficulty > GAME_DIFFICULTY_HARD ? 6 : 0), upup:11, upupup:28};
+            this.avoObj = {now:13, amari:0, up:18, upup:20, upupup:18};
+        break;
+        case UNIT_SYURUI_S3BOSS:arguments
+            this.crt = 11 + (difficulty > GAME_DIFFICULTY_HARD ? 4 : 0);
+            this.luck = 3;
+            this.rat = 8;//割合ダメージ
+            this.rdf = 8;//割合軽減
+            this.m1Cost = 40;//1移動コスト
+            this.m2Cost = 70;//2移動コスト
+            this.rangeCost = 50;//射程伸ばしコスト
+            this.exAtCost = 130;//再行動コスト
+            this.exp = 30;//経験値
+            this.mhpObj = {now:103 + (difficulty > GAME_DIFFICULTY_NORMAL ? 6 : 0) + (difficulty > GAME_DIFFICULTY_HARD ? 6 : 0), amari:0, up:65, upup:18, upupup:10};
+            this.strObj = {now:41 + (difficulty > GAME_DIFFICULTY_HARD ? 7 : 0), amari:0, up:32, upup:10, upupup:27};
+            this.magObj = {now:3, amari:0, up:15, upup:10, upupup:7};
+            this.defObj = {now:21, amari:0, up:24 + (difficulty > GAME_DIFFICULTY_NORMAL ? 8 : 0), upup:20, upupup:17};
+            this.mdfObj = {now:18, amari:0, up:24 + (difficulty > GAME_DIFFICULTY_HARD ? 8 : 0), upup:19, upupup:25};
+            this.hitObj = {now:120, amari:0, up:44 + (difficulty > GAME_DIFFICULTY_NORMAL ? 7 : 0), upup:12, upupup:24};
+            this.avoObj = {now:24, amari:0, up:23 + (difficulty > GAME_DIFFICULTY_HARD ? 3 : 0), upup:14, upupup:21};
         break;
         
         case UNIT_SYURUI_PRINCESS:arguments
@@ -596,6 +632,32 @@ UnitDefine.prototype.initCommon = function(ud, unitSyurui, side, ofOrDf, field, 
             this.goodRing.push(RING_DEFENCE);
             this.goodRing.push(RING_RECOVER);
             this.badRing.push(RING_JUKUREN);
+        break;
+        case UNIT_SYURUI_FIGHTER:arguments
+            this.msp = 20;
+            this.crt = 5;
+            this.luck = 3;
+            this.rat = 6;//割合ダメージ
+            this.rdf = 6;//割合軽減
+            this.m1Cost = 30;//1移動コスト
+            this.m2Cost = 80;//2移動コスト
+            this.rangeCost = 30;//射程伸ばしコスト
+            this.exAtCost = 160;//再行動コスト
+            this.regPoison = 50;
+            this.regStun = 25;
+            this.mhpObj = {now:80, amari:0, up:28, upup:35, upupup:30};
+            this.strObj = {now:33, amari:0, up:38, upup:3, upupup:15};
+            this.magObj = {now:4, amari:0, up:2, upup:3, upupup:4};
+            this.defObj = {now:8, amari:0, up:17, upup:12, upupup:13};
+            this.mdfObj = {now:12, amari:0, up:24, upup:15, upupup:16};
+            this.hitObj = {now:85, amari:0, up:26, upup:12, upupup:18};
+            this.avoObj = {now:20, amari:0, up:25, upup:16, upupup:16};
+            this.weaps[ITEM_TYPE_SHIELD] = 15;
+            this.weaps[ITEM_TYPE_KNIFE] = 21;
+            this.weaps[ITEM_TYPE_PUNCH] = 40;
+            this.goodRing.push(RING_DEFENCE);
+            this.badRing.push(RING_RECOVER);
+            this.badRing.push(RING_KIRYOKU);
         break;
         default:arguments
             printWarn('no UnitName unitSyurui:' + unitSyurui);
@@ -1011,7 +1073,7 @@ UnitDefine.calcRange = function(attacker, ud, attackerEQType, attackerEQSyurui) 
 }
 
 // 命中率計算　基本的に装備武器は「装備中のもの」を想定するが、攻撃予想時のみ「予想に使用する武器」である
-UnitDefine.calcHit = function(attacker, defender, ud, attackerEQType, attackerEQSyurui) {
+UnitDefine.calcHit = function(attacker, defender, ud, attackerEQType, attackerEQSyurui, bv) {
     // 味方は気力0なら問答無用で敵の攻撃全命中
     if (defender.side == BATTLE_MIKATA && defender.sp == 0) {
         return 100;
@@ -1022,7 +1084,16 @@ UnitDefine.calcHit = function(attacker, defender, ud, attackerEQType, attackerEQ
     }
     var attackerBattleStatus = attacker.calcBattleStr(attackerEQType, attackerEQSyurui);// 装備品込みのステータスを取得
     var defenderBattleStatus = defender.calcBattleStr();// 装備品込みのステータスを取得
-    var hitRate = attackerBattleStatus.hit - defenderBattleStatus.avo;
+    var adjustAvo = 1.0;
+    if (defender.hasSkill(ud, SKILL_KOGUN)) {
+        var defenderNum = bv.calcRemain(defender.side, ud);
+        var attackerNum = bv.calcRemain(attacker.side, ud);
+        if (defenderNum < attackerNum) {
+            adjustAvo += SKILL_KOGUN_RATE;
+        }
+    }
+    var hitRate = attackerBattleStatus.hit - Math.floor(adjustAvo* defenderBattleStatus.avo);
+    
     if (attacker.hasSkill(ud, SKILL_HIGHHIT)) {
         hitRate += SKILL_HIGHHIT_RATE;
     }
@@ -1172,7 +1243,7 @@ UnitDefine.prototype.getTargets = function(ud, bv, attacker, range) {
         var u = ud[i];
         // レンジ内の味方ユニット
         if (u.side == BATTLE_MIKATA && u.field == bv.field && ((attacker.x + u.x) + (attacker.y + u.y) <= range)) {
-            var hitRate = UnitDefine.calcHit(this, u, ud, this.eqType, this.eqSyurui);
+            var hitRate = UnitDefine.calcHit(this, u, ud, this.eqType, this.eqSyurui, bv);
             var basicDamage = UnitDefine.calcBasicDamage(this, u, ud, this.eqType, this.eqSyurui);
             var chikeiRate = UnitDefine.calcChikei(this, u, ud, bv.battleFields, this.eqType, this.eqSyurui);
             var rateDamage = UnitDefine.calcRateDamage(this, u, ud, this.eqType, this.eqSyurui);

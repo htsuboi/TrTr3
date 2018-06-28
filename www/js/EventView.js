@@ -1088,10 +1088,14 @@ EventView.prototype.endEvent = function(ud, bv, itemMap) {
             break;
         case EVENTVIEW_EVENTID_JOIN_YOUHEI:arguments
             u = new UnitDefine();
-            u.initCommon(ud, UNIT_SYURUI_KENSHI, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 7, SKILL_KEIKAI, SKILL_AKURO, 0);
+            u.initCommon(ud, UNIT_SYURUI_KENSHI, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 9, SKILL_KEIKAI, SKILL_AKURO, SKILL_DEATH);
             ud.push(u);
             break;
-        
+        case EVENTVIEW_EVENTID_JOIN_FIGHTER:arguments
+            u = new UnitDefine();
+            u.initCommon(ud, UNIT_SYURUI_FIGHTER, BATTLE_MIKATA, BATTLE_OFFENCE, -1, 10, SKILL_HIGHHIT, SKILL_YOROI, SKILL_KOGUN);
+            ud.push(u);
+            break;
     }
     // イベント実行したので、nowEventから消す
     var nowEventIndex = this.nowEvent.indexOf(this.eventID);
@@ -1148,6 +1152,21 @@ EventView.prototype.setFace = function(faceId) {
         case UNIT_SYURUI_MAGIC:arguments
             this.px = 3 * 256;
             this.py = 0 * 320;
+            this.pSyurui = BATTLE_PSYURUI_ZAKO;
+            break;
+        case UNIT_SYURUI_POISON:arguments
+            this.px = 0 * 256;
+            this.py = 3 * 320;
+            this.pSyurui = BATTLE_PSYURUI_ZAKO;
+            break;
+        case UNIT_SYURUI_KNIFE:arguments
+            this.px = 0 * 256;
+            this.py = 0 * 320;
+            this.pSyurui = BATTLE_PSYURUI_ZAKO;
+            break;
+        case UNIT_SYURUI_PUNCH:arguments
+            this.px = 2 * 256;
+            this.py = 1 * 320;
             this.pSyurui = BATTLE_PSYURUI_ZAKO;
             break;
         case UNIT_SYURUI_PRINCESS:arguments
@@ -1235,6 +1254,11 @@ EventView.prototype.setFace = function(faceId) {
             this.py = 2 * 320;
             this.pSyurui = BATTLE_PSYURUI_NPC;
             break;
+        case UNIT_SYURUI_RIVAL:arguments
+            this.px = 1 * 256;
+            this.py = 2 * 320;
+            this.pSyurui = BATTLE_PSYURUI_NPC;
+            break;
         case UNIT_SYURUI_S1BOSS:arguments
             this.px = 1 * 256;
             this.py = 0 * 320;
@@ -1243,6 +1267,16 @@ EventView.prototype.setFace = function(faceId) {
         case UNIT_SYURUI_S2BOSS:arguments
             this.px = 0 * 256;
             this.py = 0 * 320;
+            this.pSyurui = BATTLE_PSYURUI_BOSS;
+            break;
+        case UNIT_SYURUI_S3BOSS:arguments
+            this.px = 2 * 256;
+            this.py = 0 * 320;
+            this.pSyurui = BATTLE_PSYURUI_BOSS;
+            break;
+        case UNIT_SYURUI_S4BOSS:arguments
+            this.px = 0 * 256;
+            this.py = 1 * 320;
             this.pSyurui = BATTLE_PSYURUI_BOSS;
             break;
     }
